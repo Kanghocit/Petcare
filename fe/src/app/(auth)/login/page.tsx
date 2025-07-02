@@ -75,7 +75,7 @@ const LoginForm = () => {
         zIndex={10}
       />
 
-      {/* Form đăng nhập của bạn ở đây */}
+      {/* Form đăng nhập */}
 
       <div className="bg-white/80 rounded-3xl p-10 w-full max-w-xl shadow-2xl backdrop-blur-md border border-white/60 flex flex-col gap-3 z-10">
         <h1 className="text-3xl font-bold text-blue-700 mb-2 text-center font-[Quicksand]">

@@ -89,3 +89,25 @@ export const logout = async (req, res) => {
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
+
+//tạo lại access token
+export const refreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    const newAccessToken = authService.generateAccessToken(user);
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000,
+    });
+    res.status(200).json({
+      ok: true,
+      message: "Tạo lại access token thành công",
+      accessToken: newAccessToken,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
