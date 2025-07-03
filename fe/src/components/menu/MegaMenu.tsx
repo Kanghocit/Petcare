@@ -41,9 +41,12 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ label, menuData }) => {
         }}
       >
         {menuData.map((category, idx) => (
-          <div key={idx} className="ms-25">
-            <Link href={category?.path} className="hover:text-orange-600">
-              <h4 className="font-semibold text-[20px] mb-3 hover:text-orange-600">
+          <div key={idx}>
+            <Link
+              href={category?.path}
+              className="hover:!text-orange-600 !text-black !font-semibold"
+            >
+              <h4 className="font-semibold text-[18px] mb-3 hover:text-orange-600">
                 {category.title} 🐈
               </h4>
             </Link>

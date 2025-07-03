@@ -14,10 +14,14 @@ export default async function DashboardLayout({
 
   return (
     <App>
-      <Header user={userData.user} />
-      <Menu />
-      {children}
-      <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Header user={userData.user} />
+        <Menu />
+
+        <main className="flex-grow">{children}</main>
+
+        <Footer />
+      </div>
     </App>
   );
 }

@@ -25,8 +25,6 @@ export const fetchWithToken = async (
     },
     credentials: "include",
   });
-  console.log("response", response);
-  console.log("refreshToken", refreshToken);
 
   // Nếu access token hết hạn → gọi refresh
   if (response.status == 401 && refreshToken) {
@@ -42,7 +40,7 @@ export const fetchWithToken = async (
       }
     );
 
-    if (refreshRes.ok) {
+    if (refreshRes.status === 200) {
       // Lấy accessToken mới từ response
       const data = await refreshRes.json();
       const newAccessToken = data.accessToken;

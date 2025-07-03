@@ -31,21 +31,21 @@ const Foods = ({
             alt="foods"
             width={400}
             height={300}
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover md:w-1/3"
           />
           <Image
             src="/images/banner_group_1_2.webp"
             alt="foods"
             width={400}
             height={300}
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover md:w-1/3"
           />
           <Image
             src="/images/banner_group_1_3.webp"
             alt="foods"
             width={400}
             height={300}
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover md:w-1/3"
           />
         </div>
       )}

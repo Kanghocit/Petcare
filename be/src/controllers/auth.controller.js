@@ -1,5 +1,6 @@
 import authService from "../services/auth.js";
 import User from "../models/user.js";
+import jwt from "jsonwebtoken";
 
 //đăng ký
 export const register = async (req, res) => {
@@ -108,6 +109,7 @@ export const refreshToken = async (req, res) => {
       accessToken: newAccessToken,
     });
   } catch (error) {
+    console.error("Refresh token error:", error);
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };

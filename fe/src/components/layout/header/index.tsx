@@ -15,6 +15,7 @@ import Image from "next/image";
 
 import { App } from "antd";
 import { useRouter } from "next/navigation";
+import CartDrawer from "@/components/cart-drawer";
 
 interface HeaderProps {
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
   return (
     <App>
-      <header className="flex items-center justify-between bg-white px-3 py-2 gap-3  sticky top-0 z-10 w-full shadow-sm">
+      <header className="flex items-center justify-center bg-white px-3 py-2 gap-8 sticky  top-0 z-100 w-full shadow-sm ">
         <Link href="/" className="!ms-5 gap-2">
           <Image src="/images/logo.webp" alt="logo" width={200} height={100} />
         </Link>
@@ -114,12 +115,14 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
               </div>
             </Dropdown>
           )}
-          <button className="text-xl flex items-center gap-2 cursor-pointer  rounded-xl p-3 ">
-            <Badge count={5}>
-              <ShoppingCartOutlined style={{ fontSize: 24 }} />
-            </Badge>
-            <p className="text-[16px]">Giỏ hàng</p>
-          </button>
+          <CartDrawer>
+            <button className="text-xl flex items-center gap-2 cursor-pointer  rounded-xl p-3 ">
+              <Badge count={5}>
+                <ShoppingCartOutlined style={{ fontSize: 24 }} />
+              </Badge>
+              <p className="text-[16px]">Giỏ hàng</p>
+            </button>
+          </CartDrawer>
         </div>
       </header>
     </App>

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const Menu = () => {
   return (
-    <ul className="bg-[#ff8662] flex items-center justify-center gap-20 px-3 text-xl text-white font-semibold ">
+    <ul className="bg-[#ff8662] flex items-center justify-center gap-20 px-3 text-[18px] text-white font-semibold">
       <ul className="flex items-center justify-end gap-2 cursor-pointer hover:text-[#ffc902]">
         <Link href="/">Trang chủ</Link>
       </ul>
@@ -21,7 +21,7 @@ const Menu = () => {
         Dịch vụ
       </li>
       <li className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#ffc902]">
-        Blog
+        <Link href="/news">Tạp chí chăm Boss</Link>
       </li>
       <li className="flex items-center justify-center gap-2 cursor-pointer  hover:text-[#ffc902]">
         <Link href="/contact">
