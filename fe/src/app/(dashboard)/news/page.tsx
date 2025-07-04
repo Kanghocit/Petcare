@@ -10,7 +10,7 @@ const NewsPage = () => {
           <div className="w-full md:w-1/3">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                Tạp chí chăm Boss
+                
               </h1>
             </div>
           </div>

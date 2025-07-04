@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
-import { Rate, Button, Tooltip } from "antd";
 import { EyeOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import { Rate, Tooltip } from "antd";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
+
+import useCartStore from "@/store/cart-store";
 
 type ProductCardProps = {
   img?: [string, string];
@@ -30,10 +32,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   className = "",
 }) => {
   const text = <span>Xem nhanh</span>;
+  const addToCart = useCartStore((state) => state.addToCart);
 
   return (
     <div
-      className={`w-75 rounded-md p-3 shadow-sm !min-h-[420px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
+      className={`w-75 !rounded-2xl p-3 shadow-sm !min-h-[420px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
     >
       <Link href={`/product/${title}`}>
         <div className="relative w-full h-64 overflow-hidden group rounded-md">
@@ -98,11 +101,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 <span className="text-red-500 text-2xl">
                   {price.toLocaleString()}₫
                 </span>
-                <Button
-                  icon={<ShoppingCartOutlined />}
-                  type="primary"
-                  className="!rounded-full"
-                />
+                <button
+                  className="!rounded-full !w-10 h-10 !bg-[#FFEDE5] !text-[#ff8662] hover:!bg-[#FFEDE5]/80 cursor-pointer"
+                  onClick={() =>
+                    addToCart({
+                      id: 1,
+                      name: "Sản phẩm 1",
+                      desc: "Mô tả sản phẩm 1",
+                      price: 100000,
+                      img: "/images/news-img.webp",
+                      quantity: 1, // hoặc số lượng chọn
+                    })
+                  }
+                >
+                  <ShoppingCartOutlined />
+                </button>
               </div>
             )}
           </div>

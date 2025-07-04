@@ -11,6 +11,7 @@ import {
 import { MdSupportAgent, MdPayment } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { HiMinus, HiPlus } from "react-icons/hi";
+import useCartStore from "@/store/cart-store";
 
 const ProductDetailInfo = () => {
   // Dữ liệu mẫu, có thể thay bằng props sau này
@@ -31,6 +32,7 @@ const ProductDetailInfo = () => {
   };
 
   const getQuantity = () => Math.max(1, parseInt(quantity) || 1);
+  const addToCart = useCartStore((state) => state.addToCart);
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,7 +86,19 @@ const ProductDetailInfo = () => {
       </div>
       {/* Nút hành động */}
       <div className="flex gap-4 mt-4">
-        <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-500 hover:to-yellow-500 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all">
+        <button
+          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-500 hover:to-yellow-500 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
+          onClick={() =>
+            addToCart({
+              id: 1,
+              name: "Sản phẩm 1",
+              desc: "Mô tả sản phẩm 1",
+              price: 100000,
+              img: "/images/news-img.webp",
+              quantity: 1, // hoặc số lượng chọn
+            })
+          }
+        >
           <FaShoppingCart className="text-xl" />
           Thêm vào giỏ hàng
         </button>

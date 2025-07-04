@@ -56,7 +56,6 @@ export const login = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60 * 1000,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-
       path: "/",
     });
 
@@ -66,7 +65,6 @@ export const login = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-
       path: "/",
     });
 
@@ -85,7 +83,10 @@ export const logout = async (req, res) => {
   try {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
-    res.status(200).json({ message: "Đăng xuất thành công" });
+    res.status(200).json({
+      ok: true,
+      message: "Đăng xuất thành công",
+    });
   } catch (error) {
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
@@ -95,19 +96,29 @@ export const logout = async (req, res) => {
 export const refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
     const user = await User.findById(decoded.userId);
+
     const newAccessToken = authService.generateAccessToken(user);
+
+    //lưu access token mới vào cookie
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
     });
+
     res.status(200).json({
       ok: true,
       message: "Tạo lại access token thành công",
       accessToken: newAccessToken,
     });
+
+    console.log("đã tạo lại access token");
   } catch (error) {
     console.error("Refresh token error:", error);
     res.status(500).json({ message: error.message || "Lỗi server" });
