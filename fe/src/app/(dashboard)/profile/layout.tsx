@@ -1,4 +1,4 @@
-import { getUser } from "@/action";
+import { getUser } from "@/actions";
 import "@/app/globals.css";
 import { Breadcrumb } from "antd";
 import Image from "next/image";

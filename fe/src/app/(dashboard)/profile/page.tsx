@@ -1,4 +1,4 @@
-import { getUser } from "@/action";
+import { getUser } from "@/actions";
 
 const ProfilePage = async () => {
   const userData = await getUser();
