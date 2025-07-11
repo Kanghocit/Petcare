@@ -14,8 +14,8 @@ const Footer: React.FC = () => {
           height={100}
         />
       </div>
-      <footer className="bg-gray-100 px-12 py-14 text-black !text-xl mt-4 !font-national-park pt-4">
-        <Row gutter={[32, 24]}>
+      <footer className=" bg-gray-100 px-12 py-14 text-black !text-[14px] mt-4 !font-national-park pt-4 flex items-center justify-center">
+        <Row gutter={[32, 24]} className="container">
           {/* Cột 1 - Thông tin cửa hàng */}
           <Col xs={24} md={12} lg={6}>
             <Image
@@ -25,28 +25,28 @@ const Footer: React.FC = () => {
               width={100}
               height={100}
             />
-            <h3 className="text-2xl font-semibold">Cửa hàng cho thú cưng</h3>
-            <p className="mt-2 text-base">
+            <h3 className="text-xl font-semibold">Cửa hàng cho thú cưng</h3>
+            <p className="mt-2 text-[14px]">
               Chuyên cung cấp đồ dùng, thức ăn và phụ kiện cho thú cưng, cam kết
               chất lượng sản phẩm tốt nhất
             </p>
-            <p className="mt-2 text-base">Mã số thuế: 12345678910</p>
-            <p className="flex items-center mt-2 text-base">
+            <p className="mt-2 text-[14px]">Mã số thuế: 12345678910</p>
+            <p className="flex items-center mt-2 text-[14px]">
               📍{" "}
               <span className="ml-1 font-semibold">
                 70 Lu Gia, District 11, Ho Chi Minh City
               </span>
             </p>
-            <p className="mt-2 text-base">
+            <p className="mt-2 text-[14px]">
               📞 Hotline:{" "}
               <span className="text-red-500 font-semibold">19006750</span>
             </p>
-            <p className="mt-2 text-base">
+            <p className="mt-2 text-[14px]">
               📧 Email: <span className="font-semibold">support@sapo.vn</span>
             </p>
 
-            <h4 className="mt-4 font-semibold text-2xl">Mạng xã hội</h4>
-            <div className="flex space-x-3 mt-2 text-3xl">
+            <h4 className="mt-4 font-semibold text-xl">Mạng xã hội</h4>
+            <div className="flex space-x-3 mt-2 text-2xl">
               <FaFacebook className="text-blue-600" />
               <FaYoutube className="text-red-600" />
               <FaTiktok className="text-black" />
@@ -56,8 +56,8 @@ const Footer: React.FC = () => {
 
           {/* Cột 2 - Hỗ trợ khách hàng */}
           <Col xs={24} md={12} lg={6}>
-            <h4 className="font-bold text-2xl">Hỗ trợ khách hàng</h4>
-            <ul className="mt-2 space-y-2 list-disc list-inside text-base">
+            <h4 className="font-bold text-xl">Hỗ trợ khách hàng</h4>
+            <ul className="mt-2 space-y-2 list-disc list-inside text-[14px]">
               <li>Câu hỏi thường gặp</li>
               <li>Hệ thống cửa hàng</li>
               <li>Tìm kiếm</li>
@@ -68,16 +68,16 @@ const Footer: React.FC = () => {
 
           {/* Cột 3 - Chính sách + Tổng đài */}
           <Col xs={24} md={12} lg={6}>
-            <h4 className="font-bold text-2xl">Chính sách</h4>
-            <ul className="mt-2 space-y-2 list-disc list-inside text-base">
+            <h4 className="font-bold text-xl">Chính sách</h4>
+            <ul className="mt-2 space-y-2 list-disc list-inside text-[14px]">
               <li>Chính sách đổi trả</li>
               <li>Chính sách bảo mật</li>
               <li>Điều khoản dịch vụ</li>
               <li>Chương trình cộng tác viên</li>
             </ul>
 
-            <h4 className="font-bold text-2xl mt-6">Tổng đài hỗ trợ</h4>
-            <ul className="mt-2 space-y-1 text-base">
+            <h4 className="font-bold text-xl mt-6">Tổng đài hỗ trợ</h4>
+            <ul className="mt-2 space-y-1 text-[14px]">
               <li>
                 Gọi mua hàng: <strong>0999999999</strong> (8h-20h)
               </li>
@@ -89,23 +89,23 @@ const Footer: React.FC = () => {
 
           {/* Cột 4 - Newsletter + Thanh toán */}
           <Col xs={24} md={12} lg={6}>
-            <h4 className="font-bold text-2xl">Đăng ký nhận ưu đãi</h4>
-            <p className="mt-2 text-base">
+            <h4 className="font-bold text-xl">Đăng ký nhận ưu đãi</h4>
+            <p className="mt-2 text-[14px]">
               Bạn muốn nhận khuyến mãi đặc biệt? Tham gia cộng đồng hơn 68.000+
               người theo dõi để cập nhật ngay!
             </p>
-            <div className="flex mt-3">
+            <div className="flex w-full max-w-md mt-4">
               <input
                 type="email"
                 placeholder="Email của bạn..."
-                className="border border-gray-300 p-2 rounded-l-md w-full focus:outline-none text-base"
+                className="flex-1 border border-gray-300 px-4 py-2 rounded-l-3xl focus:outline-none focus:ring-1 focus:ring-orange-500"
               />
-              <button className="bg-orange-500 text-white px-4 w-24 rounded-r-md hover:bg-orange-600 text-base">
+              <button className="bg-orange-500 text-white px-4 rounded-r-3xl hover:bg-orange-600 text-[14px] cursor-pointer">
                 Đăng ký
               </button>
             </div>
 
-            <h4 className="font-bold text-2xl mt-6">Phương thức thanh toán</h4>
+            <h4 className="font-bold text-xl mt-4">Phương thức thanh toán</h4>
             <div className="flex space-x-3 mt-3 cursor-pointer">
               <Image
                 src="https://bizweb.dktcdn.net/thumb/grande/100/527/383/themes/964940/assets/footer-trustbadge.png?1742811067202"

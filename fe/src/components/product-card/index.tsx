@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      className={`w-75 !rounded-2xl p-3 shadow-sm !min-h-[420px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
+      className={`w-75 !rounded-2xl p-3 shadow-sm !min-h-[350px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
     >
       <Link href={`/product/${title}`}>
         <div className="relative w-full h-64 overflow-hidden group rounded-md">
@@ -66,11 +66,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         <div className="my-3">
-          <div className="min-h-[50px]">
-            <p className="text-black font-bold mb-1 line-clamp-2 group-hover:text-[#ffc226] cursor-pointer">
-              {title}
-            </p>
-          </div>
+          <p className="text-black font-bold mb-1 line-clamp-2 group-hover:text-[#ffc226] cursor-pointer">
+            {title}
+          </p>
 
           {/* Ant Design Rate */}
           <Rate
@@ -84,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="text-sm font-semibold mt-1">
             {isSale && typeof salePrice === "number" ? (
               <div className="flex flex-col">
-                <span className="text-red-500 text-2xl">
+                <span className="text-red-500 text-xl">
                   {salePrice.toLocaleString()}₫
                 </span>
                 <div className="flex gap-2 items-center">
@@ -98,7 +96,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </div>
             ) : (
               <div className="flex items-center justify-between gap-2">
-                <span className="text-red-500 text-2xl">
+                <span className="text-red-500 text-xl">
                   {price.toLocaleString()}₫
                 </span>
                 <button
