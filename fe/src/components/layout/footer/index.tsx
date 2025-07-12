@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
               <span className="text-red-500 font-semibold">19006750</span>
             </p>
             <p className="mt-2 text-[14px]">
-              📧 Email: <span className="font-semibold">support@sapo.vn</span>
+              📧 Email: <span className="font-semibold">shop@gmail.com</span>
             </p>
 
             <h4 className="mt-4 font-semibold text-xl">Mạng xã hội</h4>

@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import productRoutes from "./routes/product.routes.js";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -33,6 +34,7 @@ connectDB();
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/product", productRoutes);
 //Error handling middleware
 
 //Server running
