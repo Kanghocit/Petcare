@@ -1,4 +1,4 @@
-import authService from "../services/auth.js";
+import authService from "../services/auth.services.js";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 
