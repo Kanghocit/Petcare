@@ -1,6 +1,7 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import BasicTableOne from "@/components/tables/BasicTableOne";
+import ManageNewsTable from "@/components/tables/ManageNewsTable";
+import { getAllNewsAction } from "@/action";
 import { Metadata } from "next";
 import React from "react";
 
@@ -10,13 +11,15 @@ export const metadata: Metadata = {
   // other metadata
 };
 
-export default function BasicTables() {
+export default async function ManageNewsTablePage() {
+  const newsData = await getAllNewsAction();
+  
   return (
     <div>
       <PageBreadcrumb pageTitle="Quản lí bài đăng" />
       <div className="space-y-6">
         <ComponentCard title="Bài đăng">
-          <BasicTableOne />
+          <ManageNewsTable news={newsData.news} />
         </ComponentCard>
       </div>
     </div>

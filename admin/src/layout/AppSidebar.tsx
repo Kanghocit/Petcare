@@ -7,9 +7,9 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   TableIcon,
 } from "../icons/index";
+import Image from "next/image";
 
 type NavItem = {
   name: string;
@@ -25,19 +25,12 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   },
   {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
+    name: "Quản lý tin tức",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [{ name: "Duyệt tin tức", path: "/manage-new-table", pro: false }],
   },
   
 ];
-
-
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -259,7 +252,7 @@ const AppSidebar: React.FC = () => {
               <p className="text-2xl font-semibold">Petcare</p>
             </>
           ) : (
-            <p className="text-2xl font-semibold">Petcare</p>
+            <Image src="/images/logo/logo1.jpg" alt="logo" width={40} height={40} />
           )}
         </Link>
       </div>

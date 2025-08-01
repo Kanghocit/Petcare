@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import slugify from "slugify";
+import slugify from "@sindresorhus/slugify";
 import { nanoid } from "nanoid";
 
 const newsSchema = new mongoose.Schema(
@@ -18,6 +18,32 @@ const newsSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    link: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "active"],
+      default: "pending",
+    },
+    author: {
+      type: String,
+    },
+    publishTime: {
+      type: String,
+      // Cho phép tên ngày bằng tiếng Việt và tháng có thể 1-2 chữ số
+      match: /^.+?, \d{1,2}\/\d{1,2}\/\d{4}, \d{2}:\d{2} \(GMT\+\d{1,2}\)$/,
+    },
+    blocks: [
+      {
+        text: {
+          type: String,
+        },
+        image: {
+          type: String,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -25,16 +51,14 @@ const newsSchema = new mongoose.Schema(
 newsSchema.pre("save", async function (next) {
   if (!this.isModified("title")) return next();
 
-  const rawTitle = this.title.replace(/[^\w\s]/gi, "");
-  const words = rawTitle.trim().split(/\s+/);
+  const shortened = this.title.trim().split(/\s+/).slice(0, 6).join(" ");
 
   this.slug =
-    slugify(words.length > 6 ? words.slice(0, 6).join("-") : rawTitle, {
-      lower: true,
-      strict: true,
-    }) +
+    (await slugify(shortened, {
+      lowercase: true,
+    })) +
     "-" +
-    nanoid(5); // đảm bảo không trùng slug
+    nanoid(5);
 
   next();
 });

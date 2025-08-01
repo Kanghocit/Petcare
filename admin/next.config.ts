@@ -9,6 +9,22 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i1-vnexpress.vnecdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "i1-giadinh.vnecdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "*.vnecdn.net",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

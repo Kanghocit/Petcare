@@ -6,6 +6,8 @@ import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import cookieParser from "cookie-parser";
+import { startNewsCronJob } from "./cron/scape.task.js";
+import newsRoutes from "./routes/news.routes.js";
 
 dotenv.config();
 
@@ -35,7 +37,11 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/news", newsRoutes);
 //Error handling middleware
+
+//Cron job
+startNewsCronJob();
 
 //Server running
 app.listen(port, () => {
