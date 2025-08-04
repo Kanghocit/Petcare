@@ -137,13 +137,19 @@ async function scrapeNews(url) {
 
         const child = await scrapeArticleDetail(fullLink, page);
 
-        newsList.push({
-          title,
-          content,
-          image: fullImage,
-          link: fullLink,
-          child,
-        });
+        if (child.blocks.length >= 8 && child.image !== "https:undefined") {
+          newsList.push({
+            title,
+            content,
+            image: fullImage,
+            link: fullLink,
+            child,
+          });
+        } else {
+          console.log(
+            `❌ Bài viết ${title} có ${child.blocks.length} blocks, không đủ để lưu`
+          );
+        }
       }
     }
 

@@ -1,19 +1,21 @@
 import Breadcrumb from "@/components/breadCrumb";
-import React from "react";
+import NewsTable from "./components/NewsTable";
+import { getNews } from "@/libs/new";
 
-const NewsPage = () => {
+const NewsPage = async ({
+  searchParams,
+}: {
+  searchParams: { page: number; limit: number };
+}) => {
+  const { page, limit } = await searchParams;
+  const news = await getNews(page, limit);
+
   return (
     <div className="container mx-auto ">
       <div className="mx-8 py-8">
         <Breadcrumb />
-        <div className="flex flex-col md:flex-row gap-8 bg-white rounded-xl p-8 mt-6 shadow-lg mx-4">
-          <div className="w-full md:w-1/3">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                
-              </h1>
-            </div>
-          </div>
+        <div className="flex flex-col gap-8 bg-white rounded-xl p-8 mt-6 shadow-lg mx-4">
+          <NewsTable data={news.news} totalPages={news.totalPages} />
         </div>
       </div>
     </div>

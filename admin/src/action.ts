@@ -2,8 +2,8 @@
 
 import { deleteNews, getAllNews, getNewsByStatus, approveNews, getNewsBySlug, updateNews } from "./libs/news";
 
-export const getAllNewsAction = async () => {
-  const data = await getAllNews();
+export const getAllNewsAction = async (page: number) => {
+  const data = await getAllNews(page);
   return data;
 };
 
@@ -23,7 +23,7 @@ export const approveNewsAction = async (slug: string, status: string) => {
 export const getNewsBySlugAction = async (slug: string) => {
   return getNewsBySlug(slug);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const updateNewsAction = async (slug: string, data: any) => {
   return updateNews(slug, data);
 };

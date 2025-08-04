@@ -11,6 +11,7 @@ import NewsContentBlocks from './NewsContentBlocks'
 import NewsEditForm from './NewsEditForm'
 import NewsStats from './NewsStats'
 import { updateNewsAction } from '@/action'
+import NewsArticlePreview from './NewsArticlePreview'
 
 interface Block {
   _id?: string
@@ -32,6 +33,15 @@ interface NewsData {
   blocks: Block[]
 }
 
+interface NewsFormData {
+  title: string
+  content: string
+  author: string
+  status: string
+  image?: string
+  blocks: Block[]
+}
+
 interface NewsDetailWrapperProps {
   news: NewsData
   slug: string
@@ -41,15 +51,14 @@ const NewsDetailWrapper = ({ news, slug }: NewsDetailWrapperProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const [currentNews, setCurrentNews] = useState(news)
 
-  const handleSave = async (data: NewsData) => {
+  const handleSave = async (data: NewsFormData) => {
     try {
       await updateNewsAction(slug, data)
       setCurrentNews({ ...currentNews, ...data })
       setIsEditing(false)
       message.success('Cập nhật bài đăng thành công!')
-    } catch (error) {
-      console.error('Error updating news:', error)
-      throw error
+        } catch {
+      message.error('Có lỗi xảy ra khi cập nhật bài đăng!')
     }
   }
 
@@ -85,12 +94,13 @@ const NewsDetailWrapper = ({ news, slug }: NewsDetailWrapperProps) => {
         <h1 className="text-2xl font-bold">Chi tiết bài đăng</h1>
         <Space>
           <Button 
-            type="primary" 
-            icon={<EditOutlined />} 
+            className="!color-blue-500 !border-blue-500 hover:!text-blue-400 hover:!border-blue-400"
+            size="middle"
+            variant="outlined"
+            icon={<EditOutlined className="!text-blue-400 " />} 
             onClick={() => setIsEditing(true)}
-          >
-            Chỉnh sửa
-          </Button>
+          />
+          <NewsArticlePreview news={news} size="middle" shape="default" />  
         </Space>
       </div>
 

@@ -19,12 +19,15 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ label, menuData }) => {
 
   return (
     <li
-      className="relative flex items-center cursor-pointer py-4 px-3"
+      className="relative flex items-center cursor-pointer py-4 px-3 group"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <span className="flex items-center">
-        {label} <DownOutlined className="ms-1 text-[15px]" />
+      <span className="flex items-center cursor-pointer gap-1">
+        {label}
+        <span className="transition-all duration-300 ease-in-out rotate-0 group-hover:rotate-180">
+          <DownOutlined className="text-[15px] " />
+        </span>
       </span>
 
       {/* Menu dropdown */}

@@ -38,8 +38,36 @@ export const scrapeAndSaveNews = async () => {
 //lấy tất cả tin
 export const getAllNews = async (req, res) => {
   try {
-    const news = await News.find();
-    res.json({ message: "Lấy tin thành công", ok: true, news });
+    // Ép kiểu về số và đảm bảo giá trị hợp lệ
+    const page = Math.max(1, parseInt(req.query.page)) || 1;
+    const limit = Math.max(1, parseInt(req.query.limit)) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "";
+
+    const skip = (page - 1) * limit;
+
+    const query = {
+      title: { $regex: search, $options: "i" },
+      ...(status && { status: status }),
+    };
+
+    const news = await News.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await News.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      message: "Lấy tin thành công",
+      ok: true,
+      news,
+      page,
+      limit,
+      total,
+      totalPages,
+    });
   } catch (error) {
     console.error("❌ Lỗi lấy tin:", error.message);
     res.status(500).json({ message: "Lỗi lấy tin", ok: false });
@@ -99,6 +127,7 @@ export const deleteNews = async (req, res) => {
     res.status(500).json({ message: "Lỗi xóa tin", ok: false });
   }
 };
+
 export const getNewsBySlug = async (req, res) => {
   const { slug } = req.params;
   try {

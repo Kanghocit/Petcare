@@ -16,7 +16,6 @@ import { approveNewsAction, deleteNewsAction } from "@/action";
 import { App } from "antd";
 import { useRouter } from "next/navigation";
 import NewsArticlePreview from "../news/NewsArticlePreview";
-import TablePagination from "./TablePagination";
 
 interface News {
   _id: string;
@@ -34,9 +33,7 @@ interface News {
   createdAt: string;
 }
 
-export default function ManageNewsTable({ news }: { news? : {news: News[], total: number} }) {
-  const {news: newsData, total} = news || {};
-  
+export default function ManageEmployeeTable({ news }: { news? : News[] }) {
   const {message, modal} = App.useApp();
   const router = useRouter();
   
@@ -120,7 +117,7 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {newsData?.map((news: News) => (
+              {news?.map((news: News) => (
                 <TableRow 
                   key={news._id}
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
@@ -196,7 +193,6 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
               ))}
             </TableBody>
           </Table>
-          <TablePagination total={total || 0} link="/manage-new-table" />
         </div>
       </div>
     </div>

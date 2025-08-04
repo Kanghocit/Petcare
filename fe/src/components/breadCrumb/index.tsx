@@ -4,7 +4,7 @@ import React from "react";
 import { Breadcrumb } from "antd";
 import { usePathname } from "next/navigation";
 
-const BreadCrumb: React.FC = () => {
+const BreadCrumb: React.FC<{ title?: string }> = ({ title }) => {
   const pathname = usePathname();
 
   // Hàm chuyển đổi segment thành tên tiếng Việt
@@ -33,10 +33,14 @@ const BreadCrumb: React.FC = () => {
       title: "Trang chủ",
       href: "/",
     },
-    ...pathSegments.map((segment, index) => ({
-      title: getSegmentTitle(segment),
-      href: `/${pathSegments.slice(0, index + 1).join("/")}`,
-    })),
+    ...pathSegments.map((segment, index) => {
+      const isLast = index === pathSegments.length - 1;
+
+      return {
+        title: isLast && title ? title : getSegmentTitle(segment),
+        href: `/${pathSegments.slice(0, index + 1).join("/")}`,
+      };
+    }),
   ];
 
   return (

@@ -25,9 +25,28 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   },
   {
+    name: "Quản lý nhân viên",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Danh sách nhân viên ", path: "/manage-employee-table", pro: false },
+   
+    ],
+  },
+  {
+    name: "Quản lý sản phẩm",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Danh sách sản phẩm", path: "/manage-product-table", pro: false },
+   
+    ],
+  },
+  {
     name: "Quản lý tin tức",
     icon: <TableIcon />,
-    subItems: [{ name: "Duyệt tin tức", path: "/manage-new-table", pro: false }],
+    subItems: [
+      { name: "Duyệt tin tức", path: "/manage-new-table", pro: false },
+   
+    ],
   },
   
 ];

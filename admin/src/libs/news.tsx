@@ -1,7 +1,7 @@
 import { fetchData } from "@/utils/fetchData";
 
-export const getAllNews = async () => {
-  const data = await fetchData(`/news`);
+export const getAllNews = async (page: number) => {
+  const data = await fetchData(`/news?page=${page}`);
   return data;   
 };
 

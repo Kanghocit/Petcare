@@ -11,15 +11,16 @@ export const metadata: Metadata = {
   // other metadata
 };
 
-export default async function ManageNewsTablePage() {
-  const newsData = await getAllNewsAction();
+export default async function ManageNewsTablePage({searchParams}: {searchParams: Promise<{page: string}>}) {
+  const {page} = await searchParams;
+  const newsData = await getAllNewsAction(Number(page));
   
   return (
     <div>
       <PageBreadcrumb pageTitle="Quản lí bài đăng" />
       <div className="space-y-6">
         <ComponentCard title="Bài đăng">
-          <ManageNewsTable news={newsData.news} />
+          <ManageNewsTable news={newsData} />
         </ComponentCard>
       </div>
     </div>

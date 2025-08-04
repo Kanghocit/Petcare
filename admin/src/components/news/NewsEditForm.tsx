@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Form, Input, Button, Select, message, Space, Card, Typography, Image } from 'antd'
-import { SaveOutlined, EditOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons'
+import { SaveOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons'
 
 const { TextArea } = Input
 const { Title } = Typography
@@ -14,15 +14,17 @@ interface Block {
   image?: string
 }
 
+interface NewsData {
+  title: string
+  content: string
+  author: string
+  status: string
+  blocks: Block[]
+}
+
 interface NewsEditFormProps {
-  news: {
-    title: string
-    content: string
-    author: string
-    status: string
-    blocks: Block[]
-  }
-  onSave: (data: any) => Promise<void>
+  news: NewsData
+  onSave: (data: NewsData) => Promise<void>
   onCancel: () => void
 }
 
@@ -31,7 +33,7 @@ const NewsEditForm = ({ news, onSave, onCancel }: NewsEditFormProps) => {
   const [loading, setLoading] = useState(false)
   const [blocks, setBlocks] = useState<Block[]>(news.blocks || [])
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: NewsData) => {
     try {
       setLoading(true)
       const updatedData = {
@@ -40,7 +42,7 @@ const NewsEditForm = ({ news, onSave, onCancel }: NewsEditFormProps) => {
       }
       await onSave(updatedData)
       message.success('Cập nhật bài đăng thành công!')
-    } catch (error) {
+      } catch {
       message.error('Có lỗi xảy ra khi cập nhật bài đăng!')
     } finally {
       setLoading(false)

@@ -1,34 +1,70 @@
+"use client";
+
 import { CalendarOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import React from "react";
 import Button from "../button";
+import { useRouter } from "next/navigation";
 
-const NewPostCard = () => {
+interface News {
+  _id: string;
+  title: string;
+  content: string;
+  image: string;
+  publishTime: string;
+  slug: string;
+}
+
+const NewPostCard = ({
+  isCard = false,
+  data,
+}: {
+  isCard: boolean;
+  data?: News;
+}) => {
+  const { title, content, image, publishTime, slug } = data || {};
+  console.log("slug", slug);
+  const router = useRouter();
   return (
-    <div className="">
-      <div className="w-full h-[200px] overflow-hidden rounded-t-lg">
+    <div className={`${isCard ? "flex flex-col" : "flex gap-4 w-full"}`}>
+      <div
+        className={`${
+          isCard
+            ? "w-full h-[200px] overflow-hidden rounded-t-lg"
+            : "w-1/6 h-full flex-shrink-0"
+        }`}
+        onClick={() => {
+          router.push(`/news/${slug}`);
+        }}
+      >
         <Image
-          src="/images/news-img.webp"
+          src={image || ""}
           alt="new-post-card"
           width={300}
           height={200}
-          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-all duration-300"
+          className="min-w-[250px] object-cover cursor-pointer hover:scale-105 transition-all duration-300 rounded-lg object-center"
         />
       </div>
-      <div className="p-4">
-        <h2 className="font-bold text-lg mb-2 hover:text-primary cursor-pointer transition-all duration-300">
-          7 Lợi Ích Cỏ Lúa Mì Cho Mèo Bạn Không Nên Bỏ Qua
+      <div className={`p-4 ${!isCard && "flex-1"}`}>
+        <h2 className="font-bold text-lg mb-2 hover:text-primary cursor-pointer transition-all duration-300 line-clamp-2">
+          {title}
         </h2>
-        <p className="text-gray-500 text-sm mb-4">
-          Cỏ lúa mì là gì? Vì sao bạn phải nên cho mèo cưng dùng cỏ lúa mì cho
-          mèo? Bài viết này, hãy để Paddy...
-        </p>
+        <p className="text-gray-500 text-sm mb-4">{content}</p>
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center text-gray-400 text-sm gap-2">
             <CalendarOutlined />
-            09/10/2024
+            {new Date(publishTime || "").toLocaleDateString("vi-VN")}
           </div>
-          <Button className="bg-primary text-white">Xem chi tiết</Button>
+          {isCard && (
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                router.push(`/news/${slug}`);
+              }}
+            >
+              Xem chi tiết
+            </Button>
+          )}
         </div>
       </div>
     </div>

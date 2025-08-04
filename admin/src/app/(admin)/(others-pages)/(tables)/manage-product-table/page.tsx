@@ -1,11 +1,11 @@
 import React from 'react'
 
-const page = () => {
+const ManageProductTablePage = () => {
   return (
     <div>
-      
+      heheheheh
     </div>
   )
 }
 
-export default page
+export default ManageProductTablePage
