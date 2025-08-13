@@ -17,24 +17,10 @@ import { App } from "antd";
 import { useRouter } from "next/navigation";
 import NewsArticlePreview from "../news/NewsArticlePreview";
 import TablePagination from "./TablePagination";
-
-interface News {
-  _id: string;
-  title: string;
-  content: string;
-  author: string;
-  publishTime: string;
-  status: string;
-  blocks: {
-    text: string;
-    image: string;
-  }[];
-  image: string;
-  slug: string;
-  createdAt: string;
-}
+import { News } from "@/interface/News"
 
 export default function ManageNewsTable({ news }: { news? : {news: News[], total: number} }) {
+  console.log('new', news)
   const {news: newsData, total} = news || {};
   
   const {message, modal} = App.useApp();

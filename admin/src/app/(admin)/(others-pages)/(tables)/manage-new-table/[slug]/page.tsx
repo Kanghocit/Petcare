@@ -15,7 +15,7 @@ const ManageNewsTableDetail = async ({params}: {params: {slug: string}}) => {
 
   return (
     <div className="space-y-6">
-      <ComponentCard title="">
+      <ComponentCard title="Thông tin chi tiết">
         <NewsDetailWrapper 
           news={news.news} 
           slug={slug}
