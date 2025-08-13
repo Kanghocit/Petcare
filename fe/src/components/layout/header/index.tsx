@@ -16,6 +16,7 @@ import Image from "next/image";
 import { App } from "antd";
 import { useRouter } from "next/navigation";
 import CartDrawer from "@/components/cart-drawer";
+import useCartStore from "@/store/cart-store";
 
 interface HeaderProps {
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,6 +26,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const { message } = App.useApp();
   const router = useRouter();
+  const cartCount = useCartStore((s) => s.cart.length);
 
   const handleLogout = async () => {
     try {
@@ -117,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           )}
           <CartDrawer>
             <button className="text-xl flex items-center gap-2 cursor-pointer  rounded-xl p-3 ">
-              <Badge count={5}>
+              <Badge count={cartCount}>
                 <ShoppingCartOutlined style={{ fontSize: 24 }} />
               </Badge>
               <p className="text-[16px]">Giỏ hàng</p>

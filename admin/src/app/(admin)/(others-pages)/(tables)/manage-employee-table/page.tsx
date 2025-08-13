@@ -5,9 +5,9 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 const ManageEmployeeTablePage = () => {
   return (
     <div>
-      <PageBreadcrumb pageTitle="Quản lý nhân viên" />
+      <PageBreadcrumb pageTitle="Danh sách nhân viên" />
       <div className="space-y-6">
-        <ComponentCard title="Nhân viên">
+        <ComponentCard title="Quản lí nhân viên">
           hehe
         </ComponentCard>
       </div>

@@ -7,10 +7,13 @@ import Link from "next/link";
 import React from "react";
 
 import useCartStore from "@/store/cart-store";
+import resolveImageSrc from "@/utils/resolveImageSrc";
 
 type ProductCardProps = {
   img?: [string, string];
+  id?: string;
   title: string;
+  slug: string;
   star: number; // từ 1 đến 5
   price: number;
   isSale?: boolean;
@@ -22,7 +25,9 @@ type ProductCardProps = {
 
 const ProductCard: React.FC<ProductCardProps> = ({
   img,
+  id,
   title,
+  slug,
   star,
   price,
   isSale = false,
@@ -34,24 +39,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const text = <span>Xem nhanh</span>;
   const addToCart = useCartStore((state) => state.addToCart);
 
+  const primaryImg = resolveImageSrc(img?.[0]);
+  const hoverImg = resolveImageSrc(img?.[1]);
+
   return (
     <div
       className={`w-75 !rounded-2xl p-3 shadow-sm !min-h-[350px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
     >
-      <Link href={`/product/${title}`}>
+      <Link href={`/product/${slug}`}>
         <div className="relative w-full h-64 overflow-hidden group rounded-md">
-          {img?.[0] && (
+          {primaryImg && (
             <Image
-              src={img[0]}
+              src={primaryImg}
               alt="product"
               width={100}
               height={100}
               className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
             />
           )}
-          {img?.[1] && (
+          {hoverImg && (
             <Image
-              src={img[1]}
+              src={hoverImg}
               alt="hover"
               width={100}
               height={100}
@@ -103,12 +111,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   className="!rounded-full !w-10 h-10 !bg-[#FFEDE5] !text-[#ff8662] hover:!bg-[#FFEDE5]/80 cursor-pointer"
                   onClick={() =>
                     addToCart({
-                      id: 1,
-                      name: "Sản phẩm 1",
-                      desc: "Mô tả sản phẩm 1",
-                      price: 100000,
-                      img: "/images/news-img.webp",
-                      quantity: 1, // hoặc số lượng chọn
+                      id: id || slug,
+                      name: title,
+                      desc: title,
+                      price: price,
+                      img: primaryImg || "/images/account.webp",
+                      quantity: 1,
                     })
                   }
                 >

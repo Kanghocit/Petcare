@@ -25,10 +25,10 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   },
   {
-    name: "Quản lý nhân viên",
+    name: "Quản lý khách hàng",
     icon: <TableIcon />,
     subItems: [
-      { name: "Danh sách nhân viên ", path: "/manage-employee-table", pro: false },
+      { name: "Danh sách khách hàng", path: "/manage-customer-table", pro: false },
    
     ],
   },

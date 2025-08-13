@@ -19,6 +19,7 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
 
   const cart = useCartStore((state) => state.cart);
+  console.log("cart", cart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const total = useCartStore((state) => state.total)();
@@ -35,8 +36,8 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     message.success(`Đã copy mã: ${code}`);
   };
 
-  const handleQty = (id: number, delta: number) => updateQuantity(id, delta);
-  const handleRemove = (id: number) => removeFromCart(id);
+  const handleQty = (id: string, delta: number) => updateQuantity(id, delta);
+  const handleRemove = (id: string) => removeFromCart(id);
 
   return (
     <>
@@ -57,7 +58,7 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             onClick={onClose}
           />
         }
-        className="!h-screen !overflow-hidden !w-full"
+        className="!h-screen !overflow-hidden !w-full "
         styles={{
           body: {
             padding: 0,

@@ -1,7 +1,7 @@
 'use server'
 
 import { deleteNews, getAllNews, getNewsByStatus, approveNews, getNewsBySlug, updateNews } from "./libs/news";
-
+//news
 export const getAllNewsAction = async (page: number) => {
   const data = await getAllNews(page);
   return data;

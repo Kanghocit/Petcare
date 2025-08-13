@@ -38,39 +38,48 @@ export const scrapeAndSaveNews = async () => {
 //lấy tất cả tin
 export const getAllNews = async (req, res) => {
   try {
-    // Ép kiểu về số và đảm bảo giá trị hợp lệ
-    const page = Math.max(1, parseInt(req.query.page)) || 1;
-    const limit = Math.max(1, parseInt(req.query.limit)) || 10;
-    const search = req.query.search || "";
-    const status = req.query.status || "";
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const searchRaw = (req.query.search || "").trim();
+    const status = (req.query.status || "").trim();
+
+    // Escape ký tự đặc biệt trong regex
+    const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const query = {
+      ...(searchRaw && {
+        title: { $regex: new RegExp(escapeRegex(searchRaw), "i") },
+      }),
+      ...(status && { status }),
+    };
 
     const skip = (page - 1) * limit;
 
-    const query = {
-      title: { $regex: search, $options: "i" },
-      ...(status && { status: status }),
-    };
+    // chạy song song để nhanh hơn
+    const [news, total] = await Promise.all([
+      News.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select(
+          "_id title slug content image author publishTime status createdAt"
+        ) // chỉ ví dụ, tùy bạn
+        .lean(),
+      News.countDocuments(query),
+    ]);
 
-    const news = await News.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    const total = await News.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      message: "Lấy tin thành công",
+    return res.json({
       ok: true,
+      message: "Lấy tin thành công",
       news,
       page,
       limit,
       total,
-      totalPages,
+      totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.error("❌ Lỗi lấy tin:", error.message);
-    res.status(500).json({ message: "Lỗi lấy tin", ok: false });
+    console.error("❌ Lỗi lấy tin:", error);
+    return res.status(500).json({ ok: false, message: "Lỗi lấy tin" });
   }
 };
 
@@ -82,7 +91,8 @@ export const getNewsByStatus = async (req, res) => {
     const news = await News.find({ status })
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json({ message: "Lấy tin thành công", ok: true, news });
   } catch (error) {
     console.error("❌ Lỗi lấy tin:", error.message);

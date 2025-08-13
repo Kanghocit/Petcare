@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
   try {
     const { name, email, username, password } = req.body;
-    console.log(name, email, username, password);
     //kiểm tra xem user đã tồn tại chưa
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
@@ -21,11 +20,13 @@ export const register = async (req, res) => {
       phone: "",
       address: "",
     });
-    const { password: _, ...userWithoutPassword } = user;
+    const userObj = user.toObject();
+    delete userObj.password;
+
     res.status(201).json({
       ok: true,
       message: "Đăng ký thành công",
-      user: userWithoutPassword,
+      user: userObj,
     });
   } catch (error) {
     res.status(500).json({ message: "Đăng ký thất bại", error });
@@ -39,6 +40,10 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({ message: "Không tìm thấy tài khoản" });
+    }
+    //check trạng thái 
+    if(user.status === "blocked"){
+      return res.status(400).json({ message: "Tài khoản đã bị vô hiệu hóa"})
     }
     //so sánh mật khẩu
     const isMatch = await authService.matchPassword(password, user.password);
@@ -78,6 +83,7 @@ export const login = async (req, res) => {
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
+
 //đăng xuất
 export const logout = async (req, res) => {
   try {

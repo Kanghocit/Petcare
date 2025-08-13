@@ -32,6 +32,24 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
+    rank: {
+      type: String,
+      enum: ["new", "regular", "loyal", "vip"],
+      default: "new",
+    },
+    total_spend: {
+      type: Number,
+      default: 0,
+    },
+    status: {
+      type: String,
+      enum: ["active", "blocked", "deleted"],
+      default: "active",
+    },
+    note: {
+      type: String,
+      default: "",
+    },
     isVerified: {
       type: Boolean,
       default: false,
