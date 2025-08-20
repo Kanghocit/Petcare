@@ -255,7 +255,7 @@ const orderSchema = new Schema(
       },
       method: {
         type: String,
-        enum: ["cod", "vnpay", "stripe", "paypal", "momo"],
+        enum: ["cod", "vnpay", "momo"],
         required: true,
       },
       paidAt: Date,
@@ -487,7 +487,6 @@ orderSchema.index({ "items.product": 1 });
 orderSchema.index({ "payment.status": 1, createdAt: -1 });
 orderSchema.index({ "fulfillment.status": 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
-orderSchema.index({ orderCode: 1 });
 orderSchema.index({ "shippingAddress.phone": 1 });
 orderSchema.index({ createdAt: -1 });
 

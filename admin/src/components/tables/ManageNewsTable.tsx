@@ -20,7 +20,6 @@ import TablePagination from "./TablePagination";
 import { News } from "@/interface/News"
 
 export default function ManageNewsTable({ news }: { news? : {news: News[], total: number} }) {
-  console.log('new', news)
   const {news: newsData, total} = news || {};
   
   const {message, modal} = App.useApp();

@@ -15,16 +15,16 @@ const router = express.Router();
 
 // Authenticated routes
 router.post("/create", verifyToken, createOrder);
-router.get("/", verifyToken, getOrders);
-router.get("/stats", verifyToken, getOrderStats);
-router.get("/code/:orderCode", verifyToken, getOrderByCode);
-router.get("/:id", verifyToken, getOrderById);
+router.get("/", getOrders);
+router.get("/stats", getOrderStats);
+router.get("/code/:orderCode", getOrderByCode);
+router.get("/:id", getOrderById);
 
 // Order management
-router.put("/:id/status", verifyToken, updateOrderStatus);
-router.put("/:id/cancel", verifyToken, cancelOrder);
+router.put("/:id/status", updateOrderStatus);
+router.put("/:id/cancel", cancelOrder);
 
 // Admin-only operations
-router.delete("/:id", verifyToken, deleteOrder);
+router.delete("/:id", deleteOrder);
 
 export default router;

@@ -48,6 +48,10 @@ console.log("Fallback images from:", imagesDirRoot);
 app.use("/images", express.static(imagesDirSrc));
 // Fallback if files are stored in be/public/images instead of be/src/public/images
 app.use("/images", express.static(imagesDirRoot));
+// Provide a placeholder image path
+app.get("/images/product/placeholder.png", (req, res) => {
+  res.status(200).send();
+});
 
 //Connect to MongoDB
 connectDB();

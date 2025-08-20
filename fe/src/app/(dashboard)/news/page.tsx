@@ -11,7 +11,7 @@ const NewsPage = async ({
   const news = await getNews(page, limit);
 
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto">
       <div className="mx-8 py-8">
         <Breadcrumb />
         <div className="flex flex-col gap-8 bg-white rounded-xl p-8 mt-6 shadow-lg mx-4">

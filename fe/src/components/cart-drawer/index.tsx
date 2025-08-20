@@ -1,3 +1,5 @@
+"use client";
+
 // components/CartDrawer.tsx
 import React, { useState } from "react";
 import { Drawer, Button, Progress, message } from "antd";
@@ -9,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import Image from "next/image";
 import useCartStore from "@/store/cart-store";
+import { useRouter } from "next/navigation";
 
 const PROMO_MILESTONES = [
   { amount: 500000, discount: 50000, code: "50K" },
@@ -17,6 +20,7 @@ const PROMO_MILESTONES = [
 
 const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const cart = useCartStore((state) => state.cart);
   console.log("cart", cart);
@@ -38,6 +42,7 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const handleQty = (id: string, delta: number) => updateQuantity(id, delta);
   const handleRemove = (id: string) => removeFromCart(id);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   return (
     <>
@@ -194,7 +199,9 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 {total.toLocaleString()}đ
               </span>
             </div>
-            <div className="text-gray-400 text-xs mb-2">Nhập mã giảm giá</div>
+            <div className="text-gray-400 text-xs mb-2 text-end">
+              Nhập mã giảm giá ở trang thanh toán
+            </div>
             <Button
               type="primary"
               block
@@ -206,8 +213,13 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 fontSize: 18,
                 borderRadius: 999,
               }}
+              onClick={() => {
+                router.push("/checkout");
+                setOpen(false);
+                clearCart();
+              }}
             >
-              THANH TOÁN →
+              ĐẶT HÀNG →
             </Button>
           </div>
         </div>

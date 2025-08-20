@@ -57,14 +57,21 @@ export const createOrder = async (req, res) => {
 
       const priceAtPurchase = Number(i.priceAtPurchase ?? product.price ?? 0);
 
+      const chosenImage =
+        typeof i.image === "string" && i.image.trim()
+          ? i.image.trim()
+          : Array.isArray(product.images) && product.images[0]
+          ? product.images[0]
+          : "/images/product/placeholder.png";
+
       return {
         product: i.product,
         quantity,
         priceAtPurchase,
         productSnapshot: {
-          title: product.title,
+          title: i.name || product.title,
           slug: product.slug,
-          image: product.images?.[0] || "",
+          image: chosenImage,
           brand: product.brand || "",
         },
       };

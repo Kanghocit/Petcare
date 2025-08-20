@@ -16,6 +16,7 @@ const BreadCrumb: React.FC<{ title?: string }> = ({ title }) => {
       profile: "Tài khoản",
       contact: "Liên hệ",
       news: "Tạp chí chăm Boss",
+      checkout: "Thanh toán đơn hàng",
       // Thêm các mapping khác ở đây
     };
 

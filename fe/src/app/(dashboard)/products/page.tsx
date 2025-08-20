@@ -20,7 +20,6 @@ const ProductsPage = async ({
   const search =
     typeof searchParams?.search === "string" ? searchParams.search : "";
   const products = await getProductsAction(page, search);
-  console.log("products", products);
 
   return (
     <>
@@ -35,7 +34,7 @@ const ProductsPage = async ({
             <div className="flex flex-wrap gap-4">
               {products?.products?.map((product: Product) => (
                 <ProductCard
-                  id={(product as any)._id}
+                  id={String(product._id)}
                   slug={product.slug}
                   key={product.slug}
                   title={product.title}

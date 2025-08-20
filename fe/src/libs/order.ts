@@ -1,7 +1,11 @@
+import { fetchWithToken } from "@/utils/fetchWithToken";
+
 export type OrderItemInput = {
   product: string;
   quantity: number;
   priceAtPurchase?: number;
+  image?: string;
+  name?: string;
 };
 
 export type ShippingAddressInput = {
@@ -31,7 +35,7 @@ export type CreateOrderPayload = {
     description?: string;
   };
   payment?: {
-    method?: "cod" | "vnpay" | "stripe" | "paypal" | "momo";
+    method?: "cod" | "vnpay" | "momo";
     status?:
       | "unpaid"
       | "authorized"
@@ -46,22 +50,10 @@ export type CreateOrderPayload = {
   source?: string;
 };
 
-export async function createOrderClient(payload: CreateOrderPayload) {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base) throw new Error("Missing NEXT_PUBLIC_API_URL");
-  const res = await fetch(`${base}/orders/create`, {
+export async function createOrder(payload: CreateOrderPayload) {
+  const res = await fetchWithToken(`/orders/create`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data?.message || `Order create failed (${res.status})`);
-  }
-  return data;
+  return res;
 }
-
