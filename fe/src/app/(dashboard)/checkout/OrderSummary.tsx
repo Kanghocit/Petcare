@@ -59,6 +59,7 @@ const OrderSummary: React.FC = () => {
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
   const totalFromStore = useCartStore((s) => s.total)();
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const [cartFromStorage, setCartFromStorage] = useState<typeof cart>([]);
 
@@ -126,9 +127,6 @@ const OrderSummary: React.FC = () => {
         phone: phone || "",
         email: email || "",
         address: address || "",
-        city: "N/A",
-        district: "N/A",
-        ward: "N/A",
       },
       shipping: {
         method: receiptMethod === "home" ? "standard" : "express",
@@ -152,6 +150,7 @@ const OrderSummary: React.FC = () => {
           (result.body as { message?: string })?.message ||
           "Đặt hàng thành công";
         message.success(msg);
+        clearCart();
         router.push("/profile/orders");
       } else {
         const msg =

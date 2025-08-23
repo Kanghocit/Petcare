@@ -1,4 +1,4 @@
-'use client'  
+"use client";
 
 import React from "react";
 import {
@@ -17,14 +17,18 @@ import { App } from "antd";
 import { useRouter } from "next/navigation";
 import NewsArticlePreview from "../news/NewsArticlePreview";
 import TablePagination from "./TablePagination";
-import { News } from "@/interface/News"
+import { News } from "@/interface/News";
 
-export default function ManageNewsTable({ news }: { news? : {news: News[], total: number} }) {
-  const {news: newsData, total} = news || {};
-  
-  const {message, modal} = App.useApp();
+export default function ManageNewsTable({
+  news,
+}: {
+  news?: { news: News[]; total: number };
+}) {
+  const { news: newsData, total } = news || {};
+
+  const { message, modal } = App.useApp();
   const router = useRouter();
-  
+
   const handleDelete = async (slug: string) => {
     modal.confirm({
       title: "Xóa tin tức",
@@ -44,8 +48,8 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
   const handleApprove = async (slug: string) => {
     try {
       const response = await approveNewsAction(slug, "active");
-      if (response.ok) {  
-        message.success('Đã duyệt tin tức');
+      if (response.ok) {
+        message.success("Đã duyệt tin tức");
         router.refresh();
       } else {
         message.error(response.message);
@@ -66,37 +70,37 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
               <TableRow>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Tiêu đề
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Nội dung
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Tác giả
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Ngày đăng
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Trạng thái
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Hành động
                 </TableCell>
@@ -106,57 +110,60 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {newsData?.map((news: News) => (
-                <TableRow 
+                <TableRow
                   key={news._id}
-                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
+                  className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                   onClick={(e: React.MouseEvent<HTMLTableRowElement>) => {
                     // Kiểm tra xem click có phải từ button không
                     const target = e.target as HTMLElement;
-                    if (!target.closest('button')) {
+                    if (!target.closest("button")) {
                       router.push(`/manage-new-table/${news.slug}`);
                     }
                   }}
                 >
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    <p className=" line-clamp-1 !max-w-[1/6] font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    <p className="text-theme-sm line-clamp-1 !max-w-[1/6] font-medium text-gray-800 dark:text-white/90">
                       {news.title}
-                    </p>                                  
+                    </p>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                   <p className="line-clamp-1 !max-w-[500px]"> {news.content}</p>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    <p className="line-clamp-1 !max-w-[500px]">
+                      {" "}
+                      {news.content}
+                    </p>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     {news.author}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     {news.publishTime}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <Badge
                       size="sm"
                       color={
                         news.status === "active"
                           ? "success"
                           : news.status === "pending"
-                          ? "warning"
-                          : "error"
+                            ? "warning"
+                            : "error"
                       }
                     >
                       {news.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400 flex gap-2 my-3 mx-1">
-                    {/* Preview button - chỉ hiển thị cho tin đã duyệt */}  
-                      <NewsArticlePreview news={news} />          
-                    
+                  <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
+                    {/* Preview button - chỉ hiển thị cho tin đã duyệt */}
+                    <NewsArticlePreview news={news} />
+
                     {/* Approve button - chỉ hiển thị cho tin chờ duyệt */}
                     {news.status === "pending" && (
                       <Button
-                        className="!color-green-500 !border-green-500 hover:!text-green-400 hover:!border-green-400"
+                        className="!color-green-500 !border-green-500 hover:!border-green-400 hover:!text-green-400"
                         size="small"
                         shape="circle"
                         variant="outlined"
-                        icon={<CheckOutlined className="!text-green-400 " />}
+                        icon={<CheckOutlined className="!text-green-400" />}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleApprove(news.slug);
@@ -165,7 +172,7 @@ export default function ManageNewsTable({ news }: { news? : {news: News[], total
                     )}
 
                     {/* Delete button */}
-                    <Button                    
+                    <Button
                       size="small"
                       shape="circle"
                       color="danger"

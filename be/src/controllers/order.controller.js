@@ -142,39 +142,59 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// Get orders (admin) or current user's orders
+// Get orders (admin)
 export const getOrders = async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
     const skip = (page - 1) * limit;
 
-    const isAdmin = req.user?.role === "admin";
-    const filter = isAdmin ? {} : { user: req.user?.userId };
-
     // Add filters
-    if (req.query.status) {
-      filter.status = req.query.status;
+    // Chuẩn hóa giá trị search: bỏ qua các giá trị 'undefined' hoặc 'null' dạng string
+    const rawSearch = req.query.search;
+    const searchRaw =
+      rawSearch && rawSearch !== "undefined" && rawSearch !== "null"
+        ? String(rawSearch).trim()
+        : "";
+
+    // Escape ký tự đặc biệt trong regex
+    const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const query = {};
+    // Free-text search across orderCode and buyer name
+    if (searchRaw) {
+      query.$or = [
+        { orderCode: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        {
+          "shippingAddress.fullName": {
+            $regex: new RegExp(escapeRegex(searchRaw), "i"),
+          },
+        },
+      ];
+    }
+
+    // Filters: payment method/status, fulfillment status, overall status
+    if (req.query.paymentMethod) {
+      query["payment.method"] = String(req.query.paymentMethod);
     }
     if (req.query.paymentStatus) {
-      filter["payment.status"] = req.query.paymentStatus;
+      query["payment.status"] = String(req.query.paymentStatus);
     }
     if (req.query.fulfillmentStatus) {
-      filter["fulfillment.status"] = req.query.fulfillmentStatus;
+      query["fulfillment.status"] = String(req.query.fulfillmentStatus);
     }
-    if (req.query.orderCode) {
-      filter.orderCode = { $regex: req.query.orderCode, $options: "i" };
+    if (req.query.status) {
+      query.status = String(req.query.status);
     }
-
     const [orders, total] = await Promise.all([
-      Order.find(filter)
+      Order.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate("user", "name email phone")
-        .populate("items.product", "title price images slug brand")
+        .populate("user", "name email phone rank")
+        .populate("items.product", "title price images slug brand quantity")
         .lean(),
-      Order.countDocuments(filter),
+      Order.countDocuments(query),
     ]);
 
     return res.status(200).json({
@@ -194,29 +214,57 @@ export const getOrders = async (req, res) => {
     });
   }
 };
+//get orders from user id
+export const getOrdersByUserId = async (req, res) => {
+  try {
+    const { id } = req.params; // lấy từ URL /user/:id/orders
 
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    // base filter: chỉ lấy theo userId
+    const filter = { user: id };
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "name email phone rank")
+        .populate("items.product", "title price images slug brand quantity")
+        .lean(),
+      Order.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      ok: true,
+      message: "Lấy danh sách đơn hàng theo userId thành công",
+      orders,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Lỗi khi lấy danh sách đơn hàng theo userId",
+      error: error.message,
+    });
+  }
+};
 // Get order detail by id
 export const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
     const order = await Order.findById(id)
-      .populate("user", "name email phone")
-      .populate("items.product", "title price images slug brand")
+      .populate("user", "name email phone rank")
+      .populate("items.product", "title price images slug brand quantity")
       .populate("cancelledBy", "name")
       .lean();
 
     if (!order)
       return res.status(404).json({ message: "Đơn hàng không tồn tại" });
-
-    // Only owner or admin can see
-    if (
-      String(order.user?._id) !== String(req.user?.userId) &&
-      req.user?.role !== "admin"
-    ) {
-      return res
-        .status(403)
-        .json({ message: "Không có quyền truy cập đơn hàng này" });
-    }
 
     return res.status(200).json({ ok: true, order });
   } catch (error) {
@@ -232,8 +280,8 @@ export const getOrderByCode = async (req, res) => {
   try {
     const { orderCode } = req.params;
     const order = await Order.findByOrderCode(orderCode)
-      .populate("user", "name email phone")
-      .populate("items.product", "title price images slug brand")
+      .populate("user", "name email phone rank")
+      .populate("items.product", "title price images slug brand quantity")
       .populate("cancelledBy", "name")
       .lean();
 
@@ -262,11 +310,11 @@ export const getOrderByCode = async (req, res) => {
 // Update order status (admin)
 export const updateOrderStatus = async (req, res) => {
   try {
-    if (req.user?.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Chỉ admin mới có quyền cập nhật đơn hàng" });
-    }
+    // if (req.user?.role !== "admin") {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Chỉ admin mới có quyền cập nhật đơn hàng" });
+    // }
 
     const { id } = req.params;
     const {
@@ -286,9 +334,8 @@ export const updateOrderStatus = async (req, res) => {
       const allowedFulfillmentStatuses = [
         "unfulfilled",
         "processing",
-        "partially_shipped",
+        "shipping",
         "shipped",
-        "partially_delivered",
         "delivered",
         "returned",
         "cancelled",

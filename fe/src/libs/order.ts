@@ -1,3 +1,4 @@
+import { fetchWithoutToken } from "@/utils/fetchWithoutToken";
 import { fetchWithToken } from "@/utils/fetchWithToken";
 
 export type OrderItemInput = {
@@ -13,9 +14,6 @@ export type ShippingAddressInput = {
   phone: string;
   email: string;
   address: string;
-  city: string;
-  district: string;
-  ward: string;
   zipCode?: string;
 };
 
@@ -57,3 +55,20 @@ export async function createOrder(payload: CreateOrderPayload) {
   });
   return res;
 }
+export const getOrderByUserId = async (id: string) => {
+  const data = await fetchWithToken(`/orders/${id}/orders`);
+  return data;
+};
+
+export const getOrderById = async (id: string) => {
+  const data = await fetchWithoutToken(`/orders/${id}`, "GET");
+  return data;
+};
+
+export const cancelOrder = async (id: string, reason: string) => {
+  const data = await fetchWithToken(`/orders/${id}/cancel`, {
+    method: "PATCH",
+    body: JSON.stringify({ reason }),
+  });
+  return data;
+};

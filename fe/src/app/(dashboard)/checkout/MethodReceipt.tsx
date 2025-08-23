@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import useCheckoutStore from "@/store/checkout-store";
 
@@ -8,14 +8,17 @@ type AddressProp = { address: string };
 
 const MethodReceipt: React.FC<AddressProp> = ({ address }) => {
   const [method, setMethod] = useState<"home" | "store">("home");
-  //   const [newAddress, setNewAddress] = useState();
   const setReceiptMethod = useCheckoutStore((s) => s.setReceiptMethod);
   const setAddress = useCheckoutStore((s) => s.setAddress);
 
-  React.useEffect(() => {
-    setAddress(address);
+  useEffect(() => {
+    if (method === "store") {
+      setAddress("store");
+    } else {
+      setAddress(address);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address]);
+  }, [method, address]);
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm mt-4">

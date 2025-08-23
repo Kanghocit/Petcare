@@ -275,9 +275,8 @@ const orderSchema = new Schema(
           values: [
             "unfulfilled",
             "processing",
-            "partially_shipped",
+            "shipping",
             "shipped",
-            "partially_delivered",
             "delivered",
             "returned",
             "cancelled",
@@ -354,13 +353,10 @@ orderSchema.virtual("returnedItems").get(function () {
 orderSchema.virtual("paymentStatusText").get(function () {
   const statusMap = {
     unpaid: "Chưa thanh toán",
-    authorized: "Đã ủy quyền",
     paid: "Đã thanh toán",
-    partially_refunded: "Hoàn tiền một phần",
     refunded: "Đã hoàn tiền",
     failed: "Thanh toán thất bại",
     voided: "Đã hủy",
-    chargeback: "Tranh chấp",
   };
   return statusMap[this.payment.status] || this.payment.status;
 });
@@ -370,9 +366,8 @@ orderSchema.virtual("fulfillmentStatusText").get(function () {
   const statusMap = {
     unfulfilled: "Chưa xử lý",
     processing: "Đang xử lý",
-    partially_shipped: "Giao một phần",
+    shipping: "Bắt đầu giao",
     shipped: "Đã giao hàng",
-    partially_delivered: "Nhận một phần",
     delivered: "Đã nhận hàng",
     returned: "Đã trả hàng",
     cancelled: "Đã hủy",
@@ -388,26 +383,6 @@ orderSchema.methods.recalculateTotals = function () {
   }, 0);
 
   this.totalAmount = this.subtotal + this.shipping.fee - this.discount.amount;
-  return this;
-};
-
-// Cập nhật trạng thái giao nhận
-orderSchema.methods.updateFulfillmentStatus = function () {
-  const itemStatuses = this.items.map((item) => item.fulfillment.status);
-
-  if (itemStatuses.every((status) => status === "delivered")) {
-    this.fulfillment.status = "delivered";
-    this.fulfillment.deliveredAt = new Date();
-  } else if (itemStatuses.some((status) => status === "delivered")) {
-    this.fulfillment.status = "partially_delivered";
-  } else if (itemStatuses.every((status) => status === "shipped")) {
-    this.fulfillment.status = "shipped";
-  } else if (itemStatuses.some((status) => status === "shipped")) {
-    this.fulfillment.status = "partially_shipped";
-  } else if (itemStatuses.some((status) => status === "processing")) {
-    this.fulfillment.status = "processing";
-  }
-
   return this;
 };
 

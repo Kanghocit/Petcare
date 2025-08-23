@@ -9,6 +9,7 @@ import {
   cancelOrder,
   getOrderStats,
   deleteOrder,
+  getOrdersByUserId,
 } from "../controllers/order.controller.js";
 
 const router = express.Router();
@@ -18,11 +19,12 @@ router.post("/create", verifyToken, createOrder);
 router.get("/", getOrders);
 router.get("/stats", getOrderStats);
 router.get("/code/:orderCode", getOrderByCode);
+router.get("/:id/orders", verifyToken, getOrdersByUserId);
 router.get("/:id", getOrderById);
 
 // Order management
-router.put("/:id/status", updateOrderStatus);
-router.put("/:id/cancel", cancelOrder);
+router.patch("/:id/status", updateOrderStatus);
+router.patch("/:id/cancel", verifyToken, cancelOrder);
 
 // Admin-only operations
 router.delete("/:id", deleteOrder);

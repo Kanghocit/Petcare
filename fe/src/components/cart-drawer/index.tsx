@@ -42,7 +42,6 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const handleQty = (id: string, delta: number) => updateQuantity(id, delta);
   const handleRemove = (id: string) => removeFromCart(id);
-  const clearCart = useCartStore((state) => state.clearCart);
 
   return (
     <>
@@ -216,7 +215,6 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               onClick={() => {
                 router.push("/checkout");
                 setOpen(false);
-                clearCart();
               }}
             >
               ĐẶT HÀNG →
