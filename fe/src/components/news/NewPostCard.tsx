@@ -44,7 +44,7 @@ const NewPostCard = ({
           className="min-w-[250px] object-cover cursor-pointer hover:scale-105 transition-all duration-300 rounded-lg object-center"
         />
       </div>
-      <div className={`pe-8 ${!isCard && "flex-1"}`}>
+      <div className={`ps-6 ${!isCard && "flex-1"}`}>
         <h2 className="font-bold text-lg mb-2 hover:text-primary cursor-pointer transition-all duration-300 line-clamp-1">
           {title}
         </h2>

@@ -153,7 +153,7 @@ const ModalAddProduct: React.FC<{
           <UploadFile
             folder="product"
             onImageUpload={handleImageUpload}
-            maxCount={5}
+            maxCount={3}
             defaultImages={productImages}
           />
         </Form.Item>

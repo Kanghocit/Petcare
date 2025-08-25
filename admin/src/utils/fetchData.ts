@@ -1,5 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchData = async (url: string , method: string = "GET", data: any = null) => {
+export const fetchData = async (
+  url: string,
+  method: string = "GET",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any = null,
+) => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
     method: method,
     headers: {
@@ -7,11 +11,11 @@ export const fetchData = async (url: string , method: string = "GET", data: any 
     },
     body: data ? JSON.stringify(data) : null,
   });
-  
+
   if (!response.ok) {
+    console.log("respone", response);
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  
+
   return await response.json();
 };
-

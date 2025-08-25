@@ -3,15 +3,17 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import cookieParser from "cookie-parser";
+import { startNewsCronJob } from "./cron/scape.task.js";
+
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import productRoutes from "./routes/product.routes.js";
-import cookieParser from "cookie-parser";
-import { startNewsCronJob } from "./cron/scape.task.js";
 import newsRoutes from "./routes/news.routes.js";
 import orderRoutes from "./routes/order.routes.js";
-
 import uploadRoutes from "./routes/upload.routes.js";
+import bannerRoutes from "./routes/banner.routes.js";
+
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -29,7 +31,10 @@ app.use(cookieParser());
 //cấu hình để truy cập từ FE
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000", // FE app
+      "http://localhost:3001", // alternate FE
+    ],
     credentials: true,
   })
 );
@@ -48,10 +53,9 @@ console.log("Fallback images from:", imagesDirRoot);
 app.use("/images", express.static(imagesDirSrc));
 // Fallback if files are stored in be/public/images instead of be/src/public/images
 app.use("/images", express.static(imagesDirRoot));
-// Provide a placeholder image path
-app.get("/images/product/placeholder.png", (req, res) => {
-  res.status(200).send();
-});
+// Alias to avoid ad-blockers blocking paths containing "banner"
+app.use("/images/hero", express.static(path.join(imagesDirSrc, "banner")));
+app.use("/images/hero", express.static(path.join(imagesDirRoot, "banner")));
 
 //Connect to MongoDB
 connectDB();
@@ -63,6 +67,7 @@ app.use("/api/product", productRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/banners", bannerRoutes);
 
 //Error handling middleware
 

@@ -142,13 +142,21 @@ const UploadFile: React.FC<UploadFileProps> = ({
   const handleChange: UploadProps["onChange"] = async ({
     fileList: newFileList,
   }) => {
+    // Chỉ đồng bộ UI; KHÔNG emit ra ngoài ở đây để tránh xóa ảnh khi upload chưa xong
     setFileList(newFileList);
-    const urlsRelative = newFileList
+  };
+
+  const handleRemove: UploadProps["onRemove"] = async (file) => {
+    // Cập nhật danh sách URL khi xóa một ảnh
+    const nextList = (fileList || []).filter((f) => f.uid !== file.uid);
+    const urlsRelative = nextList
       .map((f) => f.url)
       .filter(Boolean)
-      .map((u) => toRelative(u as string));
-    uploadedUrlsRef.current = urlsRelative as string[];
+      .map((u) => toRelative(u as string)) as string[];
+    uploadedUrlsRef.current = urlsRelative;
     onImageUpload?.([...uploadedUrlsRef.current]);
+    setFileList(nextList);
+    return true;
   };
 
   // Custom upload function để xử lý upload thủ công
@@ -212,6 +220,7 @@ const UploadFile: React.FC<UploadFileProps> = ({
         fileList={fileList}
         onPreview={handlePreview}
         onChange={handleChange}
+        onRemove={handleRemove}
         beforeUpload={beforeUpload}
         accept="image/*"
         maxCount={maxCount}

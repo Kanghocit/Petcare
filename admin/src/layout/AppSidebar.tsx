@@ -56,6 +56,20 @@ const navItems: NavItem[] = [
       { name: "Danh sách đơn hàng", path: "/manage-order-table", pro: false },
     ],
   },
+  {
+    name: "Quản lý banner",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Home Banner", path: "/manage-banner-table", pro: false },
+    ],
+  },
+  {
+    name: "Quản lý voicher",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Danh sách đơn hàng", path: "/manage-order-table", pro: false },
+    ],
+  },
 ];
 
 const AppSidebar: React.FC = () => {
