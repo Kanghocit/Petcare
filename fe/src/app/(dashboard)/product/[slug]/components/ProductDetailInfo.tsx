@@ -16,11 +16,9 @@ import { Product } from "../../../../../interface/product";
 import resolveImageSrc from "@/utils/resolveImageSrc";
 
 const ProductDetailInfo = ({ product }: { product: Product }) => {
-  console.log("product đì theo", product);
   // Dữ liệu mẫu, có thể thay bằng props sau này
   const productName = product.title;
   const productType = [{ name: product.brand, url: "#" }];
-  const price = product.price;
   const [quantity, setQuantity] = useState("1");
 
   // Chỉ nhận số hoặc rỗng
@@ -51,12 +49,37 @@ const ProductDetailInfo = ({ product }: { product: Product }) => {
         ))}
       </div>
       {/* Giá */}
-      <div className="bg-white rounded-lg px-4 py-2 w-fit">
-        <span className="text-3xl font-bold text-orange-700">
-          {price.toLocaleString("vi-VN")}
-          <span className="text-lg font-normal">₫</span>
-        </span>
-      </div>
+      {product.isSaleProduct && product.discount > 0 ? (
+        <div className="flex items-center align-bottom bg-white rounded-lg px-4 py-2 w-fit gap-3 shadow-sm">
+          <div className="flex items-baseline gap-3">
+            {/* Giá sau giảm */}
+            <span className="text-3xl font-bold text-orange-600">
+              {(product.price * (1 - product.discount / 100)).toLocaleString(
+                "vi-VN"
+              )}
+              <span className="text-lg font-normal">₫</span>
+            </span>
+
+            {/* Giá gốc */}
+            <span className="text-lg text-gray-400 line-through">
+              {product.price.toLocaleString("vi-VN")}
+              <span className="text-sm font-normal">₫</span>
+            </span>
+          </div>
+
+          {/* Badge giảm giá */}
+          <span className="text-sm items-center! font-bold text-white bg-red-500 rounded-lg px-2 py-1">
+            -{product.discount.toLocaleString()}%
+          </span>
+        </div>
+      ) : (
+        <div className="flex bg-white rounded-lg px-4 py-2 w-fit">
+          <span className="text-3xl font-bold text-orange-700">
+            {product.price.toLocaleString("vi-VN")}
+            <span className="text-lg font-normal">₫</span>
+          </span>
+        </div>
+      )}
       {/* Số lượng */}
       <div className="flex items-center gap-3">
         <span className="text-base font-medium">Số lượng:</span>

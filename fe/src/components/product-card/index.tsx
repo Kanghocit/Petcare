@@ -44,25 +44,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      className={`w-75 !rounded-2xl p-3 shadow-sm !min-h-[350px] hover:shadow-lg transition relative group bg-white my-2 ${className}`}
+      className={`w-64 !rounded-2xl p-3 shadow-sm hover:shadow-lg transition relative group bg-white my-2 ${className}`}
     >
       <Link href={`/product/${slug}`}>
-        <div className="relative w-full h-64 overflow-hidden group rounded-md">
+        <div className="relative w-full overflow-hidden group rounded-md">
           {primaryImg && (
             <Image
               src={primaryImg}
               alt="product"
-              width={100}
-              height={100}
-              className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+              width={250}
+              height={250}
+              className=" object-cover transition-opacity duration-300 group-hover:opacity-0"
             />
           )}
           {hoverImg && (
             <Image
               src={hoverImg}
               alt="hover"
-              width={100}
-              height={100}
+              width={250}
+              height={250}
               className="absolute top-0 left-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
           )}
@@ -87,7 +87,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
 
           {/* Giá tiền */}
-          <div className="text-sm font-semibold mt-1">
+          <div className="text-sm font-semibold mt-1 flex items-center justify-between">
             {isSale && typeof salePrice === "number" ? (
               <div className="flex flex-col">
                 <span className="text-red-500 text-xl">
@@ -97,33 +97,33 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   <span className="line-through text-gray-500">
                     {price.toLocaleString()}₫
                   </span>
-                  <span className="text-white bg-red-500 rounded-xl px-2 py-1">
+                  <span className="text-white bg-red-500 rounded-xl px-2">
                     {discount.toLocaleString()}%
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 ">
                 <span className="text-red-500 text-xl">
                   {price.toLocaleString()}₫
                 </span>
-                <button
-                  className="!rounded-full !w-10 h-10 !bg-[#FFEDE5] !text-[#ff8662] hover:!bg-[#FFEDE5]/80 cursor-pointer"
-                  onClick={() =>
-                    addToCart({
-                      id: id || slug,
-                      name: title,
-                      desc: title,
-                      price: price,
-                      img: primaryImg || "/images/account.webp",
-                      quantity: 1,
-                    })
-                  }
-                >
-                  <ShoppingCartOutlined />
-                </button>
               </div>
             )}
+            <button
+              className="!rounded-full !w-10 h-10 !bg-[#FFEDE5] !text-[#ff8662] hover:!bg-[#FFEDE5]/80 cursor-pointer"
+              onClick={() =>
+                addToCart({
+                  id: id || slug,
+                  name: title,
+                  desc: title,
+                  price: price,
+                  img: primaryImg || "/images/account.webp",
+                  quantity: 1,
+                })
+              }
+            >
+              <ShoppingCartOutlined />
+            </button>
           </div>
 
           {/* Vừa mở bán */}

@@ -10,17 +10,12 @@ import TablePagination from "@/components/table-pagination";
 const ProductsPage = async ({
   searchParams,
 }: {
-  searchParams: { page?: string | number; search?: string };
+  searchParams: Promise<{ page?: number | 1; search?: string | "" }>;
 }) => {
-  const rawPage =
-    typeof searchParams?.page === "string"
-      ? Number(searchParams.page)
-      : Number(searchParams?.page);
-  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
-  const search =
-    typeof searchParams?.search === "string" ? searchParams.search : "";
-  const products = await getProductsAction(page, search);
+  const { page, search } = await searchParams;
+  const products = await getProductsAction(Number(page ?? 1), search ?? "");
 
+  console.log("products", products);
   return (
     <>
       <div className="p-4 flex flex-col gap-4 max-w-screen-2xl mx-auto">
@@ -40,6 +35,10 @@ const ProductsPage = async ({
                   title={product.title}
                   star={product.star}
                   price={product.price}
+                  isSale={product.isSaleProduct}
+                  discount={product.discount}
+                  salePrice={product.price * (1 - product.discount / 100)}
+                  isNew={product.isNewProduct}
                   img={[product.images[0], product.images[1]]}
                 />
               ))}

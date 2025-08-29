@@ -25,7 +25,6 @@ const ManageOrderDetailPage = async ({
 
   const data = await getOrderByIdAction(id);
   const order = data?.order;
-  console.log("order", order);
 
   if (!order) return <div>Không tìm thấy đơn hàng.</div>;
 

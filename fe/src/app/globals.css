@@ -34,3 +34,7 @@ body {
   width: 3px; /* Độ rộng của thanh cuộn dọc */
   height: 3px; /* Độ cao của thanh cuộn ngang */
 }
+.ant-collapse-content-box {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}

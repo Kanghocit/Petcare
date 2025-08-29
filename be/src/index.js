@@ -13,6 +13,7 @@ import newsRoutes from "./routes/news.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import bannerRoutes from "./routes/banner.routes.js";
+import voicherRoutes from "./routes/voicher.routes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -48,8 +49,6 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files từ thư mục public
 const imagesDirSrc = path.join(__dirname, "public", "images");
 const imagesDirRoot = path.join(__dirname, "..", "public", "images");
-console.log("Serving images from:", imagesDirSrc);
-console.log("Fallback images from:", imagesDirRoot);
 app.use("/images", express.static(imagesDirSrc));
 // Fallback if files are stored in be/public/images instead of be/src/public/images
 app.use("/images", express.static(imagesDirRoot));
@@ -68,6 +67,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/voicher", voicherRoutes);
 
 //Error handling middleware
 

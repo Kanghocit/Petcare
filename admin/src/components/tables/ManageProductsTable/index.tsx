@@ -9,27 +9,18 @@ import {
   TableRow,
 } from "../../ui/table";
 
-import { Button, Image } from "antd";
+import { Button, Image, Tooltip } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  EditOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { Product } from "@/interface/Products";
 import TablePagination from "../TablePagination";
 import clsx from "clsx";
 
-import dynamic from "next/dynamic";
-
-const ModalAddProduct = dynamic(
-  () =>
-    import(
-      "@/app/(admin)/(others-pages)/(tables)/manage-product-table/ModalAddProduct"
-    ),
-  {
-    ssr: false,
-  },
-);
+import { useRouter } from "next/navigation";
+import Badge from "@/components/ui/badge/Badge";
 
 export default function ManageProductsTable({
   products,
@@ -39,6 +30,7 @@ export default function ManageProductsTable({
   const { products: productList = [], total = 0 } = products || {};
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
   const imageBase = apiBase?.replace(/\/api\/?$/, "");
+  const router = useRouter();
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -101,6 +93,12 @@ export default function ManageProductsTable({
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
+                  Trạng thái
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
                   Số sao
                 </TableCell>
                 <TableCell
@@ -124,26 +122,18 @@ export default function ManageProductsTable({
                 <TableRow
                   key={p.title}
                   className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
-                  // onClick={(e: React.MouseEvent<HTMLTableRowElement>) => {
-                  //   const target = e.target as HTMLElement;
-                  //   if (
-                  //     !target.closest("button") &&
-                  //     !target.closest(".ant-modal") &&
-                  //     !target.closest(".ant-upload")
-                  //   ) {
-                  //     router.push(`/manage-product-table/${p.slug}`);
-                  //   }
-                  // }}
                 >
-                  <TableCell className="text-theme-sm !max-w-[250px] px-4 py-3 text-start text-gray-500 hover:!max-w-full dark:text-gray-400">
-                    <p
-                      className={clsx(
-                        "text-theme-sm line-clamp-2 font-medium text-gray-800 dark:text-white/90",
-                        p.quantity < 20 && "text-red-500",
-                      )}
-                    >
-                      {p.title}
-                    </p>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 hover:!max-w-fit dark:text-gray-400">
+                    <Tooltip title={p.title}>
+                      <p
+                        className={clsx(
+                          "text-theme-sm line-clamp-1 font-medium text-gray-800 hover:!max-w-full dark:text-white/90",
+                          p.quantity < 20 && "text-red-500",
+                        )}
+                      >
+                        {p.title}
+                      </p>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <div className="flex gap-1">
@@ -164,7 +154,7 @@ export default function ManageProductsTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    <p className="line-clamp-1 !max-w-[500px]">
+                    <p className="line-clamp-1 !max-w-[300px]">
                       {p.description || "--"}
                     </p>
                   </TableCell>
@@ -199,6 +189,24 @@ export default function ManageProductsTable({
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     {p.discount}
                   </TableCell>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start whitespace-nowrap text-gray-500 dark:text-gray-400">
+                    <Badge
+                      size="sm"
+                      color={
+                        p.status === "active"
+                          ? "success"
+                          : p.status === "inactive"
+                            ? "warning"
+                            : "error"
+                      }
+                    >
+                      {p.status === "active"
+                        ? "Đang bán"
+                        : p.status === "inactive"
+                          ? "Tạm ngừng bán"
+                          : ""}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     {p.star}
                   </TableCell>
@@ -206,15 +214,16 @@ export default function ManageProductsTable({
                     {p.brand || "--"}
                   </TableCell>
                   <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
-                    <ModalAddProduct initialValues={p} action="update">
-                      <Button
-                        size="small"
-                        shape="circle"
-                        color="primary"
-                        variant="outlined"
-                        icon={<EditOutlined />}
-                      />
-                    </ModalAddProduct>
+                    <Button
+                      className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
+                      size="small"
+                      shape="circle"
+                      variant="outlined"
+                      icon={<EyeOutlined className="!text-blue-400" />}
+                      onClick={() =>
+                        router.push(`/manage-product-table/${p.slug}`)
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}

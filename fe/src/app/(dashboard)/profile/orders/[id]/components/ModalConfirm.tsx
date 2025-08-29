@@ -79,7 +79,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
       const finalReason = cancelReason === "other" ? otherReason : cancelReason;
 
       const res = await cancelOrderAction(orderId, finalReason);
-      console.log("res", res);
+
       if (res.ok) {
         message.success("Đã hủy đơn hàng thành công");
         setIsModalOpen(false);

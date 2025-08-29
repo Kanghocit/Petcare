@@ -11,6 +11,7 @@ export const createProduct = async (req, res) => {
       isNewProduct,
       isSaleProduct,
       star,
+      status,
       quantity,
       brand,
       images,
@@ -27,6 +28,7 @@ export const createProduct = async (req, res) => {
       isNewProduct,
       isSaleProduct,
       star,
+      status,
       quantity,
       brand,
       images,
@@ -71,7 +73,7 @@ export const getProducts = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .select(
-          "_id title slug description price discount quantity isNewProduct isSaleProduct star brand images"
+          "_id title slug description price discount quantity isNewProduct isSaleProduct star brand images status"
         )
         .lean(),
       Product.countDocuments(query),
@@ -124,6 +126,7 @@ export const updateProduct = async (req, res) => {
       isNewProduct,
       isSaleProduct,
       star,
+      status,
       quantity,
       brand,
       images,
@@ -136,6 +139,7 @@ export const updateProduct = async (req, res) => {
       ...(price !== undefined && { price }),
       ...(isNewProduct !== undefined && { isNewProduct }),
       ...(isSaleProduct !== undefined && { isSaleProduct }),
+      ...(status !== undefined && { status }),
       ...(star !== undefined && { star }),
       ...(quantity !== undefined && { quantity }),
       ...(brand !== undefined && { brand }),
