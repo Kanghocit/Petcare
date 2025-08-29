@@ -23,6 +23,12 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    //đang bán/tạm ngừng bán/ngừng hẳn
+    status: {
+      type: String,
+      enum: ["active", "inactive", "archived"],
+      default: "active",
+    },
     discount: {
       type: Number,
       default: 0,

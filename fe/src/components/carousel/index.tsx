@@ -10,7 +10,7 @@ export interface Banner {
 }
 const App: React.FC = async () => {
   const carouselData = await getAllBanners();
-  console.log("data", carouselData);
+
   const images: Banner[] = Array.isArray(carouselData?.banners?.images)
     ? carouselData.banners.images
     : Array.isArray(carouselData?.banners)

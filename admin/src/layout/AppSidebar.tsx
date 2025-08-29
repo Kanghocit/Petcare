@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
     name: "Quản lý voicher",
     icon: <TableIcon />,
     subItems: [
-      { name: "Danh sách đơn hàng", path: "/manage-order-table", pro: false },
+      { name: "Danh sách voicher", path: "/manage-voicher-table", pro: false },
     ],
   },
 ];

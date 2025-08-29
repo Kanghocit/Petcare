@@ -16,7 +16,6 @@ import { Product } from "../../../../../interface/product";
 import resolveImageSrc from "@/utils/resolveImageSrc";
 
 const ProductDetailInfo = ({ product }: { product: Product }) => {
-  console.log("product đì theo", product);
   // Dữ liệu mẫu, có thể thay bằng props sau này
   const productName = product.title;
   const productType = [{ name: product.brand, url: "#" }];

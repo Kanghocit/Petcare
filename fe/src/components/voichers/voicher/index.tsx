@@ -3,6 +3,7 @@
 import { Card, message } from "antd";
 import React, { useState } from "react";
 import Button from "@/components/button";
+import dayjs from "dayjs";
 
 type VoicherProps = {
   code?: string;
@@ -32,7 +33,9 @@ const Voicher = ({ code, date, description, status }: VoicherProps) => {
           <p className="font-semibold text-[18px] text-gray-800">
             Mã: <span className="text-black">{code}</span>
           </p>
-          <p className="text-[14px] text-gray-400">HSD: {date}</p>
+          <p className="text-[14px] text-gray-400">
+            HSD: {dayjs(date).format("DD-MM-YYYY")}
+          </p>
         </div>
 
         {/* Description */}

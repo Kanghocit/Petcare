@@ -4,6 +4,7 @@ export interface Product {
   description: string;
   price: number;
   discount: number;
+  status: string;
   quantity: number;
   isNewProduct: boolean;
   isSaleProduct: boolean;

@@ -23,7 +23,7 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
 
   const cart = useCartStore((state) => state.cart);
-  console.log("cart", cart);
+
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const total = useCartStore((state) => state.total)();

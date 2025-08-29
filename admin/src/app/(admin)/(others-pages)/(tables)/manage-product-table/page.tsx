@@ -8,7 +8,7 @@ import { getAllProductsAction } from "./action";
 import SearchProducts from "./SearchProducts";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin ",
+  title: "Petcare Admin | Products ",
   description: "Petcare",
   // other metadata
 };

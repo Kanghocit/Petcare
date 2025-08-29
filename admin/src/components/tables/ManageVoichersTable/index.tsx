@@ -8,29 +8,49 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
+import dayjs from "dayjs";
 
-import { Button, Image } from "antd";
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
-import { Product } from "@/interface/Products";
+import { App, Button } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+
 import TablePagination from "../TablePagination";
-import clsx from "clsx";
 
-import { useRouter } from "next/navigation";
 import Badge from "@/components/ui/badge/Badge";
+import { Voicher } from "@/interface/Voicher";
 
-export default function ManageProductsTable({
-  products,
+import { deleteVoicherAction } from "@/app/(admin)/(others-pages)/(tables)/manage-voicher-table/action";
+import { useRouter } from "next/navigation";
+import ModalAddVoicher from "@/app/(admin)/(others-pages)/(tables)/manage-voicher-table/ModalAddVoicher";
+
+export default function ManageVoichersTable({
+  voichers,
 }: {
-  products?: { products: Product[]; total: number };
+  voichers?: { voichers: Voicher[]; total: number };
 }) {
-  const { products: productList = [], total = 0 } = products || {};
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const imageBase = apiBase?.replace(/\/api\/?$/, "");
+  const { voichers: voicherList = [], total = 0 } = voichers || {};
+  const { modal, message } = App.useApp();
   const router = useRouter();
+  const handleDeleteVoicher = async (id: string) => {
+    modal.confirm({
+      title: "Xác nhận xoá",
+      content: "Bạn có chắc chắn muốn xoá voucher này không?",
+      okText: "Xoá",
+      cancelText: "Hủy",
+      okType: "danger",
+      async onOk() {
+        try {
+          const res = await deleteVoicherAction(id);
+          if (res.ok) {
+            message.success("Xoá voucher thành công");
+            router.refresh();
+          }
+        } catch (error) {
+          console.error(error);
+          message.error("Có lỗi khi xoá voucher");
+        }
+      },
+    });
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -44,68 +64,50 @@ export default function ManageProductsTable({
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Tên sản phẩm
+                  Tên voicher
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Ảnh sản phẩm
+                  Voicher code
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Mô tả
+                  Giá trị giảm
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Giá
+                  Ngày bắt đầu
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Số lượng
+                  Ngày kết thúc
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Người dùng tối đa
                 </TableCell>
 
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Là sản phẩm mới
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Đang giảm giá
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Giảm giá
+                  Số người đã dùng
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
                   Trạng thái
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Số sao
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Hãng
                 </TableCell>
                 <TableCell
                   isHeader
@@ -118,116 +120,76 @@ export default function ManageProductsTable({
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {productList?.map((p) => (
+              {voicherList?.map((v) => (
                 <TableRow
-                  key={p.title}
+                  key={v.name}
                   className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                 >
-                  <TableCell className="text-theme-sm !max-w-[250px] px-4 py-3 text-start text-gray-500 hover:!max-w-full dark:text-gray-400">
-                    <p
-                      className={clsx(
-                        "text-theme-sm line-clamp-1 font-medium text-gray-800 dark:text-white/90",
-                        p.quantity < 20 && "text-red-500",
-                      )}
-                    >
-                      {p.title}
-                    </p>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    <div className="flex gap-1">{v.name}</div>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    <div className="flex gap-1">
-                      {p.images?.map((item, index) => {
-                        const src = item.startsWith("http")
-                          ? item
-                          : `${imageBase}${item}`;
-                        return (
-                          <Image
-                            width={40}
-                            src={src}
-                            key={index}
-                            alt=""
-                            className="rounded-sm"
-                          />
-                        );
-                      })}
-                    </div>
+                    <div className="flex gap-1">{v.code}</div>
+                  </TableCell>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    {v.discountValue}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <p className="line-clamp-1 !max-w-[500px]">
-                      {p.description || "--"}
+                      {dayjs(v.startDate).format("DD-MM-YYYY")}
                     </p>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.price}
+                    {dayjs(v.endDate).format("DD-MM-YYYY")}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    <p
-                      className={clsx(
-                        "text-theme-sm line-clamp-2 font-medium text-gray-800 dark:text-white/90",
-                        p.quantity < 20 && "text-red-500",
-                      )}
-                    >
-                      {p.quantity === 0 ? "Hết hàng" : p.quantity}
-                    </p>
-                  </TableCell>
-
-                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.isNewProduct ? (
-                      <CheckCircleOutlined className="ms-2 text-xl !text-green-500" />
-                    ) : (
-                      <CloseCircleOutlined className="ms-2 text-xl !text-yellow-500" />
-                    )}
+                    {v.maxUsers}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.isSaleProduct ? (
-                      <CheckCircleOutlined className="ms-2 text-xl !text-blue-500" />
-                    ) : (
-                      <CloseCircleOutlined className="ms-2 text-xl !text-red-500" />
-                    )}
-                  </TableCell>
-                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.discount}
+                    {v.usedCount ?? 0}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <Badge
                       size="sm"
                       color={
-                        p.status === "active"
+                        v.status === "active"
                           ? "success"
-                          : p.status === "inactive"
+                          : v.status === "inactive"
                             ? "warning"
                             : "error"
                       }
                     >
-                      {p.status === "active"
-                        ? "Đang bán"
-                        : p.status === "inactive"
-                          ? "Tạm ngừng bán"
+                      {v.status === "active"
+                        ? "Đang hoạt động"
+                        : v.status === "inactive"
+                          ? "Ngừng hoạt động"
                           : ""}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.star}
-                  </TableCell>
-                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.brand || "--"}
-                  </TableCell>
                   <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
+                    <ModalAddVoicher action="update" initialValues={v}>
+                      <Button
+                        className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
+                        size="small"
+                        shape="circle"
+                        variant="outlined"
+                        icon={<EditOutlined className="!text-blue-400" />}
+                      />
+                    </ModalAddVoicher>
                     <Button
-                      className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
+                      className="!color-red-500 !border-red-500 hover:!border-red-400 hover:!text-red-400"
                       size="small"
                       shape="circle"
                       variant="outlined"
-                      icon={<EyeOutlined className="!text-blue-400" />}
-                      onClick={() =>
-                        router.push(`/manage-product-table/${p.slug}`)
-                      }
+                      icon={<DeleteOutlined className="!text-red-400" />}
+                      onClick={() => handleDeleteVoicher(v._id)}
                     />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <TablePagination total={total || 0} link="/manage-product-table" />
+          <TablePagination total={total || 0} link="/manage-voicher-table" />
         </div>
       </div>
     </div>

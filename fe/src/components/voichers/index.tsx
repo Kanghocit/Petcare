@@ -1,33 +1,25 @@
 import React from "react";
+
+import { getAllVoichers } from "@/libs/voicher";
+import { VoicherInterface } from "@/interface/voicher";
 import Voicher from "./voicher";
 
-const Voichers = () => {
+const Voichers = async () => {
+  const data = await getAllVoichers();
+  const voicherData = data.voichers;
+
   return (
     <div className="flex flex-wrap gap-16 justify-center items-center">
-      <Voicher
-        code="1234567890"
-        date="2025-01-01"
-        description="Mã giảm giá 10%"
-        status="expired"
-      />
-      <Voicher
-        code="1234567890"
-        date="2025-01-01"
-        description="Mã giảm giá 10%"
-        status="expired"
-      />
-      <Voicher
-        code="1234567890"
-        date="2025-01-01"
-        description="Mã giảm giá 10%"
-        status="expired"
-      />
-      <Voicher
-        code="1234567890"
-        date="2025-01-01"
-        description="Mã giảm giá 10%"
-        status="active"
-      />
+      {voicherData.map((item: VoicherInterface) => (
+        <div key={item._id}>
+          <Voicher
+            code={item.code}
+            date={item.endDate}
+            description={item.name}
+            status={item.status}
+          />
+        </div>
+      ))}
     </div>
   );
 };
