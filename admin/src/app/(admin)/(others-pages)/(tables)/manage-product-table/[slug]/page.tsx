@@ -4,6 +4,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ProductEditForm from "./ProductEditForm";
 import { Metadata } from "next";
+import { getAllBrandsAction } from "../../manage-brand-table/action";
 
 export const metadata: Metadata = {
   title: "Petcare Admin | Products Detail ",
@@ -17,14 +18,19 @@ const ManageProductDetail = async ({
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await params;
-  const data = await getProductBySlugAction(slug);
-  const product = data.product;
+
+  const [productsData, brandsData] = await Promise.all([
+    getProductBySlugAction(slug),
+    getAllBrandsAction(1, 10),
+  ]);
+
+  const product = productsData.product;
   return (
     <>
       <PageBreadcrumb pageTitle="Chỉnh sửa sản phẩm" />
       <div className="space-y-6">
         <ComponentCard title={product?.title || "Chỉnh sửa sản phẩm"}>
-          <ProductEditForm product={product} />
+          <ProductEditForm product={product} brands={brandsData} />
         </ComponentCard>
       </div>
     </>

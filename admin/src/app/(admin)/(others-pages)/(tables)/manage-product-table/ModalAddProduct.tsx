@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { App, Button, Form, Input, Modal, Checkbox, InputNumber } from "antd";
 import UploadFile from "@/components/upload-file";
+import BrandSelect from "@/components/form/BrandSelect";
 import { CreateProductAction, UpdateProductAction } from "./action";
 import { useRouter } from "next/navigation";
 import { Product } from "@/interface/Products";
+import { Brand } from "@/interface/Brand";
 
 type AppError = {
   message: string;
@@ -29,7 +31,8 @@ const ModalAddProduct: React.FC<{
   children?: React.ReactNode;
   initialValues?: Product;
   action?: "create" | "update";
-}> = ({ children, initialValues, action = "create" }) => {
+  brands: { brands: Brand[]; total: number };
+}> = ({ children, initialValues, action = "create", brands }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -146,7 +149,7 @@ const ModalAddProduct: React.FC<{
           name="title"
           rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
         >
-          <Input />
+          <Input placeholder="Điền tên sản phẩm" />
         </Form.Item>
 
         <Form.Item label="Ảnh sản phẩm" name="images">
@@ -159,7 +162,7 @@ const ModalAddProduct: React.FC<{
         </Form.Item>
 
         <Form.Item label="Mô tả" name="description">
-          <Input.TextArea rows={3} />
+          <Input.TextArea rows={3} placeholder="Thêm mô tả" />
         </Form.Item>
 
         <Form.Item
@@ -167,7 +170,11 @@ const ModalAddProduct: React.FC<{
           name="price"
           rules={[{ required: true, message: "Vui lòng nhập giá" }]}
         >
-          <InputNumber min={0} style={{ width: "100%" }} />
+          <InputNumber
+            min={0}
+            style={{ width: "100%" }}
+            placeholder="Thêm giá sản phẩm"
+          />
         </Form.Item>
 
         <Form.Item label="Số lượng" name="quantity">
@@ -212,7 +219,7 @@ const ModalAddProduct: React.FC<{
         </Form.Item>
 
         <Form.Item label="Hãng" name="brand">
-          <Input />
+          <BrandSelect brands={brands} />
         </Form.Item>
       </Modal>
     </>

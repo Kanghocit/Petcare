@@ -71,12 +71,12 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    name: "Quản lý Thương hiệu",
+    name: "Quản lý thương hiệu",
     icon: <TableIcon />,
     subItems: [
       {
         name: "Danh sách thương hiệu",
-        path: "/manage-brands-table",
+        path: "/manage-brand-table",
         pro: false,
       },
     ],

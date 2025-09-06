@@ -143,7 +143,7 @@ const ModalAddBanner: React.FC<{
             layout="horizontal"
             initialValues={initialValues}
             onFinish={handleSubmit}
-            labelCol={{ span: 6 }}
+            labelCol={{ span: 8 }}
             wrapperCol={{ span: 18 }}
           >
             {dom}
@@ -160,11 +160,12 @@ const ModalAddBanner: React.FC<{
           label="Tên banner"
           name="title"
           rules={[{ required: true, message: "Vui lòng nhập tên banner" }]}
+          labelAlign="left"
         >
           <Input />
         </Form.Item>
 
-        <Form.Item label="Ảnh banner" name="image">
+        <Form.Item label="Ảnh banner" name="image" labelAlign="left">
           <UploadFile
             folder="banner"
             onImageUpload={handleImageUpload}
@@ -173,7 +174,7 @@ const ModalAddBanner: React.FC<{
           />
         </Form.Item>
 
-        <Form.Item label="Vị trí banner" name="sort">
+        <Form.Item label="Vị trí banner" name="sort" labelAlign="left">
           <InputNumber min={1} max={100} style={{ width: "100%" }} />
         </Form.Item>
       </Modal>

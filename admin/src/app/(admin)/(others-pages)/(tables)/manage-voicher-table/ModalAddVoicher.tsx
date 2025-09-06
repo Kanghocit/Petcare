@@ -129,7 +129,7 @@ const ModalAddVoicher: React.FC<{
             form={form}
             layout="horizontal"
             onFinish={handleSubmit}
-            labelCol={{ span: 6 }}
+            labelCol={{ span: 8 }}
             wrapperCol={{ span: 18 }}
           >
             {dom}
@@ -146,6 +146,7 @@ const ModalAddVoicher: React.FC<{
           label="Tên voicher"
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập tên voicher" }]}
+          labelAlign="left"
         >
           <Input />
         </Form.Item>
@@ -154,6 +155,7 @@ const ModalAddVoicher: React.FC<{
           label="Mã voicher"
           name="code"
           rules={[{ required: true, message: "Vui lòng nhập mã voicher" }]}
+          labelAlign="left"
         >
           <Input />
         </Form.Item>
@@ -162,6 +164,7 @@ const ModalAddVoicher: React.FC<{
           label="Giá trị giảm"
           name="discountValue"
           rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+          labelAlign="left"
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
@@ -170,6 +173,7 @@ const ModalAddVoicher: React.FC<{
           label="Ngày bắt đầu"
           name="startDate"
           rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu" }]}
+          labelAlign="left"
         >
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
@@ -178,15 +182,16 @@ const ModalAddVoicher: React.FC<{
           label="Ngày kết thúc"
           name="endDate"
           rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc" }]}
+          labelAlign="left"
         >
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item label="Số lượng người dùng tối đa" name="maxUsers">
+        <Form.Item label="Người dùng tối đa" name="maxUsers" labelAlign="left">
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item label="Trạng thái" name="status">
+        <Form.Item label="Trạng thái" name="status" labelAlign="left">
           <Select
             options={[
               { label: "Active", value: "active" },

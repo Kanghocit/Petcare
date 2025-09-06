@@ -15,13 +15,13 @@ const Menu = () => {
       <MegaMenu label="Mua cho chó" menuData={SALE_MENU} />
       <MegaMenu label="Mua cho mèo" menuData={CAT_MENU} />
       <li className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#ffc902]">
-        <ShopOutlined /> Today&apos;s Sale
+        <ShopOutlined /> Khuyễn mãi
       </li>
       <li className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#ffc902]">
-        Dịch vụ
+        <Link href="/brands">Thương hiệu</Link>
       </li>
       <li className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#ffc902]">
-        <Link href="/news">Tạp chí chăm Boss</Link>
+        <Link href="/news">Blog thú cưng</Link>
       </li>
       <li className="flex items-center justify-center gap-2 cursor-pointer  hover:text-[#ffc902]">
         <Link href="/contact">

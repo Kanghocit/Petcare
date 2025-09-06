@@ -1,37 +1,47 @@
 "use client";
 
-import React from "react";
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from "../../ui/table";
+} from "@/components/ui/table";
 
-import { Button, Image } from "antd";
-import { EditOutlined } from "@ant-design/icons";
-import dynamic from "next/dynamic";
-import { Banner } from "@/interface/Banner";
+import { App, Button, Image } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import TablePagination from "@/components/tables/TablePagination";
+import { useRouter } from "next/navigation";
+import { Brand } from "@/interface/Brand";
+import ModalAddBrand from "@/app/(admin)/(others-pages)/(tables)/manage-brand-table/ModalAddBrand";
+import { deleteBrandAction } from "@/app/(admin)/(others-pages)/(tables)/manage-brand-table/action";
 
-const ModalAddBanner = dynamic(
-  () =>
-    import(
-      "@/app/(admin)/(others-pages)/(tables)/manage-banner-table/ModalAddBanner"
-    ),
-  {
-    ssr: false,
-  },
-);
-
-export default function ManageBannerTable({
-  banners,
+const ManageBrandTable = ({
+  brands,
 }: {
-  banners?: { banners: Banner[] };
-}) {
-  const { banners: bannerList = [] } = banners || {};
+  brands?: { brands: Brand[]; total: number; limit: number };
+}) => {
+  const { brands: brandsData, total, limit } = brands || {};
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
   const imageBase = apiBase?.replace(/\/api\/?$/, "");
+  const router = useRouter();
+  const { modal, message } = App.useApp();
+
+  const handleDeleteBrand = async (id: string) => {
+    modal.confirm({
+      title: "Xoá brand",
+      content: "Bạn có chắc chắn muốn xoá brand này không?",
+      onOk: async () => {
+        const res = await deleteBrandAction(id);
+        if (res.ok) {
+          message.success("Xoá brand thành công");
+          router.refresh();
+        } else {
+          message.error(res.message);
+        }
+      },
+    });
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -45,19 +55,19 @@ export default function ManageBannerTable({
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Ảnh
+                  Tên brand
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Tên banner
+                  Ảnh brand
                 </TableCell>
                 <TableCell
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Thứ tự
+                  Số lượng sản phẩm
                 </TableCell>
                 <TableCell
                   isHeader
@@ -70,11 +80,17 @@ export default function ManageBannerTable({
 
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {bannerList?.map((b) => (
+              {brandsData?.map((brand: Brand) => (
                 <TableRow
-                  key={b.title}
+                  key={brand._id}
                   className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]"
                 >
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    <p className="text-theme-sm line-clamp-1 !max-w-[1/6] font-medium text-gray-800 dark:text-white/90">
+                      {brand.name || brand._id.slice(-8).toUpperCase()}
+                    </p>
+                  </TableCell>
+
                   <TableCell className="text-theme-sm w-1/4 px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <div className="flex gap-1">
                       {(() => {
@@ -86,16 +102,16 @@ export default function ManageBannerTable({
                             "$1images/hero/",
                           );
                         };
-                        const raw = b.image;
+                        const raw = brand.image;
                         const normalized = rewriteBannerPath(raw);
                         const src = normalized?.startsWith("http")
                           ? normalized
                           : `${imageBase}${normalized}`;
 
-                        return b.image ? (
+                        return brand.image ? (
                           <Image
-                            width={180}
-                            height="auto"
+                            height={40}
+                            width={110}
                             src={src as string}
                             alt=""
                             className="rounded-sm"
@@ -106,30 +122,44 @@ export default function ManageBannerTable({
                       })()}
                     </div>
                   </TableCell>
-                  <TableCell className="text-theme-sm !max-w-[250px] px-4 py-3 text-start text-gray-500 hover:!max-w-full dark:text-gray-400">
-                    {b.title}
-                  </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {b.sort}
+                    <p className="text-theme-sm line-clamp-1 !max-w-[1/6] font-medium text-gray-800 dark:text-white/90">
+                      {brand.numberProducts || 0}
+                    </p>
                   </TableCell>
                   <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
-                    <ModalAddBanner initialValues={b} action="update">
+                    {/* View button */}
+                    <ModalAddBrand action="update" initialValues={brand}>
                       <Button
+                        className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
                         size="small"
                         shape="circle"
-                        color="primary"
                         variant="outlined"
-                        icon={<EditOutlined />}
+                        icon={<EditOutlined className="!text-blue-400" />}
                       />
-                    </ModalAddBanner>
+                    </ModalAddBrand>
+                    <Button
+                      className="!color-red-500 !border-red-500 hover:!border-red-400 hover:!text-red-400"
+                      size="small"
+                      shape="circle"
+                      variant="outlined"
+                      icon={<DeleteOutlined className="!text-red-400" />}
+                      onClick={() => handleDeleteBrand(brand._id)}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          {/* Banners typically are few; omit pagination or compute total if needed */}
+          <TablePagination
+            total={total || 0}
+            link="/manage-brand-table"
+            limit={limit || 5}
+          />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default ManageBrandTable;

@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import Brand from "../models/Brand.js";
 
 //tạo sản phẩm
 export const createProduct = async (req, res) => {
@@ -20,7 +21,13 @@ export const createProduct = async (req, res) => {
     if (existingProduct) {
       return res.status(400).json({ message: "Sản phẩm đã tồn tại" });
     }
-    const product = await Product.create({
+    // Tìm brand theo tên để lấy _id
+    const brandDoc = await Brand.findOne({ name: brand });
+    if (!brandDoc) {
+      return res.status(400).json({ message: "Brand không tồn tại" });
+    }
+
+    const productData = {
       title,
       description,
       price,
@@ -30,8 +37,15 @@ export const createProduct = async (req, res) => {
       star,
       status,
       quantity,
-      brand,
+      brand, // Sử dụng _id thay vì tên
       images,
+    };
+
+    const product = await Product.create(productData);
+
+    // Cập nhật số lượng sản phẩm của brand
+    await Brand.findByIdAndUpdate(brandDoc._id, {
+      $inc: { numberProducts: 1 },
     });
     res.status(201).json({
       ok: true,
@@ -39,7 +53,12 @@ export const createProduct = async (req, res) => {
       product,
     });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi tạo sản phẩm", error });
+    console.error("Create product error:", error);
+    res.status(500).json({
+      message: "Lỗi khi tạo sản phẩm",
+      error: error.message,
+      details: error,
+    });
   }
 };
 
@@ -156,14 +175,88 @@ export const updateProduct = async (req, res) => {
       update.discount = discount;
     }
 
+    // Lấy sản phẩm cũ trước khi update
+    const oldProduct = await Product.findOne({ slug });
+    if (!oldProduct) {
+      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    }
+
     const updated = await Product.findOneAndUpdate({ slug }, update, {
       new: true,
       runValidators: true,
       context: "query",
     });
 
-    if (!updated) {
-      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    // Nếu brand thay đổi → update lại số lượng sản phẩm trong brand
+    console.log("Brand comparison:", {
+      newBrand: brand,
+      oldBrand: oldProduct.brand,
+      oldBrandType: typeof oldProduct.brand,
+      newBrandType: typeof brand,
+    });
+
+    // Tìm brand cũ theo _id để lấy tên
+    let oldBrandDoc = null;
+    let oldBrandName = null;
+
+    if (
+      oldProduct.brand &&
+      typeof oldProduct.brand === "string" &&
+      oldProduct.brand.length === 24
+    ) {
+      try {
+        oldBrandDoc = await Brand.findById(oldProduct.brand);
+        oldBrandName = oldBrandDoc ? oldBrandDoc.name : null;
+      } catch (error) {
+        console.error("Lỗi khi tìm brand cũ:", error);
+      }
+    } else {
+      console.log("Brand cũ không hợp lệ:", oldProduct.brand);
+    }
+
+    console.log("Brand names comparison:", {
+      oldBrandName,
+      newBrandName: brand,
+      isDifferent: brand && brand !== oldBrandName,
+    });
+
+    if (brand && brand !== oldBrandName) {
+      try {
+        // Tìm brand mới theo tên để lấy _id
+        const newBrandDoc = await Brand.findOne({ name: brand });
+        if (!newBrandDoc) {
+          console.error("Brand mới không tồn tại:", brand);
+          return res.status(400).json({ message: "Brand mới không tồn tại" });
+        }
+
+        console.log("Updating brand counts:", {
+          oldBrandId: oldProduct.brand,
+          newBrandId: newBrandDoc._id,
+        });
+
+        // Giảm số lượng sản phẩm của brand cũ
+        if (
+          oldProduct.brand &&
+          typeof oldProduct.brand === "string" &&
+          oldProduct.brand.length === 24
+        ) {
+          await Brand.findByIdAndUpdate(oldProduct.brand, {
+            $inc: { numberProducts: -1 },
+          });
+        }
+
+        // Tăng số lượng sản phẩm của brand mới
+        await Brand.findByIdAndUpdate(newBrandDoc._id, {
+          $inc: { numberProducts: 1 },
+        });
+
+        console.log("Brand counts updated successfully");
+      } catch (brandError) {
+        console.error("Lỗi khi update brand count:", brandError);
+        // Không throw error để không ảnh hưởng đến việc update product
+      }
+    } else {
+      console.log("Brand không thay đổi hoặc không có brand mới");
     }
 
     return res.status(200).json({
@@ -180,7 +273,7 @@ export const updateProduct = async (req, res) => {
     }
     return res
       .status(500)
-      .json({ message: "Lỗi khi cập nhật sản phẩm", error });
+      .json({ message: "Lỗi khi cập nhật sản phẩm", error: error.message });
   }
 };
 
@@ -193,6 +286,9 @@ export const deleteProduct = async (req, res) => {
   }
   try {
     await Product.findOneAndDelete({ slug });
+    await Brand.findByIdAndUpdate(product.brand, {
+      $inc: { numberProducts: -1 },
+    });
     res.status(200).json({
       ok: true,
       message: "Xóa sản phẩm thành công",

@@ -6,6 +6,7 @@ import ModalAddProduct from "./ModalAddProduct";
 import { Metadata } from "next";
 import { getAllProductsAction } from "./action";
 import SearchProducts from "./SearchProducts";
+import { getAllBrandsAction } from "../manage-brand-table/action";
 
 export const metadata: Metadata = {
   title: "Petcare Admin | Products ",
@@ -16,10 +17,13 @@ export const metadata: Metadata = {
 const ManageProductTablePage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ page: string; search: string }>;
+  searchParams: Promise<{ page: number; search: number; limit: number }>;
 }) => {
-  const { page, search } = await searchParams;
-  const productsData = await getAllProductsAction(page, search);
+  const { page, search, limit } = await searchParams;
+  const [productsData, brandsData] = await Promise.all([
+    getAllProductsAction(page, search),
+    getAllBrandsAction(page, limit),
+  ]);
 
   return (
     <>
@@ -29,7 +33,7 @@ const ManageProductTablePage = async ({
           title="Quản lí sản phẩm"
           subHeader={
             <div className="flex items-center justify-between gap-2">
-              <ModalAddProduct />
+              <ModalAddProduct brands={brandsData} />
               <SearchProducts />
             </div>
           }

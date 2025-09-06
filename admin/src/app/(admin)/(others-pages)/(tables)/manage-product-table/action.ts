@@ -3,7 +3,7 @@
 import { Product } from "@/interface/Products";
 import { createProduct, getAllProducts, getProductBySlug, updateProduct } from "@/libs/product";
 
-export const getAllProductsAction = async (page: string, search: string) => {
+export const getAllProductsAction = async (page: number, search: number) => {
   const data = await getAllProducts(page, search);
   return data;
 };

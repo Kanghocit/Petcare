@@ -1,22 +1,31 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import type { PaginationProps } from 'antd';
-import { Pagination } from 'antd';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import type { PaginationProps } from "antd";
+import { Pagination } from "antd";
+import { useRouter } from "next/navigation";
 
-const TablePagination: React.FC<{ total: number , link: string }> = ({ total, link }) => {
+const TablePagination: React.FC<{
+  total: number;
+  link: string;
+  limit?: number;
+}> = ({ total, link, limit }) => {
   const [current, setCurrent] = useState(1);
   const router = useRouter();
 
-  const onChange: PaginationProps['onChange'] = (page) => {
-    router.push(`${link}?page=${page}`);
+  const onChange: PaginationProps["onChange"] = (page) => {
+    router.push(`${link}?page=${page}&limit=${limit}`);
     setCurrent(page);
   };
 
   return (
-    <div className='flex justify-center my-4'>
-      <Pagination current={current} onChange={onChange} total={total} />
+    <div className="my-4 flex justify-center">
+      <Pagination
+        current={current}
+        onChange={onChange}
+        total={total}
+        pageSize={limit}
+      />
     </div>
   );
 };
