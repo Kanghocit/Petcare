@@ -23,7 +23,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">ĐẶT HÀNG</h2>
+        <h2 className="text-lg font-bold">Thông tin người nhận hàng</h2>
         <button
           className="text-blue-600 hover:underline"
           onClick={() => setIsEditing((v) => !v)}
@@ -33,7 +33,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
       </div>
 
       <div className="flex flex-col gap-4 text-sm">
-        <div>
+        <div className="flex gap-2 items-center">
           <div className="text-gray-500 mb-1">Tên khách hàng</div>
           {isEditing ? (
             <input
@@ -48,7 +48,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
             <div className="font-medium">{name}</div>
           )}
         </div>
-        <div>
+        <div className="flex gap-2 items-center">
           <div className="text-gray-500 mb-1">Email</div>
           {isEditing ? (
             <input

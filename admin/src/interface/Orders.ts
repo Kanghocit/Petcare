@@ -90,7 +90,7 @@ export interface PaymentInfo {
     | "failed"
     | "voided"
     | "chargeback";
-  method: "cod" | "vnpay" | "momo";
+  method: "cod" | "ck" | "momo";
   refundedAmount: number;
   transactions: Transaction[];
   paidAt?: string;

@@ -47,7 +47,7 @@ const SelectAction: React.FC = () => {
           options={[
             { value: "cod", label: "Tiền mặt" },
             { value: "momo", label: "Momo" },
-            { value: "vnpay", label: "Vnpay" },
+            { value: "ck", label: "Chuyển khoản" },
           ]}
         />
         <Select

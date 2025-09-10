@@ -135,10 +135,10 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       className="w-16 h-16 object-cover rounded"
                     />
                     <div className="flex-1">
-                      <div className="font-semibold text-base leading-tight">
+                      <div className="font-semibold text-base leading-tight line-clamp-1">
                         {item.name}
                       </div>
-                      <div className="text-gray-400 text-sm mb-1">
+                      <div className="text-gray-400 text-sm mb-1 line-clamp-1">
                         {item.desc}
                       </div>
                       <div className="text-[#ff8662] font-bold text-lg">

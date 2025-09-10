@@ -98,8 +98,8 @@ const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
     switch (method) {
       case "cod":
         return "Thanh toán khi nhận hàng";
-      case "vnpay":
-        return "Thanh toán qua VNPay";
+      case "ck":
+        return "Thanh toán bằng chuyển khoản";
       case "momo":
         return "Thanh toán qua MoMo";
       default:

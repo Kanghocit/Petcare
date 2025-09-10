@@ -44,7 +44,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      className={`w-64 !rounded-2xl p-3 shadow-sm hover:shadow-lg transition relative group bg-white my-2 ${className}`}
+      className={`w-64 !rounded-2xl p-3 shadow-sm hover:shadow-lg transition relative group bg-white  ${className}`}
     >
       <Link href={`/product/${slug}`}>
         <div className="relative w-full overflow-hidden group rounded-md">

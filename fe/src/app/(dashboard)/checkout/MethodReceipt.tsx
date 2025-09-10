@@ -57,6 +57,7 @@ const MethodReceipt: React.FC<AddressProp> = ({ address }) => {
           <div className="flex items-center justify-between">
             <div className="font-medium">{address}</div>
             <button className="text-blue-600 hover:underline">Thay đổi</button>
+            <input type="text" />
           </div>
         </div>
       )}

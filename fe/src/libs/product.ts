@@ -1,10 +1,16 @@
 import { fetchWithoutToken } from "@/utils/fetchWithoutToken";
 
-export const getProducts = async (page: number, search: string) => {
+export const getProducts = async (
+  page: number,
+  search: string,
+  limit: number,
+  extraQuery: string = ""
+) => {
   const safePage = Math.max(1, Number(page) || 1);
   const safeSearch = search ? encodeURIComponent(search) : "";
+  const extras = extraQuery ? `&${extraQuery}` : "";
   const data = await fetchWithoutToken(
-    `/product?page=${safePage}&search=${safeSearch}`,
+    `/product?page=${safePage}&search=${safeSearch}&limit=${limit}${extras}`,
     "GET"
   );
   return data;

@@ -23,15 +23,7 @@ export const createOrder = async (req, res) => {
         .json({ message: "Thiếu thông tin địa chỉ giao hàng" });
 
     // Validate shipping address
-    const requiredAddressFields = [
-      "fullName",
-      "phone",
-      "email",
-      "address",
-      "city",
-      "district",
-      "ward",
-    ];
+    const requiredAddressFields = ["fullName", "phone", "email", "address"];
     for (const field of requiredAddressFields) {
       if (!shippingAddress[field]) {
         return res.status(400).json({ message: `Thiếu thông tin: ${field}` });
@@ -92,7 +84,12 @@ export const createOrder = async (req, res) => {
     const shippingFee =
       shipping.fee || shippingFees[shipping.method || "standard"] || 0;
     const discountAmount = discount.amount || 0;
-    const totalAmount = subtotal + shippingFee - discountAmount;
+    // Prevent over-discount: cap discount to (subtotal + shippingFee)
+    const maxDiscount = Math.max(
+      0,
+      Math.min(discountAmount, subtotal + shippingFee)
+    );
+    const totalAmount = subtotal + shippingFee - maxDiscount;
 
     const orderData = {
       user: userId,

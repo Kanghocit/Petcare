@@ -34,7 +34,7 @@ const ManageOrderTablePage = async ({
   } = await searchParams;
   const data = await getOrdersAction(page, {
     search,
-    paymentMethod: paymentMethod as "cod" | "vnpay" | "momo" | undefined,
+    paymentMethod: paymentMethod as "cod" | "ck" | "momo" | undefined,
     paymentStatus: paymentStatus as
       | "unpaid"
       | "authorized"

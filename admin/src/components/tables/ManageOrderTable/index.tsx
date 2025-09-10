@@ -34,8 +34,8 @@ const ManageOrderTable = ({
     switch (method) {
       case "cod":
         return "Tiền mặt";
-      case "vnpay":
-        return "VNPay";
+      case "ck":
+        return "Chuyển khoản";
       case "momo":
         return "MoMo";
       default:

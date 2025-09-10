@@ -89,7 +89,8 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
       title: "Tổng hóa đơn",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => formatCurrency(amount),
+      render: (amount: number) =>
+        Number(amount) < 0 ? "0đ" : formatCurrency(amount),
     },
     {
       title: "Số sản phẩm",

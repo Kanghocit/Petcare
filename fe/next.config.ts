@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "qr.sepay.vn",
+        pathname: "/**",
+      },
     ],
   },
 };

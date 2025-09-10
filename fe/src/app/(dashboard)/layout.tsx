@@ -4,6 +4,7 @@ import Footer from "@/components/layout/footer";
 import Menu from "@/components/menu";
 import { getUser } from "@/actions";
 import { App } from "antd";
+import FloatingActionButton from "@/components/brands/FloatingActionButton";
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +20,8 @@ export default async function DashboardLayout({
         <Menu />
 
         <main className="flex-grow">{children}</main>
-
+        {/* Floating Action Buttons */}
+        <FloatingActionButton />
         <Footer />
       </div>
     </App>

@@ -11,9 +11,6 @@ const shippingAddressSchema = new Schema(
     phone: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true },
     address: { type: String, required: true, trim: true },
-    city: { type: String, required: true, trim: true },
-    district: { type: String, required: true, trim: true },
-    ward: { type: String, required: true, trim: true },
     zipCode: { type: String, trim: true },
     isDefault: { type: Boolean, default: false },
   },
@@ -255,7 +252,7 @@ const orderSchema = new Schema(
       },
       method: {
         type: String,
-        enum: ["cod", "vnpay", "momo"],
+        enum: ["cod", "qr", "ck"],
         required: true,
       },
       paidAt: Date,
@@ -431,14 +428,6 @@ orderSchema.pre("save", function (next) {
     this.isModified("discount.amount")
   ) {
     this.recalculateTotals();
-  }
-  next();
-});
-
-// Pre-save: Cập nhật trạng thái giao nhận
-orderSchema.pre("save", function (next) {
-  if (this.isModified("items")) {
-    this.updateFulfillmentStatus();
   }
   next();
 });

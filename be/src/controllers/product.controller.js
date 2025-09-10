@@ -78,11 +78,62 @@ export const getProducts = async (req, res) => {
     const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const query = {};
+
+    const parseMultiParam = (value) => {
+      if (!value) return [];
+      const raw = Array.isArray(value) ? value : [value];
+      return raw
+        .flatMap((v) => String(v).split(","))
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0);
+    };
     if (searchRaw) {
       query.$or = [
         { title: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
         { brand: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        { color: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        { isNewProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        { isSaleProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        { price: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
       ];
+    }
+    const brands = parseMultiParam(req.query.brand);
+    if (brands.length > 0) {
+      query.brand = { $in: brands };
+    }
+
+    const colors = parseMultiParam(req.query.color);
+    if (colors.length > 0) {
+      query.color = { $in: colors };
+    }
+
+    const statuses = parseMultiParam(req.query.status);
+    if (statuses.length > 0) {
+      query.status = { $in: statuses };
+    }
+
+    // Boolean flags for new and sale products
+    const parseBool = (v) =>
+      v !== undefined &&
+      v !== null &&
+      String(v).toLowerCase() !== "false" &&
+      String(v) !== "0";
+    if (parseBool(req.query.isNewProduct)) {
+      query.isNewProduct = true;
+    }
+    if (parseBool(req.query.isSaleProduct)) {
+      query.isSaleProduct = true;
+    }
+
+    const price = {};
+    if (req.query.price_min !== undefined && req.query.price_min !== "") {
+      price.$gte = Number(req.query.price_min);
+    }
+    if (req.query.price_max !== undefined && req.query.price_max !== "") {
+      price.$lte = Number(req.query.price_max);
+    }
+    if (Object.keys(price).length > 0) {
+      query.price = price;
     }
 
     const skip = (page - 1) * limit;

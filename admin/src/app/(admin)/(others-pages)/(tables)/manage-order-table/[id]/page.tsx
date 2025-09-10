@@ -198,8 +198,8 @@ const ManageOrderDetailPage = async ({
                   <span className="text-md text-black">
                     {order.payment?.method === "cod"
                       ? "Thanh toán khi nhận hàng"
-                      : order.payment?.method === "vnpay"
-                        ? "Thanh toán qua VNPay"
+                      : order.payment?.method === "ck"
+                        ? "Thanh toán bằng chuyển khoản"
                         : order.payment?.method === "momo"
                           ? "Thanh toán qua MoMo"
                           : "Thẻ tín dụng"}

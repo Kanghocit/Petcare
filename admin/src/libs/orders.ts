@@ -7,7 +7,7 @@ export const getOrders = async (
     search?: string;
     orderCode?: string;
     fullName?: string;
-    paymentMethod?: "cod" | "vnpay" | "momo";
+    paymentMethod?: "cod" | "ck" | "momo";
     paymentStatus?: PaymentInfo["status"];
     fulfillmentStatus?: FulfillmentInfo["status"];
     status?: "open" | "completed" | "cancelled" | "closed";

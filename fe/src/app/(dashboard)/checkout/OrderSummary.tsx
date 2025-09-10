@@ -7,10 +7,11 @@ import { useShallow } from "zustand/react/shallow";
 import Image from "next/image";
 import { createOrderAction } from "./action";
 import { CreateOrderPayload } from "@/libs/order";
-import { App } from "antd";
-import { useRouter } from "next/navigation";
+import { App, Button, Input } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const DiscountInput: React.FC = () => {
+  const search = useSearchParams();
   const [code, setCode] = useState("");
   const setDiscount = useCheckoutStore((s) => s.setDiscount);
   const appliedCode = useCheckoutStore((s) => s.discountCode);
@@ -33,28 +34,32 @@ const DiscountInput: React.FC = () => {
 
   const clear = () => setDiscount(undefined, undefined);
 
-  return (
-    <div className="flex items-center gap-2">
-      <input
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        placeholder="Nhập mã"
-        className="border rounded px-2 py-1 text-sm w-28 text-right"
-      />
-      {appliedAmount > 0 ? (
-        <button onClick={clear} className="text-red-500 text-sm">
-          Bỏ
-        </button>
-      ) : (
-        <button onClick={apply} className="text-blue-600 text-sm">
-          Áp dụng
-        </button>
-      )}
+  return search.size !== 0 ? null : (
+    <div className="flex flex-col justify-between  gap-2">
+      <span>Mã giảm giá</span>
+      <div className="flex items-center gap-2">
+        <Input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Nhập mã"
+          className="border rounded px-2 py-1 text-sm w-28 "
+        />
+        {appliedAmount > 0 ? (
+          <Button onClick={clear} danger>
+            Hủy
+          </Button>
+        ) : (
+          <Button onClick={apply} type="primary">
+            Áp dụng
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
 
 const OrderSummary: React.FC = () => {
+  const search = useSearchParams();
   const { message } = App.useApp();
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
@@ -150,6 +155,14 @@ const OrderSummary: React.FC = () => {
           (result.body as { message?: string })?.message ||
           "Đặt hàng thành công";
         message.success(msg);
+        if (paymentMethod === "momo") {
+          const params = new URLSearchParams({
+            amount: String(grandTotal), // tổng tiền cần thanh toán
+            content: `${phone || "KH"}-${Date.now()}`,
+          }).toString();
+          router.push(`/checkout/payment?${params}`);
+          return;
+        }
         clearCart();
         router.push("/profile/orders");
       } else {
@@ -168,25 +181,34 @@ const OrderSummary: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-lg">ĐƠN HÀNG</h3>
       </div>
-      {cart.map((item) => (
+      {effectiveCart.map((item) => (
         <div
           key={item.id}
-          className="flex items-center border-b border-gray-200 py-4 gap-4"
+          className="flex flex-col  border-b border-gray-200 py-4 gap-4"
         >
-          <Image
-            src={item.img}
-            alt={item.name}
-            width={100}
-            height={100}
-            className="w-10 h-10 object-cover"
-          />
-          <div>
-            <h4 className="font-semibold text-sm line-clamp-1">{item.name}</h4>
-            <p>
-              {item.price.toLocaleString()}đ{" "}
-              <span className="text-gray-500 font-bold"> x{item.quantity}</span>
-            </p>
+          <div className="flex gap-2">
+            <Image
+              src={item.img}
+              alt={item.name}
+              width={100}
+              height={100}
+              className="w-10 h-10 object-cover"
+            />
+            <div>
+              <h4 className="font-semibold text-sm line-clamp-1">
+                {item.name}
+              </h4>
+              <p>
+                {item.price.toLocaleString()}đ{" "}
+                <span className="text-gray-500 font-bold">
+                  {" "}
+                  x{item.quantity}
+                </span>
+              </p>
+            </div>
           </div>
+
+          <DiscountInput />
         </div>
       ))}
       <div className="space-y-2 text-sm">
@@ -194,10 +216,7 @@ const OrderSummary: React.FC = () => {
           <span>Tạm tính</span>
           <span className="font-bold">{subtotal.toLocaleString()} đ</span>
         </div>
-        <div className="flex justify-between items-center gap-2">
-          <span>Mã giảm giá</span>
-          <DiscountInput />
-        </div>
+
         {discountAmount > 0 && (
           <div className="flex justify-between text-green-600">
             <span>Giảm</span>
@@ -221,7 +240,7 @@ const OrderSummary: React.FC = () => {
         disabled={effectiveCart.length === 0}
         onClick={handlePlaceOrder}
       >
-        Đặt mua
+        {search.size !== 0 ? "Thanh toán" : "Đặt mua"}
       </button>
     </div>
   );

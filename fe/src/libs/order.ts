@@ -33,7 +33,7 @@ export type CreateOrderPayload = {
     description?: string;
   };
   payment?: {
-    method?: "cod" | "vnpay" | "momo";
+    method?: "cod" | "ck" | "momo";
     status?:
       | "unpaid"
       | "authorized"

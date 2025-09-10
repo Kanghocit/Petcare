@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export type ReceiptMethod = "home" | "store";
-export type PaymentMethod = "cod" | "momo" | "vnpay";
+export type PaymentMethod = "cod" | "momo" | "ck";
 
 type CheckoutState = {
   fullName: string;

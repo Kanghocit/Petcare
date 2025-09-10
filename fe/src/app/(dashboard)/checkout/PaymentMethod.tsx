@@ -2,53 +2,105 @@
 
 import React from "react";
 import useCheckoutStore from "@/store/checkout-store";
+import { Collapse } from "antd";
+import type { CollapseProps } from "antd";
 
 const PaymentMethod: React.FC = () => {
-  const [method, setMethod] = React.useState<"cod" | "momo" | "vnpay">("cod");
+  const [activeKey, setActiveKey] = React.useState<string>("3");
   const [note, setNote] = React.useState("");
   const [invoice, setInvoice] = React.useState(false);
   const setPaymentMethod = useCheckoutStore((s) => s.setPaymentMethod);
   const setNoteStore = useCheckoutStore((s) => s.setNote);
   const setInvoiceStore = useCheckoutStore((s) => s.setInvoice);
 
+  const keyToMethod: Record<string, "cod" | "momo" | "ck"> = {
+    "1": "momo", // OnePAY - Credit/ATM
+    "2": "cod", // Thanh toán khi nhận hàng
+    "3": "ck", // Chuyển khoản ngân hàng / ví
+  };
+
+  const bankInfo = (
+    <div className="text-sm text-gray-700 leading-relaxed">
+      <p className="mb-1">
+        Quý Khách Hàng vui lòng chuyển khoản theo thông tin bên dưới
+      </p>
+      <p>Tài khoản MB Bank (Ngân Hàng Quân Đội)</p>
+      <p>
+        STK: <strong>8565618052003</strong>
+      </p>
+      <p>
+        Tên TK: <strong>BUI AN KHANG</strong>
+      </p>
+      <p>
+        Nội dung: <strong>Tên Người Mua Hàng + Số Điện Thoại</strong>
+      </p>
+    </div>
+  );
+
+  const items: CollapseProps["items"] = [
+    {
+      key: "1",
+      className: "bg-white",
+      label: (
+        <div className="flex items-center gap-2">
+          <input type="radio" readOnly checked={activeKey === "1"} />
+          <span>Thanh toán qua ví MoMo</span>
+        </div>
+      ),
+      children: (
+        <div className="text-sm text-gray-600 flex flex-col items-center justify-center text-center px-6 ">
+          Sau khi nhấp vào “Đặt mua”, bạn sẽ được chuyển hướng đến MoMo để
+          Credit/ATM card/QR để hoàn tất việc mua hàng một cách an toàn.
+        </div>
+      ),
+    },
+    {
+      key: "2",
+      className: "bg-white",
+      label: (
+        <div className="flex items-center gap-2">
+          <input type="radio" readOnly checked={activeKey === "2"} />
+          <span>Thanh toán khi nhận hàng (COD)</span>
+        </div>
+      ),
+      children: (
+        <div className="text-sm text-gray-600 flex flex-col items-center justify-center text-center px-6 ">
+          Quý khách thanh toán tiền mặt khi nhận hàng.
+        </div>
+      ),
+    },
+    {
+      key: "3",
+      className: "bg-white",
+      label: (
+        <div className="flex items-center gap-2">
+          <input type="radio" readOnly checked={activeKey === "3"} />
+          <span>Chuyển Khoản Ngân Hàng</span>
+        </div>
+      ),
+      children: bankInfo,
+    },
+  ];
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm mt-4">
-      <h3 className="text-base font-semibold mb-3">HÌNH THỨC THANH TOÁN</h3>
-      <div className="flex flex-col gap-2 text-sm">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            checked={method === "cod"}
-            onChange={() => {
-              setMethod("cod");
-              setPaymentMethod("cod");
-            }}
-          />
-          Thanh toán tiền mặt khi nhận hàng (COD)
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            checked={method === "momo"}
-            onChange={() => {
-              setMethod("momo");
-              setPaymentMethod("momo");
-            }}
-          />
-          Thanh toán bằng Ví MoMo
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            checked={method === "vnpay"}
-            onChange={() => {
-              setMethod("vnpay");
-              setPaymentMethod("vnpay");
-            }}
-          />
-          Thanh toán bằng Ví VNPAY
-        </label>
-      </div>
+      <h3 className="text-base font-semibold mb-3">Thanh toán</h3>
+
+      <Collapse
+        items={items}
+        bordered={false}
+        accordion
+        className="bg-white"
+        activeKey={[activeKey]}
+        expandIcon={() => null}
+        onChange={(key) => {
+          const k = Array.isArray(key) ? key[0] : (key as string | undefined);
+          if (!k) return;
+          setActiveKey(k);
+          const m = keyToMethod[k];
+          if (m) setPaymentMethod(m);
+        }}
+      />
 
       <div className="mt-4">
         <div className="text-sm text-gray-600 mb-1">Ghi chú</div>
