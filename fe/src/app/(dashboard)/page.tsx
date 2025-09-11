@@ -7,9 +7,10 @@ import Products from "../../components/products";
 import ProductBrand from "../../components/product-brand";
 import Foods from "../../components/foods";
 import { FOOD_TABS } from "../../constants/food";
-import { FOOD_SERVICES } from "../../constants/food-services";
+
 import News from "../../components/news";
 import MotionDiv from "../../components/motion-div";
+import Address from "@/components/address";
 
 export default function Home() {
   return (
@@ -36,17 +37,13 @@ export default function Home() {
         <Foods title="Thức ăn cho mèo" tabs={FOOD_TABS.tabs} />
       </MotionDiv>
       <MotionDiv>
-        <Foods
-          title="Dịch vụ chăm sóc Boss"
-          tabs={FOOD_SERVICES.tabs}
-          hasBanner={false}
-        />
-      </MotionDiv>
-      <MotionDiv>
         <News />
       </MotionDiv>
       <MotionDiv>
         <ProductBrand />
+      </MotionDiv>
+      <MotionDiv>
+        <Address />
       </MotionDiv>
     </div>
   );

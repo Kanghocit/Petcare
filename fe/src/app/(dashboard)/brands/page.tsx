@@ -5,7 +5,7 @@ import BrandFilter from "@/components/brands/BrandFilter";
 import { getAllBrandsAction } from "./action";
 
 const BrandsPage = async () => {
-  const data = await getAllBrandsAction();
+  const data = await getAllBrandsAction(1, 20);
   const { brands } = data;
 
   return (

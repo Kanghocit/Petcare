@@ -1,45 +1,39 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { App, Button, Form, Input, Modal, InputNumber } from "antd";
+import { App, Button, Form, Input, Modal } from "antd";
 import UploadFile from "@/components/upload-file";
-import { createBannerAction, updateBannerAction } from "./action";
+import { createAddressAction, updateAddressAction } from "./action";
 import { useRouter } from "next/navigation";
-import { Banner } from "@/interface/Banner";
+import { Address } from "@/interface/Address";
 
 type AppError = {
   message: string;
   code?: number;
 };
 
-interface ProductFormData {
-  title: string;
-  description: string;
-  price: number;
-  discount?: number; // <-- có thể undefined khi không sale
-  isNewProduct: boolean;
-  isSaleProduct: boolean;
-  star: number;
-  brand: string;
+interface AddressFormData {
+  name: string;
+  address: string;
+  addressLink: string;
   images?: string[];
-  quantity?: number;
 }
 
-const ModalAddBanner: React.FC<{
+const ModalAddAddress: React.FC<{
   children?: React.ReactNode;
-  initialValues?: Banner;
+  initialValues?: Address;
   action?: "create" | "update";
 }> = ({ children, initialValues, action = "create" }) => {
-  console.log("init", initialValues);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setIsLoading] = useState(false);
-  const [productImages, setProductImages] = useState<string[]>([]);
+  const [addressImages, setAddressImages] = useState<string[]>([]);
+  const [uploadKey, setUploadKey] = useState(0);
   const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm();
-  const bannerId =
+  const addressId =
     (initialValues as { _id?: string; id?: string } | undefined)?._id ??
-    initialValues?.id;
+    initialValues?._id;
 
   // Prefill form and images when editing
   useEffect(() => {
@@ -51,56 +45,50 @@ const ModalAddBanner: React.FC<{
       const rewriteBannerPath = (u?: string) =>
         u ? u.replace(/(^|\/)images\/banner\//, "$1images/hero/") : u;
       if (Array.isArray(img)) {
-        setProductImages(
+        setAddressImages(
           (img.filter(Boolean) as string[]).map((u) => rewriteBannerPath(u)!),
         );
       } else if (typeof img === "string" && img) {
-        setProductImages([rewriteBannerPath(img)!]);
+        setAddressImages([rewriteBannerPath(img)!]);
       } else {
-        setProductImages([]);
+        setAddressImages([]);
       }
     }
   }, [initialValues, form]);
 
   const showModal = () => {
+    if (action === "create") {
+      form.resetFields();
+      setAddressImages([]);
+      setUploadKey((k) => k + 1);
+    }
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async (formData: ProductFormData) => {
+  const handleSubmit = async (formData: AddressFormData) => {
     setIsLoading(true);
 
-    // Nếu không phải sản phẩm sale thì loại bỏ discount
-    const finalFormData: Banner = {
-      // id giữ nguyên nếu là update (đã nằm trong initialValues khi setFieldsValue)
-      ...(initialValues?.id ? { id: initialValues.id } : {}),
-      title: formData.title as unknown as string,
-      // Banner BE nhận image là string -> lấy ảnh đầu tiên (nếu có)
-      image:
-        Array.isArray(productImages) && productImages.length > 0
-          ? productImages[0]
-          : "",
-      // sort lấy từ form (nếu để trống, BE sẽ tự set theo pre-save)
-      sort:
-        (form.getFieldValue("sort") as number | undefined) ??
-        initialValues?.sort ??
-        0,
-    } as Banner;
-
     try {
+      // Tạo dữ liệu gửi đi bao gồm hình ảnh
+      const submitData: Address = {
+        _id: addressId || "", // Thêm id cho update, empty string cho create
+        ...formData,
+        image: addressImages.length > 0 ? addressImages[0] : "", // Lấy ảnh đầu tiên hoặc chuỗi rỗng
+      };
+
       const res =
         action === "create"
-          ? await createBannerAction(finalFormData as unknown as Banner)
-          : await updateBannerAction(
-              bannerId!,
-              finalFormData as unknown as Banner,
-            );
+          ? await createAddressAction(submitData)
+          : await updateAddressAction(addressId!, submitData);
       if (res?.ok) {
         message.success(
           action === "create"
-            ? "Banner đã được tạo thành công!"
-            : "Banner đã được cập nhật thành công!",
+            ? "Địa chỉ đã được tạo thành công!"
+            : "Địa chỉ đã được cập nhật thành công!",
         );
         form.resetFields();
+        setAddressImages([]); // Reset hình ảnh
+        setUploadKey((k) => k + 1);
         router.refresh();
         setIsModalOpen(false);
       }
@@ -118,7 +106,7 @@ const ModalAddBanner: React.FC<{
   };
 
   const handleImageUpload = (imageUrls: string[]) => {
-    setProductImages(imageUrls);
+    setAddressImages(imageUrls);
   };
 
   return (
@@ -133,11 +121,11 @@ const ModalAddBanner: React.FC<{
         </Button>
       )}
       <Modal
-        title={action === "create" ? "Thêm banner mới" : "Cập nhật banner"}
+        title={action === "create" ? "Thêm địa chỉ mới" : "Cập nhật địa chỉ"}
         closable
         open={isModalOpen}
-        destroyOnHidden
         onCancel={handleCancel}
+        destroyOnHidden
         modalRender={(dom) => (
           <Form
             form={form}
@@ -154,33 +142,48 @@ const ModalAddBanner: React.FC<{
           htmlType: "submit",
           loading,
         }}
-        okText={action === "create" ? "Tạo banner" : "Cập nhật"}
+        okText={action === "create" ? "Tạo địa chỉ" : "Cập nhật"}
         cancelText="Quay lại"
       >
         <Form.Item
-          label="Tên banner"
-          name="title"
-          rules={[{ required: true, message: "Vui lòng nhập tên banner" }]}
+          label="Tên"
+          name="name"
+          rules={[{ required: true, message: "Vui lòng nhập tên" }]}
           labelAlign="left"
         >
           <Input />
         </Form.Item>
 
-        <Form.Item label="Ảnh banner" name="image" labelAlign="left">
+        <Form.Item label="Ảnh" name="image" labelAlign="left">
           <UploadFile
-            folder="banner"
+            key={uploadKey}
+            folder="address"
             onImageUpload={handleImageUpload}
-            maxCount={3}
-            defaultImages={productImages}
+            maxCount={1}
+            defaultImages={addressImages}
           />
         </Form.Item>
 
-        <Form.Item label="Vị trí banner" name="sort" labelAlign="left">
-          <InputNumber min={1} max={100} style={{ width: "100%" }} />
+        <Form.Item
+          label="Địa chỉ"
+          name="address"
+          rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+          labelAlign="left"
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Link địa chỉ"
+          name="addressLink"
+          rules={[{ required: true, message: "Vui lòng nhập link địa chỉ" }]}
+          labelAlign="left"
+        >
+          <Input />
         </Form.Item>
       </Modal>
     </>
   );
 };
 
-export default ModalAddBanner;
+export default ModalAddAddress;

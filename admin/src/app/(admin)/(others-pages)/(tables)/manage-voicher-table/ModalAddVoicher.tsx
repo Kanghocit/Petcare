@@ -123,6 +123,7 @@ const ModalAddVoicher: React.FC<{
         title={action === "create" ? "Thêm voicher mới" : "Cập nhật voicher"}
         closable
         open={isModalOpen}
+        destroyOnHidden
         onCancel={handleCancel}
         modalRender={(dom) => (
           <Form

@@ -81,6 +81,17 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  {
+    name: "Quản lý địa chỉ",
+    icon: <TableIcon />,
+    subItems: [
+      {
+        name: "Danh sách địa chỉ",
+        path: "/manage-address-table",
+        pro: false,
+      },
+    ],
+  },
 ];
 
 const AppSidebar: React.FC = () => {

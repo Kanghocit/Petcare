@@ -16,6 +16,7 @@ import bannerRoutes from "./routes/banner.routes.js";
 import voicherRoutes from "./routes/voicher.routes.js";
 import brandRoutes from "./routes/brand.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import addressRoutes from "./routes/address.routes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -72,6 +73,7 @@ app.use("/api/banners", bannerRoutes);
 app.use("/api/voicher", voicherRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/address", addressRoutes);
 
 //Error handling middleware
 

@@ -61,44 +61,48 @@ const BrandList: React.FC<BrandListProps> = ({ brands, selectedLetter }) => {
   }, [groupedBrands, selectedLetter]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {Object.keys(filteredGroups).map((letter) => (
         <div key={letter} className="flex gap-8 border-b border-gray-200 pb-8">
           {/* Letter header */}
           <div className="w-16 flex-shrink-0">
-            <h2 className="text-4xl font-bold text-gray-300 sticky top-4">
+            <h2 className="text-4xl font-extrabold tracking-tight text-gray-200 sticky top-4">
               {letter}
             </h2>
           </div>
 
           {/* Brands grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredGroups[letter].map((brand) => (
                 <div
                   key={brand.id}
-                  className="p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                  className="group cursor-pointer rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200/70 dark:bg-white/5 dark:border-white/10"
                 >
-                  <div className="flex items-center space-x-3">
-                    {brand.logo && (
-                      <div className="w-8 h-8 flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gray-50 ring-1 ring-gray-100 overflow-hidden grid place-items-center dark:bg-white/5 dark:ring-white/10">
+                      {brand.logo ? (
                         <Image
-                          width={100}
-                          height={100}
+                          width={40}
+                          height={40}
                           src={
                             brand.logo?.startsWith("http")
                               ? brand.logo
                               : `http://localhost:8000${brand.logo}`
                           }
                           alt={brand.name}
-                          className="w-full h-full object-contain"
+                          className="w-8 h-8 object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}
                         />
-                      </div>
-                    )}
-                    <span className="text-gray-800 group-hover:text-blue-600 transition-colors">
+                      ) : (
+                        <span className="text-xs font-semibold text-gray-500">
+                          {brand.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
                       {brand.name}
                     </span>
                   </div>

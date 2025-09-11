@@ -2,7 +2,7 @@
 
 import { getAllBrands } from "@/libs/brand";
 
-export const getAllBrandsAction = async (page: number, limit: number) => {
+export const getAllBrandsActions = async (page: number, limit: number) => {
   const data = await getAllBrands(page, limit);
   return data;
 };

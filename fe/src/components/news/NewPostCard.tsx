@@ -23,6 +23,7 @@ const NewPostCard = ({
   data?: News;
 }) => {
   const { title, content, image, publishTime, slug } = data || {};
+  console.log("publishTime", publishTime);
   const router = useRouter();
   return (
     <div className={`${isCard ? "flex flex-col" : "flex gap-4 w-full"}`}>
@@ -30,29 +31,33 @@ const NewPostCard = ({
         className={`${
           isCard
             ? "w-full h-[200px] overflow-hidden rounded-t-lg"
-            : "w-1/6 h-full flex-shrink-0"
+            : "w-[300px] h-[200px] overflow-hidden rounded-lg flex-shrink-0"
         }`}
         onClick={() => {
           router.push(`/news/${slug}`);
         }}
       >
-        <Image
-          src={image || ""}
-          alt="new-post-card"
-          width={300}
-          height={200}
-          className="min-w-[250px] object-cover cursor-pointer hover:scale-105 transition-all duration-300 rounded-lg object-center"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt="new-post-card"
+            width={300}
+            height={200}
+            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-all duration-300 rounded-lg object-center"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 rounded-lg" />
+        )}
       </div>
-      <div className={`ps-6 ${!isCard && "flex-1"}`}>
+      <div className={`${!isCard && "flex-1"}`}>
         <h2 className="font-bold text-lg mb-2 hover:text-primary cursor-pointer transition-all duration-300 line-clamp-1">
           {title}
         </h2>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-3">{content}</p>
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{content}</p>
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center text-gray-400 text-sm gap-2">
             <CalendarOutlined />
-            {new Date(publishTime || "").toLocaleDateString("vi-VN")}
+            {publishTime?.split(",")[1]}
           </div>
           {isCard && (
             <Button

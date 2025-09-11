@@ -27,14 +27,21 @@ const ModalAddBrand: React.FC<{
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setIsLoading] = useState(false);
   const [brandImages, setBrandImages] = useState<string[]>([]);
+  const [uploadKey, setUploadKey] = useState(0);
+
   const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const brandId = initialValues?._id;
 
   const showModal = () => {
+    if (action === "create") {
+      form.resetFields();
+      setBrandImages([]);
+      setUploadKey((k) => k + 1);
+    }
     setIsModalOpen(true);
-    // Khởi tạo brandImages với ảnh hiện tại khi mở modal
+    // Khởi tạo brandImages với ảnh hiện tại khi mở modal (update)
     if (initialValues?.image) {
       const currentImage = Array.isArray(initialValues.image)
         ? initialValues.image
@@ -52,7 +59,6 @@ const ModalAddBrand: React.FC<{
   }, [isModalOpen, form]);
 
   const handleSubmit = async (formData: BrandFormData) => {
-    console.log("formData", formData);
     setIsLoading(true);
 
     try {
@@ -75,6 +81,8 @@ const ModalAddBrand: React.FC<{
             : "Brand đã được cập nhật thành công!",
         );
         form.resetFields();
+        setBrandImages([]);
+        setUploadKey((k) => k + 1);
         router.refresh();
         setIsModalOpen(false);
       }
@@ -91,6 +99,7 @@ const ModalAddBrand: React.FC<{
     setIsModalOpen(false);
     setBrandImages([]);
     form.resetFields();
+    setUploadKey((k) => k + 1);
   };
 
   const handleImageUpload = (imageUrls: string[]) => {
@@ -115,6 +124,7 @@ const ModalAddBrand: React.FC<{
         closable
         open={isModalOpen}
         onCancel={handleCancel}
+        destroyOnHidden
         modalRender={(dom) => (
           <Form
             form={form}
@@ -156,9 +166,10 @@ const ModalAddBrand: React.FC<{
 
         <Form.Item label="Ảnh brand" name="image" labelAlign="left">
           <UploadFile
+            key={uploadKey}
             folder="brand"
             onImageUpload={handleImageUpload}
-            maxCount={3}
+            maxCount={1}
             defaultImages={brandImages}
           />
         </Form.Item>
