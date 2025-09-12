@@ -17,7 +17,7 @@ interface ModalConfirmProps {
 const ModalConfirm: React.FC<ModalConfirmProps> = ({
   orderId,
   orderCode,
-  canCancel = true,
+  canCancel,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>("");
@@ -88,6 +88,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
         setCancelReason("");
         setOtherReason("");
         router.refresh();
+        router.push("/profile/orders");
       } else {
         message.error(res.message);
       }
@@ -125,7 +126,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
           onClick={showModal}
           icon={<ExclamationCircleOutlined />}
           className="flex items-center gap-2"
-          disabled={canCancel}
+          disabled={!canCancel}
         >
           Hủy đơn hàng
         </Button>

@@ -131,7 +131,8 @@ const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
               orderId={order._id}
               orderCode={order.orderCode || order._id?.slice(-8)}
               canCancel={
-                order.fulfillment?.status !== "cancelled" &&
+                order.fulfillment?.status !== "shipping" &&
+                order.fulfillment?.status !== "shipped" &&
                 order.fulfillment?.status !== "delivered"
               }
             />

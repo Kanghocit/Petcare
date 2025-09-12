@@ -125,6 +125,15 @@ export const createOrder = async (req, res) => {
 
     const created = await Order.create(orderData);
 
+    // cập nhật số lượng sản phẩm
+    for (const item of created.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.quantity -= item.quantity;
+        await product.save();
+      }
+    }
+
     return res.status(201).json({
       ok: true,
       message: "Tạo đơn hàng thành công",
@@ -473,6 +482,15 @@ export const cancelOrder = async (req, res) => {
     order.cancelReason = reason || "";
 
     await order.save();
+
+    // cập nhật số lượng sản phẩm
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.quantity += item.quantity;
+        await product.save();
+      }
+    }
 
     return res.status(200).json({
       ok: true,
