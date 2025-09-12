@@ -1,18 +1,20 @@
 import crypto from "crypto";
 import axios from "axios";
 import dotenv from "dotenv";
+import Order from "../models/Order.js";
+
 dotenv.config();
 
 export const createPayment = async (req, res) => {
-  const { amount } = req.body;
+  const { orderCode, amount } = req.body;
   var accessKey = process.env.MOMO_ACCESS_KEY;
   var secretKey = process.env.MOMO_SECRET_KEY;
   var orderInfo = "pay with MoMo";
   var partnerCode = process.env.MOMO_PARTNER_CODE;
   var redirectUrl = "http://localhost:3000/profile/orders";
-  var ipnUrl = "http://localhost:3000/profile/orders";
+  var ipnUrl = process.env.IPN_URL;
   var requestType = "payWithMethod";
-  var orderId = partnerCode + new Date().getTime();
+  var orderId = orderCode;
   var requestId = orderId;
   var extraData = "";
 
@@ -144,4 +146,20 @@ export const transactionStatus = async (req, res) => {
   } catch (error) {
     console.log("error", error);
   }
+};
+
+export const getStatusPayment = async (req, res) => {
+  const data = req.body;
+  console.log("Đã nhận callback từ momo", data);
+  if (data.resultCode === 0) {
+    const order = await Order.findOne({ orderCode: data.orderId });
+    if (order) {
+      order.payment.status = "paid";
+      await order.save();
+    }
+  }
+  return res.status(200).json({
+    ok: true,
+    data: data,
+  });
 };

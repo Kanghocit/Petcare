@@ -5,7 +5,7 @@ import useCartStore from "@/store/cart-store";
 import useCheckoutStore from "@/store/checkout-store";
 import { useShallow } from "zustand/react/shallow";
 import Image from "next/image";
-import { createOrderAction } from "./action";
+import { createOrderAction, createPaymentAction } from "./action";
 import { CreateOrderPayload } from "@/libs/order";
 import { App, Button, Input } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -147,20 +147,24 @@ const OrderSummary: React.FC = () => {
       invoice,
       totals: { subtotal, shippingFee, grandTotal },
     } as CreateOrderPayload;
+    let orderCode = "";
 
     try {
       const result = await createOrderAction(payload);
+      orderCode =
+        (result.body as { order?: { orderCode?: string } })?.order?.orderCode ||
+        "";
       if (result.ok) {
         const msg =
           (result.body as { message?: string })?.message ||
           "Đặt hàng thành công";
         message.success(msg);
         if (paymentMethod === "momo") {
-          const params = new URLSearchParams({
-            amount: String(grandTotal), // tổng tiền cần thanh toán
-            content: `${phone || "KH"}-${Date.now()}`,
-          }).toString();
-          router.push(`/checkout/payment?${params}`);
+          const result = await createPaymentAction(orderCode, grandTotal);
+          if (result.ok) {
+            window.location.href = result.data.payUrl;
+            clearCart();
+          }
           return;
         }
         clearCart();

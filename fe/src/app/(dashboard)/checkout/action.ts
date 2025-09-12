@@ -3,6 +3,7 @@
 import { getUser } from "@/actions";
 import { createOrder } from "@/libs/order";
 import { CreateOrderPayload } from "@/libs/order";
+import { createPayment } from "@/libs/payment";
 
 //get
 export const getUserAction = async () => {
@@ -18,4 +19,12 @@ export const createOrderAction = async (payload: CreateOrderPayload) => {
     status: number;
     body: unknown;
   };
+};
+
+export const createPaymentAction = async (
+  orderCode: string,
+  amount: number
+) => {
+  const data = await createPayment(orderCode, amount);
+  return data;
 };

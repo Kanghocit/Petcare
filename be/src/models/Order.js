@@ -252,7 +252,7 @@ const orderSchema = new Schema(
       },
       method: {
         type: String,
-        enum: ["cod", "qr", "ck"],
+        enum: ["cod", "momo", "ck"],
         required: true,
       },
       paidAt: Date,

@@ -125,6 +125,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
           onClick={showModal}
           icon={<ExclamationCircleOutlined />}
           className="flex items-center gap-2"
+          disabled={canCancel}
         >
           Hủy đơn hàng
         </Button>
