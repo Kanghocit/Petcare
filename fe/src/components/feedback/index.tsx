@@ -1,54 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import { User } from "@/interface/user";
+import { App, Avatar, Button, Input, Rate } from "antd";
+import React, { useState, useEffect } from "react";
+import { Comment, CommentDisplay, ReplyDisplay } from "@/interface/comment";
+import {
+  createCommentAtion,
+  getCommentAction,
+  createReplyCommentAction,
+  updateCommentAction,
+  deleteCommentAction,
+} from "./action";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 
-interface Reply {
-  id: number;
-  name: string;
-  comment: string;
-  timestamp: string;
-}
-
-interface Comment {
-  id: number;
-  name: string;
-  rating: number;
-  verified: boolean;
-  comment: string;
-  timestamp: string;
-  replies: Reply[];
-}
-
-const commentsInit: Comment[] = [
-  {
-    id: 1,
-    name: "Tuan Anh",
-    rating: 4,
-    verified: true,
-    comment:
-      "San pham chat luong, meo nha minh an kha hop. Vi ga thom, pate min, de tieu hoa. Minh thay co rau chan vit va taurine la diem cong. Chi hoi kho dat lai vi het hang nhanh. Van se ung ho shop.",
-    timestamp: "2024-03-15T10:30:00",
-    replies: [
-      {
-        id: 1,
-        name: "Shop Pet",
-        comment:
-          "Cảm ơn bạn đã ủng hộ shop. Chúng tôi sẽ cố gắng nhập thêm hàng sớm nhất có thể.",
-        timestamp: "2024-03-15T11:00:00",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Dang Van Nam",
-    rating: 3,
-    verified: true,
-    comment:
-      "Pate nay on, nhung meo minh chi an duoc mot it roi chan. Co le do be khong thich rau chan vit. Thanh phan nhin chung tot, nhieu dinh duong. Minh se thu vi khac xem sao. Goi nho tien loi.",
-    timestamp: "2024-03-14T15:45:00",
-    replies: [],
-  },
-];
+const { TextArea } = Input;
 
 type RatingValue = "all" | 1 | 2 | 3 | 4 | 5;
 
@@ -61,61 +31,394 @@ const ratingOptions: { label: string; value: RatingValue }[] = [
   { label: "1 Điểm", value: 1 },
 ];
 
-const Feedback = () => {
+const Feedback = ({
+  user,
+  productSlug,
+  comment,
+}: {
+  user: { user: User };
+  productSlug: string;
+  comment: CommentDisplay[];
+}) => {
   const [selectedRating, setSelectedRating] = useState<RatingValue>("all");
-  const [comments, setComments] = useState<Comment[]>(commentsInit);
+  const [comments, setComments] = useState<CommentDisplay[]>(comment);
+
+
+  // Tính avgRating ban đầu từ props
+  const calculateInitialAvgRating = (comments: CommentDisplay[]) => {
+    if (comments.length === 0) return 0;
+    const parentComments = comments.filter((comment) => comment.rating > 0);
+    if (parentComments.length === 0) return 0;
+    const totalRating = parentComments.reduce((sum, c) => sum + c.rating, 0);
+    return Math.round((totalRating / parentComments.length) * 10) / 10;
+  };
+
+  const [avgRating, setAvgRating] = useState(
+    calculateInitialAvgRating(comment)
+  );
+
+  // Tính avgRating khi comments thay đổi
+  useEffect(() => {
+    if (comments.length === 0) {
+      setAvgRating(0);
+      return;
+    }
+
+    // Chỉ tính rating cho comments gốc (không phải replies)
+    const parentComments = comments.filter((comment) => comment.rating > 0);
+
+    if (parentComments.length === 0) {
+      setAvgRating(0);
+      return;
+    }
+
+    const totalRating = parentComments.reduce((sum, c) => sum + c.rating, 0);
+    const average = totalRating / parentComments.length;
+    const rounded = Math.round(average * 10) / 10;
+
+    setAvgRating(rounded);
+  }, [comments]);
+
   const [newComment, setNewComment] = useState({
-    name: "",
+    name: user ? user.user.name : "",
     rating: 5,
     comment: "",
   });
-  const [replyTo, setReplyTo] = useState<number | null>(null);
+
+  const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editRating, setEditRating] = useState(5);
+  const { message, modal } = App.useApp();
 
-  const filteredComments = comments.filter((comment) => {
-    if (selectedRating === "all") return true;
-    return comment.rating === selectedRating;
-  });
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    const comment: Comment = {
-      id: comments.length + 1,
-      name: newComment.name,
-      rating: newComment.rating,
-      verified: false,
-      comment: newComment.comment,
-      timestamp: new Date().toISOString(),
-      replies: [],
-    };
-    setComments([...comments, comment]);
-    setNewComment({ name: "", rating: 5, comment: "" });
-  };
-
-  const handleAddReply = (commentId: number) => {
-    if (!replyText.trim()) return;
-
-    const updatedComments = comments.map((comment) => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          replies: [
-            ...comment.replies,
-            {
-              id: comment.replies.length + 1,
-              name: "Shop Pet",
-              comment: replyText,
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        };
+  // Load comments from API
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        const data = await getCommentAction(productSlug);
+        if (data && data.comments) {
+          // Transform API data to match CommentDisplay interface
+          const transformedComments = data.comments.map(
+            (comment: {
+              _id: string;
+              userId?: { _id: string; name: string };
+              rating?: number;
+              content: string;
+              createdAt: string;
+              status: string;
+              replies?: Array<{
+                _id: string;
+                userId?: { _id: string; name: string };
+                content: string;
+                createdAt: string;
+              }>;
+            }) => ({
+              id: comment._id,
+              name: comment.userId?.name || "Anonymous",
+              rating: comment.rating || 0,
+              verified: true, // You can add verification logic later
+              comment: comment.content,
+              status: comment.status,
+              timestamp: comment.createdAt,
+              userId: comment.userId?._id,
+              replies:
+                comment.replies?.map((reply) => ({
+                  id: reply._id,
+                  name: reply.userId?.name || "Shop Pet",
+                  comment: reply.content,
+                  timestamp: reply.createdAt,
+                })) || [],
+            })
+          );
+          setComments(transformedComments);
+        }
+      } catch (error) {
+        console.error("Error loading comments:", error);
       }
-      return comment;
+    };
+    loadComments();
+  }, [productSlug]);
+
+  const filteredComments = comments
+    .filter((comment: CommentDisplay) => {
+      if (selectedRating === "all") return true;
+      return comment.rating === selectedRating;
+    })
+    .filter((comment: CommentDisplay) => {
+      return comment.status === "active";
     });
 
-    setComments(updatedComments);
-    setReplyText("");
-    setReplyTo(null);
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user?.user?._id) {
+      message.error("Vui lòng đăng nhập để đánh giá");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const commentData: Comment = {
+        productSlug,
+        userId: user.user._id,
+        content: newComment.comment,
+        rating: newComment.rating.toString(),
+        parentId: null,
+        status: "active",
+      };
+
+      const result = await createCommentAtion(productSlug, commentData);
+
+      if (result.ok === false) {
+        message.error(result.message);
+        return;
+      }
+
+      message.success("Đã đánh giá thành công");
+      setNewComment({ name: "", rating: 5, comment: "" });
+      setOpen(false);
+
+      // Reload comments
+      const data = await getCommentAction(productSlug);
+      if (data && data.comments) {
+        const transformedComments = data.comments.map(
+          (comment: {
+            _id: string;
+            userId?: { _id: string; name: string };
+            rating?: number;
+            content: string;
+            createdAt: string;
+            status: string;
+            replies?: Array<{
+              _id: string;
+              userId?: { _id: string; name: string };
+              content: string;
+              createdAt: string;
+            }>;
+          }) => ({
+            id: comment._id,
+            name: comment.userId?.name || "Default user",
+            rating: comment.rating || 0,
+            verified: true,
+            comment: comment.content,
+            timestamp: comment.createdAt,
+            userId: comment.userId?._id,
+            status: comment.status,
+            replies:
+              comment.replies?.map((reply) => ({
+                id: reply._id,
+                name: reply.userId?.name || "Shop Pet",
+                comment: reply.content,
+                timestamp: reply.createdAt,
+              })) || [],
+          })
+        );
+        setComments(transformedComments);
+      }
+    } catch {
+      message.error(`Có lỗi xảy ra khi gửi đánh giá`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddReply = async (commentId: string) => {
+    if (!replyText.trim()) return;
+    if (!user?.user?._id) {
+      message.error("Vui lòng đăng nhập để trả lời bình luận");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const replyData: Comment = {
+        productSlug,
+        userId: user.user._id,
+        content: replyText,
+        rating: "0", // Reply không cần rating
+        parentId: commentId,
+        status: "active",
+      };
+
+      const result = await createReplyCommentAction(
+        productSlug,
+        commentId,
+        replyData
+      );
+
+      if (!result.comment) {
+        message.error(result.message);
+        return;
+      }
+
+      message.success("Đã trả lời thành công");
+      setReplyText("");
+      setReplyTo(null);
+
+      // Reload comments
+      const data = await getCommentAction(productSlug);
+      if (data && data.comments) {
+        const transformedComments = data.comments.map(
+          (comment: {
+            _id: string;
+            userId?: { _id: string; name: string };
+            rating?: number;
+            content: string;
+            createdAt: string;
+            status: string;
+            replies?: Array<{
+              _id: string;
+              userId?: { _id: string; name: string };
+              content: string;
+              createdAt: string;
+            }>;
+          }) => ({
+            id: comment._id,
+            name: comment.userId?.name || "Default user",
+            rating: comment.rating || 0,
+            verified: true,
+            comment: comment.content,
+            timestamp: comment.createdAt,
+            userId: comment.userId?._id,
+            status: comment.status,
+            replies:
+              comment.replies?.map((reply) => ({
+                id: reply._id,
+                name: reply.userId?.name || "Shop Pet",
+                comment: reply.content,
+                timestamp: reply.createdAt,
+              })) || [],
+          })
+        );
+        setComments(transformedComments);
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      message.error("Có lỗi xảy ra khi gửi trả lời");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditComment = (
+    commentId: string,
+    currentText: string,
+    currentRating: number
+  ) => {
+    setEditingComment(commentId);
+    setEditText(currentText);
+    setEditRating(currentRating);
+  };
+
+  const handleUpdateComment = async (commentId: string) => {
+    if (!editText.trim()) return;
+    if (!user?.user?._id) {
+      message.error("Vui lòng đăng nhập để chỉnh sửa bình luận");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await updateCommentAction(
+        commentId,
+        editText,
+        user.user._id,
+        editRating
+      );
+      if (result.ok) {
+        message.success("Đã cập nhật bình luận thành công");
+        setEditingComment(null);
+        setEditText("");
+        setEditRating(5);
+
+        // Reload comments
+        const data = await getCommentAction(productSlug);
+        if (data && data.comments) {
+          const transformedComments = data.comments.map(
+            (comment: {
+              _id: string;
+              userId?: { _id: string; name: string };
+              rating?: number;
+              content: string;
+              createdAt: string;
+              status: string;
+              replies?: Array<{
+                _id: string;
+                userId?: { _id: string; name: string };
+                content: string;
+                createdAt: string;
+              }>;
+            }) => ({
+              id: comment._id,
+              name: comment.userId?.name || "Default user",
+              rating: comment.rating || 0,
+              verified: true,
+              comment: comment.content,
+              timestamp: comment.createdAt,
+              userId: comment.userId?._id,
+              status: comment.status,
+              replies:
+                comment.replies?.map((reply) => ({
+                  id: reply._id,
+                  name: reply.userId?.name || "Shop Pet",
+                  comment: reply.content,
+                  timestamp: reply.createdAt,
+                })) || [],
+            })
+          );
+          setComments(transformedComments);
+        }
+      } else {
+        message.error("Không thể cập nhật bình luận");
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      message.error("Có lỗi xảy ra khi cập nhật bình luận");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user?.user?._id) {
+      message.error("Vui lòng đăng nhập để xóa bình luận");
+      return;
+    }
+
+    modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa bình luận này?",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      onOk: async () => {
+        setLoading(true);
+        try {
+          const result = await deleteCommentAction(commentId, user.user._id);
+          if (result.ok) {
+            message.success("Đã xóa bình luận thành công");
+
+            // Cập nhật state trực tiếp thay vì reload
+            setComments((prevComments) => {
+              const updatedComments = prevComments.filter(
+                (comment) => comment.id !== commentId
+              );
+
+              return updatedComments;
+            });
+          } else {
+            message.error("Không thể xóa bình luận");
+          }
+        } catch (error) {
+          console.error("Error deleting comment:", error);
+          message.error("Có lỗi xảy ra khi xóa bình luận");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -129,16 +432,20 @@ const Feedback = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 mt-6 shadow">
+    <div className="flex flex-col bg-white rounded-lg p-6 mt-6 shadow">
       <h2 className="text-xl font-bold mb-2">
         Đánh giá nhận xét từ khách hàng
       </h2>
       <div className="bg-blue-50 border border-gray-200 rounded p-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
         {/* Khối điểm trung bình và sao */}
         <div className="flex flex-col items-center md:items-start">
-          <div className="text-3xl font-semibold text-blue-700">4.2/5</div>
-          <div className="text-yellow-500 text-xl mb-1">★★★★☆</div>
-          <div className="text-sm text-gray-600">(13 đánh giá)</div>
+          <div className="text-3xl font-semibold text-blue-700">
+            {avgRating}/5
+          </div>
+          <Rate disabled value={avgRating} />
+          <div className="text-sm text-gray-600">
+            ({comments.filter((comment) => comment.rating > 0).length} đánh giá)
+          </div>
         </div>
 
         {/* Bộ lọc sao */}
@@ -153,95 +460,207 @@ const Feedback = () => {
                   : "border-gray-300 hover:bg-gray-100"
               }`}
             >
-              {option.label} ({option.value === "all" ? "" : option.value})
+              {option.label} {option.value === "all" ? "" : `(${option.value})`}
             </button>
           ))}
         </div>
       </div>
 
+      <div className="flex justify-end mt-6 border-b-1 border-gray-300">
+        <Button
+          color="primary"
+          variant="outlined"
+          onClick={() => setOpen(!open)}
+          className="mb-2"
+        >
+          Viết đánh giá
+        </Button>
+      </div>
       {/* Form thêm bình luận mới */}
-      <form onSubmit={handleAddComment} className="mt-6 p-4 border rounded-lg">
-        <h3 className="font-semibold mb-4">Thêm đánh giá của bạn</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tên của bạn
-            </label>
-            <input
-              type="text"
-              value={newComment.name}
-              onChange={(e) =>
-                setNewComment({ ...newComment, name: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
+      <div
+        className={`rounded-lg transition-all duration-300 ease-in-out transform ${
+          open
+            ? "opacity-100 scale-100 max-h-screen mt- p-4"
+            : "opacity-0 scale-95 max-h-0 overflow-hidden"
+        }`}
+      >
+        <form
+          onSubmit={handleAddComment}
+          className="px-4 pb-4 pt-2 shadow shadow-blue-300 rounded-lg"
+        >
+          <h3 className="font-semibold my-4">Thêm đánh giá của bạn</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tên của bạn
+              </label>
+              <Input
+                type="text"
+                defaultValue={newComment.name}
+                onChange={(e) =>
+                  setNewComment({ ...newComment, name: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Xếp hạng
+              </label>
+              <Rate
+                value={newComment.rating}
+                onChange={(value) =>
+                  setNewComment({
+                    ...newComment,
+                    rating: value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nhận xét
+              </label>
+              <TextArea
+                value={newComment.comment}
+                onChange={(e) =>
+                  setNewComment({ ...newComment, comment: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded-md"
+                rows={3}
+                required
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button
+                htmlType="submit"
+                color="primary"
+                variant="filled"
+                loading={loading}
+                disabled={loading}
+              >
+                Gửi đánh giá
+              </Button>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Đánh giá
-            </label>
-            <select
-              value={newComment.rating}
-              onChange={(e) =>
-                setNewComment({
-                  ...newComment,
-                  rating: parseInt(e.target.value),
-                })
-              }
-              className="w-full px-3 py-2 border rounded-md"
-            >
-              {[5, 4, 3, 2, 1].map((rating) => (
-                <option key={rating} value={rating}>
-                  {rating} sao
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nhận xét
-            </label>
-            <textarea
-              value={newComment.comment}
-              onChange={(e) =>
-                setNewComment({ ...newComment, comment: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded-md"
-              rows={3}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
-          >
-            Gửi đánh giá
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
 
       {/* Danh sách bình luận */}
       <div className="mt-6">
         {filteredComments.length > 0 ? (
-          filteredComments.map((comment) => (
-            <div key={comment.id} className="mb-6 border-b pb-4">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{comment.name}</span>
-                <span className="text-gray-500">({comment.rating} sao)</span>
-                {comment.verified && (
-                  <span className="text-blue-500">Đã xác nhận</span>
-                )}
-                <span className="text-sm text-gray-500">
-                  {formatDate(comment.timestamp)}
-                </span>
+          filteredComments.map((comment: CommentDisplay) => (
+            <div
+              key={comment.id}
+              className="mb-6 border-b-1 border-gray-300 pb-4"
+            >
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2 items-center">
+                  <Avatar
+                    style={{
+                      backgroundColor: "green",
+                      verticalAlign: "middle",
+                    }}
+                    size="large"
+                    gap={2}
+                  >
+                    {user.user.name.split("")[0].toUpperCase()}
+                  </Avatar>
+                  <span className="font-semibold">{comment.name}</span>
+                  <Rate
+                    disabled
+                    value={comment.rating}
+                    style={{ fontSize: 12, alignItems: "center" }}
+                  />
+                  {comment.verified ? (
+                    <CheckCircleOutlined className="text-green-600!" />
+                  ) : (
+                    <CloseCircleOutlined className="text-red-600!" />
+                  )}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <span className="text-sm text-gray-500">
+                    {formatDate(comment.timestamp)}
+                  </span>
+                </div>
               </div>
-              <div className="mt-2 text-gray-700">{comment.comment}</div>
+              <div className="flex items-center justify-between mt-2 text-gray-700">
+                {editingComment === comment.id ? (
+                  <div className="flex-1">
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Xếp hạng
+                      </label>
+                      <Rate
+                        value={editRating}
+                        onChange={(value) => setEditRating(value)}
+                      />
+                    </div>
+                    <TextArea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md"
+                      rows={3}
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        onClick={() => handleUpdateComment(comment.id)}
+                        disabled={loading}
+                        loading={loading}
+                        type="primary"
+                        size="small"
+                      >
+                        Cập nhật
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingComment(null);
+                          setEditText("");
+                          setEditRating(5);
+                        }}
+                        disabled={loading}
+                        size="small"
+                      >
+                        Hủy
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p>{comment.comment}</p>
+                    {user?.user?._id && comment.userId === user.user._id && (
+                      <div className="flex">
+                        <Button
+                          icon={<EditOutlined />}
+                          color="primary"
+                          variant="text"
+                          onClick={() =>
+                            handleEditComment(
+                              comment.id,
+                              comment.comment,
+                              comment.rating
+                            )
+                          }
+                          disabled={loading}
+                        />
+                        <Button
+                          icon={<DeleteOutlined />}
+                          color="danger"
+                          variant="text"
+                          onClick={() => handleDeleteComment(comment.id)}
+                          disabled={loading}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
 
               {/* Phần trả lời */}
-              {comment.replies.length > 0 && (
+              {comment.replies.length > 0 && comment.status === "active" && (
                 <div className="ml-8 mt-4 space-y-4">
-                  {comment.replies.map((reply) => (
+                  {comment.replies.map((reply: ReplyDisplay) => (
                     <div key={reply.id} className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-blue-600">
@@ -270,16 +689,22 @@ const Feedback = () => {
                   <div className="mt-2 flex gap-2">
                     <button
                       onClick={() => handleAddReply(comment.id)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                      disabled={loading}
+                      className={`px-3 py-1 rounded text-sm ${
+                        loading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
                     >
-                      Gửi phản hồi
+                      {loading ? "Đang gửi..." : "Gửi phản hồi"}
                     </button>
                     <button
                       onClick={() => {
                         setReplyTo(null);
                         setReplyText("");
                       }}
-                      className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm"
+                      disabled={loading}
+                      className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm disabled:opacity-50"
                     >
                       Hủy
                     </button>

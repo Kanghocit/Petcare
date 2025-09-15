@@ -92,6 +92,17 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  {
+    name: "Quản lý đánh giá",
+    icon: <TableIcon />,
+    subItems: [
+      {
+        name: "Danh sách đánh giá",
+        path: "/manage-comment-table",
+        pro: false,
+      },
+    ],
+  },
 ];
 
 const AppSidebar: React.FC = () => {

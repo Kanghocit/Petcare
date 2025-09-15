@@ -30,7 +30,6 @@ const ModalAddBanner: React.FC<{
   initialValues?: Banner;
   action?: "create" | "update";
 }> = ({ children, initialValues, action = "create" }) => {
-  console.log("init", initialValues);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);

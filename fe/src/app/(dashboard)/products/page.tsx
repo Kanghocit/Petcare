@@ -50,7 +50,7 @@ const ProductsPage = async ({
 
   const [products, brands] = await Promise.all([
     getProductsAction(Number(page ?? 1), search ?? "", 12, buildExtras()),
-    getAllBrandsAction(),
+    getAllBrandsAction(1, 10),
   ]);
 
   return (

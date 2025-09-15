@@ -17,6 +17,10 @@ import voicherRoutes from "./routes/voicher.routes.js";
 import brandRoutes from "./routes/brand.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import addressRoutes from "./routes/address.routes.js";
+import commentRoutes from "./routes/comment.routes.js";
+
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -26,8 +30,10 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-const app = express();
+const app = express(); // định nghĩa router
 const port = process.env.PORT || 8000;
+const server = createServer(app); // tạo HTTP server từ app
+const io = new Server(server); // tạo Socket.io server từ server
 
 // Middleware để parse cookies - PHẢI ĐẶT TRƯỚC CORS
 app.use(cookieParser());
@@ -74,6 +80,15 @@ app.use("/api/voicher", voicherRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/comment", commentRoutes);
+
+//Socket.io
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("disconnect", () => {
+    console.log("a user disconnected");
+  });
+});
 
 //Error handling middleware
 
@@ -81,6 +96,6 @@ app.use("/api/address", addressRoutes);
 startNewsCronJob();
 
 //Server running
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

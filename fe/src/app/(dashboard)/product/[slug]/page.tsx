@@ -5,6 +5,9 @@ import ProductDetailDocument from "./components/ProductDetailDocument";
 import ProductsWatched from "./components/ProductsWatched";
 import Feedback from "@/components/feedback";
 import { getProductBySlugAction } from "../../products/action";
+import { getUser } from "@/actions";
+import { getComments } from "@/libs/comment";
+import { CommentApiResponse } from "@/interface/comment";
 
 const ProductDetailPage = async ({
   params,
@@ -13,7 +16,31 @@ const ProductDetailPage = async ({
 }) => {
   const { slug } = await params;
 
-  const product = await getProductBySlugAction(slug);
+  const [product, user, commentData] = await Promise.all([
+    getProductBySlugAction(slug),
+    getUser(),
+    getComments(slug),
+  ]);
+
+  // Transform comment data to match CommentDisplay interface
+  const comment =
+    commentData?.comments?.map((comment: CommentApiResponse) => ({
+      id: comment._id,
+      name: comment.userId?.name || "Anonymous",
+      rating: comment.rating || 0,
+      verified: true,
+      comment: comment.content,
+      status: comment.status,
+      timestamp: comment.createdAt,
+      userId: comment.userId?._id,
+      replies:
+        comment.replies?.map((reply) => ({
+          id: reply._id,
+          name: reply.userId?.name || "Shop Pet",
+          comment: reply.content,
+          timestamp: reply.createdAt,
+        })) || [],
+    })) || [];
 
   return (
     <>
@@ -24,7 +51,7 @@ const ProductDetailPage = async ({
           <ProductDetailInfo product={product.product} />
         </div>
         <ProductDetailDocument description={product.product.description} />
-        <Feedback />
+        <Feedback user={user} productSlug={slug} comment={comment} />
         <ProductsWatched />
       </div>
     </>

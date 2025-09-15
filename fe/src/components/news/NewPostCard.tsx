@@ -23,7 +23,7 @@ const NewPostCard = ({
   data?: News;
 }) => {
   const { title, content, image, publishTime, slug } = data || {};
-  console.log("publishTime", publishTime);
+
   const router = useRouter();
   return (
     <div className={`${isCard ? "flex flex-col" : "flex gap-4 w-full"}`}>

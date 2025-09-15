@@ -9,6 +9,7 @@ export const fetchData = async (
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include", // Include cookies for authentication
     body: data ? JSON.stringify(data) : null,
   });
 
