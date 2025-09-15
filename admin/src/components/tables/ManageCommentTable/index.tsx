@@ -28,7 +28,8 @@ import {
   updateCommentStatusAction,
 } from "@/app/(admin)/(others-pages)/(tables)/manage-comment-table/action";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getSocket } from "@/libs/socket";
 
 const ReplyCommentModal = dynamic(() => import("./ReplyCommentModal"), {
   ssr: false,
@@ -162,6 +163,20 @@ const ManageCommentTable = ({
       setReplyLoading(false);
     }
   };
+
+  // Realtime: update local admin table when new-reply comes
+  useEffect(() => {
+    const socket = getSocket();
+    const handleNewReply = () => {
+      // Instead of full refresh, just soft reload current route data
+      router.refresh();
+    };
+
+    socket.on("new-reply", handleNewReply);
+    return () => {
+      socket.off("new-reply", handleNewReply);
+    };
+  }, [router]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

@@ -3,6 +3,7 @@
 import { User } from "@/interface/user";
 import { App, Avatar, Button, Input, Rate } from "antd";
 import React, { useState, useEffect } from "react";
+import { getSocket } from "@/libs/socket";
 import { Comment, CommentDisplay, ReplyDisplay } from "@/interface/comment";
 import {
   createCommentAtion,
@@ -42,7 +43,6 @@ const Feedback = ({
 }) => {
   const [selectedRating, setSelectedRating] = useState<RatingValue>("all");
   const [comments, setComments] = useState<CommentDisplay[]>(comment);
-
 
   // Tính avgRating ban đầu từ props
   const calculateInitialAvgRating = (comments: CommentDisplay[]) => {
@@ -140,6 +140,86 @@ const Feedback = ({
       }
     };
     loadComments();
+  }, [productSlug]);
+
+  // Realtime: listen to new-comment and new-reply
+  useEffect(() => {
+    const socket = getSocket();
+
+    type NewCommentPayload = {
+      productSlug: string;
+      comment: {
+        _id: string;
+        userId?: { _id: string; name: string };
+        rating?: number;
+        content: string;
+        createdAt: string;
+        status: string;
+      };
+    };
+
+    const handleNewComment = (payload: NewCommentPayload) => {
+      if (payload?.productSlug !== productSlug) return;
+      const c = payload.comment;
+      setComments((prev) => [
+        {
+          id: c._id,
+          name: c.userId?.name || "Anonymous",
+          rating: c.rating || 0,
+          verified: true,
+          comment: c.content,
+          status: c.status || "active",
+          timestamp: c.createdAt,
+          userId: c.userId?._id,
+          replies: [],
+        },
+        ...prev,
+      ]);
+    };
+
+    type NewReplyPayload = {
+      productSlug: string;
+      reply: {
+        _id: string;
+        parentId: string;
+        userId?: { _id: string; name: string };
+        content: string;
+        createdAt: string;
+        status: string;
+      };
+    };
+
+    const handleNewReply = (payload: NewReplyPayload) => {
+      if (payload?.productSlug !== productSlug) return;
+      const r = payload.reply;
+      setComments((prev) =>
+        prev.map((cm) =>
+          cm.id === r.parentId
+            ? {
+                ...cm,
+                replies: [
+                  ...cm.replies,
+                  {
+                    id: r._id,
+                    name: r.userId?.name || "Shop Pet",
+                    comment: r.content,
+                    timestamp: r.createdAt,
+                    status: r.status || "active",
+                  },
+                ],
+              }
+            : cm
+        )
+      );
+    };
+
+    socket.on("new-comment", handleNewComment);
+    socket.on("new-reply", handleNewReply);
+
+    return () => {
+      socket.off("new-comment", handleNewComment);
+      socket.off("new-reply", handleNewReply);
+    };
   }, [productSlug]);
 
   const filteredComments = comments

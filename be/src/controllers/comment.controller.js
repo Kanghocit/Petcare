@@ -2,6 +2,7 @@ import Comment from "../models/Comment.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
+import { getIo } from "../socket/index.js";
 
 export const createComment = async (req, res) => {
   try {
@@ -35,7 +36,18 @@ export const createComment = async (req, res) => {
       content,
       rating,
       parentId: parentId === "" ? null : parentId,
+      status: "active",
     });
+    // enrich for realtime consumers
+    await comment.populate("userId", "name");
+
+    const io = getIo();
+    if (io)
+      io.emit("new-comment", {
+        productSlug: product.slug,
+        comment,
+      });
+
     res.status(201).json({
       ok: true,
       message: "Tạo bình luận thành công",
@@ -102,14 +114,15 @@ export const getCommentsInAdmin = async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
     const skip = (page - 1) * limit;
-    const comments = await Comment.find()
+    // Only paginate root comments to match admin UI
+    const comments = await Comment.find({ parentId: null })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("userId", "name")
       .populate("productId", "title slug");
 
-    const total = await Comment.countDocuments();
+    const total = await Comment.countDocuments({ parentId: null });
     const totalPages = Math.ceil(total / limit);
     return res.status(200).json({
       ok: true,
@@ -256,6 +269,16 @@ export const replyComment = async (req, res) => {
     // Populate thông tin user và product
     await reply.populate("userId", "name");
     await reply.populate("productId", "title slug");
+
+    const io = getIo();
+    if (io)
+      io.emit("new-reply", {
+        productSlug: parentComment.productId.slug,
+        reply: {
+          ...reply.toObject(),
+          parentId: parentId.toString?.() || String(parentId),
+        },
+      });
 
     res.status(201).json({
       ok: true,

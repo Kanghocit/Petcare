@@ -20,7 +20,7 @@ import addressRoutes from "./routes/address.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 
 import { createServer } from "http";
-import { Server } from "socket.io";
+import initSocket from "./socket/index.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -33,7 +33,8 @@ dotenv.config();
 const app = express(); // định nghĩa router
 const port = process.env.PORT || 8000;
 const server = createServer(app); // tạo HTTP server từ app
-const io = new Server(server); // tạo Socket.io server từ server
+
+initSocket(server); // tạo Socket.io server từ server
 
 // Middleware để parse cookies - PHẢI ĐẶT TRƯỚC CORS
 app.use(cookieParser());
@@ -82,13 +83,6 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/comment", commentRoutes);
 
-//Socket.io
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("a user disconnected");
-  });
-});
 
 //Error handling middleware
 

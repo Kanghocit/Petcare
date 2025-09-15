@@ -19,7 +19,7 @@ const ManageCommentTablePage = async ({
   const { page, limit } = await searchParams;
   const commentsData = await getCommentsInAdminAction(
     Number(page) || 1,
-    Number(limit) || 5,
+    Number(limit) || 10,
   );
 
   return (
