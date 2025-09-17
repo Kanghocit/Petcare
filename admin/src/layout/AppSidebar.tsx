@@ -103,6 +103,17 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  {
+    name: "Quản lý chương trình",
+    icon: <TableIcon />,
+    subItems: [
+      {
+        name: "Chương trình khuyến mại",
+        path: "/manage-sales-table",
+        pro: false,
+      },
+    ],
+  },
 ];
 
 const AppSidebar: React.FC = () => {

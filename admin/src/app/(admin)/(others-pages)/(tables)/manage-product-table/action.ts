@@ -1,9 +1,14 @@
 "use server";
 
 import { Product } from "@/interface/Products";
-import { createProduct, getAllProducts, getProductBySlug, updateProduct } from "@/libs/product";
+import {
+  createProduct,
+  getAllProducts,
+  getProductBySlug,
+  updateProduct,
+} from "@/libs/product";
 
-export const getAllProductsAction = async (page: number, search: number) => {
+export const getAllProductsAction = async (page: number, search: string) => {
   const data = await getAllProducts(page, search);
   return data;
 };

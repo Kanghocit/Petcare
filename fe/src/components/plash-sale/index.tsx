@@ -1,14 +1,26 @@
+"use client";
+
 import React from "react";
 import CountdownTimer from "./countdown-timer";
 import ProductCard from "../product-card";
+import useEmblaCarousel from "embla-carousel-react";
+import type { FlashSale, FlashSaleProductItem } from "@/interface/flashSale";
 
-const PlashSale = () => {
-  // Sử dụng một thời gian cố định thay vì tính toán mỗi lần render
-  const endTime = "2025-06-01T23:59:59";
+const PlashSale = ({ flashSale }: { flashSale: FlashSale | null }) => {
+  console.log("flashSale", flashSale);
+  const endTime = flashSale?.endDate || "";
+  const [emblaRef] = useEmblaCarousel({
+    loop: false,
+    align: "start",
+    dragFree: true,
+    axis: "x",
+  });
+
+  if (!flashSale || !flashSale.products?.length) return null;
 
   return (
-    <div className="mt-4 flex flex-col w-full">
-      <div className="flex flex-col bg-[#f96264] gap-8 mx-40 px-2 rounded-lg text-white">
+    <div className="mt-4 flex flex-col w-fit justify-center items-center mx-auto">
+      <div className="flex flex-col bg-[#f96264] mx-40 p-4 rounded-3xl text-white w-[1540px]">
         <div className="flex gap-4 justify-between items-center px-2 rounded-lg text-white">
           <p className="text-[43px] font-bold font-sans">
             Chớp thời cơ. Giá như mơ!
@@ -23,20 +35,46 @@ const PlashSale = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1 items-center justify-center">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <ProductCard
-              key={`flash-sale-${index}`}
-              img={[
-                "https://bizweb.dktcdn.net/thumb/large/100/527/383/products/upload-eb792ecb6ee3495181976026c8f7017d.jpg?v=1727669769057",
-                "https://bizweb.dktcdn.net/thumb/large/100/527/383/products/upload-d2ccf62fb4394fbe8ca25e6f724d7eb5.jpg?v=1727669769057",
-              ]}
-              title="Bàn Cào Móng Giấy Cho Mèo + Tặng Cỏ Mèo"
-              star={3}
-              price={100000}
-              isSale={true}
-            />
-          ))}
+
+        <div className="relative">
+          {/* Viewport */}
+          <div className="overflow-hidden" ref={emblaRef}>
+            {/* Container */}
+            <div className="flex gap-4 touch-pan-y select-none will-change-transform">
+              {flashSale.products.map(
+                (item: FlashSaleProductItem, index: number) => {
+                  const p = item.productId;
+                  const salePrice = item.flashSalePrice;
+                  const basePrice = p.price > 0 ? p.price : 0;
+                  const computedDiscount =
+                    basePrice > 0
+                      ? Math.max(
+                          0,
+                          Math.round((1 - salePrice / basePrice) * 100)
+                        )
+                      : 0;
+                  return (
+                    <div key={`flash-sale-slide-${index}`}>
+                      <div className="shrink-0 grow-0 basis-[260px] min-w-0">
+                        <ProductCard
+                          key={`flash-sale-${index}`}
+                          id={p._id}
+                          img={[p.images?.[0], p.images?.[1]]}
+                          title={p.title}
+                          star={p.star}
+                          price={p.price}
+                          isSale={true}
+                          discount={computedDiscount}
+                          salePrice={salePrice}
+                          slug={p.slug}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

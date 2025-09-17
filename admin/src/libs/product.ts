@@ -2,7 +2,7 @@ import { fetchData } from "@/utils/fetchData";
 import { Product } from "@/interface/Products";
 
 //get
-export const getAllProducts = async (page: number, search: number) => {
+export const getAllProducts = async (page: number, search: string = "") => {
   const data = await fetchData(`/product?page=${page}&search=${search}`);
   return data;
 };

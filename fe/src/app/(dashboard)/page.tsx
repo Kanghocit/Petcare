@@ -11,8 +11,10 @@ import { FOOD_TABS } from "../../constants/food";
 import News from "../../components/news";
 import MotionDiv from "../../components/motion-div";
 import Address from "@/components/address";
+import { getFlashSaleAction } from "@/actions";
 
-export default function Home() {
+export default async function Home() {
+  const flashSale = await getFlashSaleAction();
   return (
     <div className="flex flex-col w-full ">
       <MotionDiv>
@@ -27,9 +29,11 @@ export default function Home() {
       <MotionDiv>
         <Voichers />
       </MotionDiv>
-      <MotionDiv>
-        <PlashSale />
-      </MotionDiv>
+      {flashSale && (
+        <MotionDiv>
+          <PlashSale flashSale={flashSale} />
+        </MotionDiv>
+      )}
       <MotionDiv>
         <Products />
       </MotionDiv>
