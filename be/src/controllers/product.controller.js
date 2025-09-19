@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
 import Brand from "../models/Brand.js";
+import { meiliClient, productIndex } from "../services/meilisearch.services.js";
 
 //tạo sản phẩm
 export const createProduct = async (req, res) => {
@@ -47,6 +48,37 @@ export const createProduct = async (req, res) => {
     await Brand.findByIdAndUpdate(brandDoc._id, {
       $inc: { numberProducts: 1 },
     });
+    // thêm vào meilisearch (nếu có)
+    if (productIndex) {
+      try {
+        await productIndex.addDocuments([
+          {
+            id: product._id.toString(), // nên set id để đồng bộ
+            title,
+            description,
+            price,
+            discount,
+            isNewProduct,
+            isSaleProduct,
+            star,
+            status,
+            quantity,
+            brand: brandDoc.name, // hoặc brandDoc._id tùy bạn muốn search theo gì
+            images,
+          },
+        ]);
+        console.log("Product added to MeiliSearch successfully");
+      } catch (meiliError) {
+        console.warn(
+          "Failed to add product to MeiliSearch:",
+          meiliError.message
+        );
+        // Continue without throwing error - product is still created in MongoDB
+      }
+    } else {
+      console.warn("MeiliSearch not available - skipping search index update");
+    }
+
     res.status(201).json({
       ok: true,
       message: "Tạo sản phẩm thành công",
@@ -90,13 +122,19 @@ export const getProducts = async (req, res) => {
     if (searchRaw) {
       query.$or = [
         { title: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
-        { brand: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
-        { color: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
-        { isNewProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
-        { isSaleProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
-        { price: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        // { brand: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        // { color: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        // { isNewProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        // { isSaleProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        // { price: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
       ];
     }
+
+    const titles = parseMultiParam(req.query.title);
+    if (titles.length > 0) {
+      query.title = { $in: titles };
+    }
+
     const brands = parseMultiParam(req.query.brand);
     if (brands.length > 0) {
       query.brand = { $in: brands };
@@ -145,6 +183,7 @@ export const getProducts = async (req, res) => {
         .select(
           "_id title slug description price discount quantity isNewProduct isSaleProduct star brand images status"
         )
+        .collation({ locale: "vi", strength: 3 })
         .lean(),
       Product.countDocuments(query),
     ]);
@@ -160,6 +199,38 @@ export const getProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi lấy danh sách sản phẩm", error });
+  }
+};
+
+//tìm kiếm sản phẩm
+export const searchProducts = async (req, res) => {
+  try {
+    const query = req.query.q || "";
+    // Fix pagination: ensure page >= 1 and limit within sensible bounds
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+
+    const result = await meiliClient.index("products").search(query, {
+      attributesToHighlight: ["title", "description"],
+      limit,
+      offset: (page - 1) * limit,
+      showRankingScore: true,
+    });
+    res.status(200).json({
+      ok: true,
+      message: "Tìm sản phẩm thành công",
+      query,
+      products: result.hits,
+      total: result.estimatedTotalHits,
+      page,
+      totalPages: Math.ceil(result.estimatedTotalHits / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: "Không tìm được sản phẩm",
+      error: error.message,
+    });
   }
 };
 

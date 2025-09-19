@@ -87,7 +87,12 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     <App>
       <header className="flex items-center justify-center bg-white px-3 py-2 gap-8 sticky  top-0 z-100 w-full shadow-sm ">
         <Link href="/" className="!ms-5 gap-2">
-          <Image src="/images/logo.webp" alt="logo" width={200} height={100} />
+          <Image
+            src="https://paddy.vn/cdn/shop/files/logo_paddy_desktop_155x.png?v=1693364605"
+            alt="logo"
+            width={150}
+            height={100}
+          />
         </Link>
         <SearchBar />
         <div className="flex items-center justify-around gap-2">

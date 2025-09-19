@@ -15,10 +15,8 @@ export const fetchWithoutToken = async (
     options.body = JSON.stringify(data);
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}${url}`,
-    options
-  );
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const response = await fetch(`${apiUrl}${url}`, options);
 
   // Nếu BE có message thì log rõ ra
   if (!response.ok) {

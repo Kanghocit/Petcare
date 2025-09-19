@@ -20,3 +20,16 @@ export const getProductBySlug = async (slug: string) => {
   const data = await fetchWithoutToken(`/product/${slug}`, "GET");
   return data;
 };
+
+export const searchProduct = async (
+  search: string,
+  page: number,
+  limit: number
+) => {
+  const data = await fetchWithoutToken(
+    `/product/search?q=${encodeURIComponent(
+      search
+    )}&page=${page}&limit=${limit}`
+  );
+  return data;
+};

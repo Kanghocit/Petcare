@@ -23,7 +23,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ label, menuData }) => {
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <span className="flex items-center cursor-pointer gap-1">
+      <span className="flex items-center cursor-pointer gap-1 hover:!text-[#ffc902] !text-white">
         {label}
         <span className="transition-all duration-300 ease-in-out rotate-0 group-hover:rotate-180">
           <DownOutlined className="text-[15px] " />
@@ -47,9 +47,9 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ label, menuData }) => {
           <div key={idx}>
             <Link
               href={category?.path}
-              className="hover:!text-orange-600 !text-black !font-semibold"
+              className="hover:!text-[#ffc902] !text-black !font-semibold"
             >
-              <h4 className="font-semibold text-[18px] mb-3 hover:text-orange-600">
+              <h4 className="font-semibold text-[18px] mb-3 ">
                 {category.title} 🐈
               </h4>
             </Link>

@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 const ManageProductTablePage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ page: number; search: number; limit: number }>;
+  searchParams: Promise<{ page: number; search: string }>;
 }) => {
-  const { page, search, limit } = await searchParams;
+  const { page, search } = await searchParams;
   const [productsData, brandsData] = await Promise.all([
     getAllProductsAction(page, search),
-    getAllBrandsAction(page, limit),
+    getAllBrandsAction(page, 20),
   ]);
 
   return (

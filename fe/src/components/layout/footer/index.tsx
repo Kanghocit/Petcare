@@ -19,11 +19,11 @@ const Footer: React.FC = () => {
           {/* Cột 1 - Thông tin cửa hàng */}
           <Col xs={24} md={12} lg={6}>
             <Image
-              src="/images/logo.webp"
+              src="https://paddy.vn/cdn/shop/files/logo_paddy_desktop_155x.png?v=1693364605"
               alt="logo"
-              className="w-60 mb-4"
-              width={100}
-              height={100}
+              className="mb-4"
+              width={150}
+              height={150}
             />
             <h3 className="text-xl font-semibold">Cửa hàng cho thú cưng</h3>
             <p className="mt-2 text-[14px]">

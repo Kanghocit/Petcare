@@ -1,0 +1,30 @@
+services:
+  be:
+    build: .
+    container_name: petcare-be
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - meilisearch
+    environment:
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_MASTER_KEY=masterKey
+    volumes:
+      - .:/app
+    command: npm run dev
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    container_name: meilisearch
+    restart: always
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: masterKey
+    volumes:
+      - meili_data:/meili_data
+
+volumes:
+  meili_data:

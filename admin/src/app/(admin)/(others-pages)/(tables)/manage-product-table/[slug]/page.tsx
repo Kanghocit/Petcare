@@ -21,7 +21,7 @@ const ManageProductDetail = async ({
 
   const [productsData, brandsData] = await Promise.all([
     getProductBySlugAction(slug),
-    getAllBrandsAction(1, 10),
+    getAllBrandsAction(1, 20),
   ]);
 
   const product = productsData.product;

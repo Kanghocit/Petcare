@@ -3,7 +3,7 @@ import BreadCumb from "@/components/breadCrumb";
 import ProductsFilter from "./components/products-filter";
 import Products from "@/components/products";
 import ProductCard from "@/components/product-card";
-import { getProductsAction } from "./action";
+import { getProductsAction, searchProductAction } from "./action";
 import { Product } from "../../../interface/product";
 import TablePagination from "@/components/table-pagination";
 import { getAllBrandsAction } from "../brands/action";
@@ -12,6 +12,7 @@ const ProductsPage = async ({
   searchParams,
 }: {
   searchParams: Promise<{
+    q?: string;
     page?: number | 1;
     search?: string | "";
     brand?: string | string[];
@@ -24,7 +25,7 @@ const ProductsPage = async ({
   }>;
 }) => {
   const params = await searchParams;
-  const { page, search } = params;
+  const { page, search, q } = await searchParams;
 
   // Build extra query with repeated keys
   const buildExtras = () => {
@@ -49,7 +50,9 @@ const ProductsPage = async ({
   };
 
   const [products, brands] = await Promise.all([
-    getProductsAction(Number(page ?? 1), search ?? "", 12, buildExtras()),
+    q
+      ? searchProductAction(q, Number(page ?? 1), 18)
+      : getProductsAction(Number(page ?? 1), search ?? "", 12, buildExtras()),
     getAllBrandsAction(1, 10),
   ]);
 

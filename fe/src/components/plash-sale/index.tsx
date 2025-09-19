@@ -7,7 +7,6 @@ import useEmblaCarousel from "embla-carousel-react";
 import type { FlashSale, FlashSaleProductItem } from "@/interface/flashSale";
 
 const PlashSale = ({ flashSale }: { flashSale: FlashSale | null }) => {
-  console.log("flashSale", flashSale);
   const endTime = flashSale?.endDate || "";
   const [emblaRef] = useEmblaCarousel({
     loop: false,
@@ -20,7 +19,7 @@ const PlashSale = ({ flashSale }: { flashSale: FlashSale | null }) => {
 
   return (
     <div className="mt-4 flex flex-col w-fit justify-center items-center mx-auto">
-      <div className="flex flex-col bg-[#f96264] mx-40 p-4 rounded-3xl text-white w-[1540px]">
+      <div className="flex flex-col bg-[#f96264] mx-40 p-4 rounded-3xl text-white w-[1540px] shadow-xl shadow-red-300">
         <div className="flex gap-4 justify-between items-center px-2 rounded-lg text-white">
           <p className="text-[43px] font-bold font-sans">
             Chớp thời cơ. Giá như mơ!
