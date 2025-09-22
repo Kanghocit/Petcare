@@ -1,56 +1,81 @@
 "use client";
 import React from "react";
-import Badge from "../ui/badge/Badge";
-import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
+import StatisticCard from "./StatisticCard";
+import {
+  DollarOutlined,
+  ShoppingCartOutlined,
+  UserAddOutlined,
+  ShoppingOutlined,
+  UndoOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 
-export const EcommerceMetrics = () => {
+type EcommerceStats = {
+  revenue: number;
+  sales: number;
+  newCustomers: number;
+  sold: number;
+  refund: number;
+  canceled: number;
+};
+
+export const EcommerceMetrics = ({ data }: { data: EcommerceStats }) => {
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(value);
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
-        </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-6">
+      <StatisticCard
+        title="Doanh thu"
+        value={formatCurrency(data.revenue)}
+        icon={
+          <DollarOutlined className="text-xl text-emerald-600! dark:text-emerald-500!" />
+        }
+      />
 
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
-            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
-            </h4>
-          </div>
-          <Badge color="success">
-            <ArrowUpIcon />
-            11.01%
-          </Badge>
-        </div>
-      </div>
-      {/* <!-- Metric Item End --> */}
+      <StatisticCard
+        title="Doanh số"
+        value={data.sales}
+        icon={
+          <ShoppingCartOutlined className="text-xl text-blue-600! dark:text-blue-500!" />
+        }
+      />
 
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 dark:text-white/90" />
-        </div>
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Orders
-            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
-            </h4>
-          </div>
+      <StatisticCard
+        title="Khách hàng mới"
+        value={data.newCustomers}
+        icon={
+          <UserAddOutlined className="text-xl text-cyan-600! dark:text-cyan-500!" />
+        }
+      />
 
-          <Badge color="error">
-            <ArrowDownIcon className="text-error-500" />
-            9.05%
-          </Badge>
-        </div>
-      </div>
-      {/* <!-- Metric Item End --> */}
+      <StatisticCard
+        title="Đã bán"
+        value={data.sold}
+        icon={
+          <ShoppingOutlined className="text-xl text-violet-600! dark:text-violet-500!" />
+        }
+      />
+
+      <StatisticCard
+        title="Trả hàng"
+        value={data.refund}
+        icon={
+          <UndoOutlined className="text-xl text-amber-600! dark:text-amber-500!" />
+        }
+      />
+
+      <StatisticCard
+        title="Đã hủy"
+        value={data.canceled}
+        icon={
+          <CloseCircleOutlined className="text-xl text-rose-600! dark:text-rose-500!" />
+        }
+      />
     </div>
   );
 };

@@ -19,6 +19,7 @@ import paymentRoutes from "./routes/payment.routes.js";
 import addressRoutes from "./routes/address.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 import flashSalesRoutes from "./routes/flashSale.routes.js";
+import statisticRoutes from "./routes/statistic.routes.js";
 
 import { createServer } from "http";
 import initSocket from "./socket/index.js";
@@ -84,6 +85,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/flash-sale", flashSalesRoutes);
+app.use("/api/statistics", statisticRoutes);
 
 //Error handling middleware
 

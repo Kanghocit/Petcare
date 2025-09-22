@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
+import { getStatisticsAction } from "../action";
 
 export const metadata: Metadata = {
   title:
@@ -13,29 +11,30 @@ export const metadata: Metadata = {
   description: "This is Next.js Home for TailAdmin Dashboard Template",
 };
 
-export default function Ecommerce() {
+export default async function Ecommerce() {
+  const statisticData = await getStatisticsAction();
+  const { products } = statisticData;
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
-      <div className="col-span-12 space-y-6 xl:col-span-7">
-        <EcommerceMetrics />
-
+      <div className="col-span-12">
         <MonthlySalesChart />
       </div>
-
-      <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
+      <div className="col-span-12 space-y-6">
+        <EcommerceMetrics data={statisticData} />
       </div>
 
-      <div className="col-span-12">
-        <StatisticsChart />
+      <div className="col-span-12 xl:col-span-6">
+        <RecentOrders
+          title="Sản phẩm sắp hết hàng"
+          products={products?.lowStock || []}
+        />
       </div>
 
-      <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
-      </div>
-
-      <div className="col-span-12 xl:col-span-7">
-        <RecentOrders />
+      <div className="col-span-12 xl:col-span-6">
+        <RecentOrders
+          title="Sản phẩm hết hàng"
+          products={products?.outOfStock || []}
+        />
       </div>
     </div>
   );
