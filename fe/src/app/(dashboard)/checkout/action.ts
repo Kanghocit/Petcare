@@ -4,6 +4,7 @@ import { getUser } from "@/actions";
 import { createOrder } from "@/libs/order";
 import { CreateOrderPayload } from "@/libs/order";
 import { createPayment } from "@/libs/payment";
+import { postValidateVoicher, postUseVoicher } from "@/libs/voicher";
 
 //get
 export const getUserAction = async () => {
@@ -26,5 +27,18 @@ export const createPaymentAction = async (
   amount: number
 ) => {
   const data = await createPayment(orderCode, amount);
+  return data;
+};
+
+export const postValidateVoicherAction = async (
+  code: string,
+  userId: string
+) => {
+  const data = await postValidateVoicher(code, userId);
+  return data;
+};
+
+export const postUseVoicherAction = async (code: string, userId: string) => {
+  const data = await postUseVoicher(code, userId);
   return data;
 };

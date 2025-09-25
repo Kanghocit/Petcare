@@ -41,11 +41,10 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    star: {
-      type: Number,
-      min: 1,
-      max: 5,
-      default: 5,
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
     },
     brand: {
       type: String,

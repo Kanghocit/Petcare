@@ -6,13 +6,15 @@ import {
   updateVoicher,
   deleteVoicher,
   useVoicher,
+  validateVoicher,
 } from "../controllers/voicher.controller.js";
 
 const router = express.Router();
 
 router.post("/", createVoicher);
 router.get("/", getVoichers);
-router.post("/:id/use", useVoicher);
+router.post("/validate", validateVoicher);
+router.post("/use", useVoicher);
 router.put("/:id", updateVoicher);
 router.delete("/:id", deleteVoicher);
 export default router;

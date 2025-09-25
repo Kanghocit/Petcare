@@ -69,26 +69,169 @@ export const getVoichers = async (req, res) => {
   }
 };
 
-export const useVoicher = async (req, res) => {
+export const validateVoicher = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { userId } = req.body;
-    const voicher = await Voicher.findById(id);
+    const { code, userId } = req.body;
+
+    // Validate input
+    if (!code || !userId) {
+      return res.status(400).json({
+        ok: false,
+        message: "Mã voicher và userId là bắt buộc",
+      });
+    }
+
+    // Find voicher
+    const voicher = await Voicher.findOne({ code });
     if (!voicher) {
-      return res.status(404).json({ message: "Voicher không tồn tại" });
+      return res.status(404).json({
+        ok: false,
+        message: "Mã voicher không tồn tại",
+      });
     }
-    if (voicher.userCount >= voicher.maxUsers) {
-      return res.status(400).json({ message: "Voicher đã hết số lượng" });
+
+    // Check voicher status
+    if (voicher.status !== "active") {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher không còn hoạt động",
+      });
     }
+
+    // Check if voicher has reached max users
+    if (voicher.usedCount >= voicher.maxUsers) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher đã hết số lượng sử dụng",
+      });
+    }
+
+    // Check voicher validity period
     const now = new Date();
-    if (voicher.startDate > now || voicher.endDate < now) {
-      return res.status(400).json({ message: "Voicher đã hết hạn" });
+    if (voicher.startDate > now) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher chưa đến thời gian sử dụng",
+      });
     }
+    if (voicher.endDate < now) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher đã hết hạn",
+      });
+    }
+
+    // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ message: "User không tồn tại" });
+      return res.status(404).json({
+        ok: false,
+        message: "Người dùng không tồn tại",
+      });
     }
-    user.total_spend += voicher.discountValue;
+
+    // Return voicher information for frontend to use
+    res.status(200).json({
+      ok: true,
+      message: "Voicher hợp lệ",
+      voicher: {
+        _id: voicher._id,
+        name: voicher.name,
+        code: voicher.code,
+        discountValue: voicher.discountValue,
+        startDate: voicher.startDate,
+        endDate: voicher.endDate,
+        maxUsers: voicher.maxUsers,
+        usedCount: voicher.usedCount,
+        status: voicher.status,
+      },
+    });
+  } catch (error) {
+    console.error("Voicher validation error:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Lỗi khi kiểm tra voicher",
+      error: error.message,
+    });
+  }
+};
+
+export const useVoicher = async (req, res) => {
+  try {
+    const { code, userId } = req.body;
+
+    // Validate input
+    if (!code || !userId) {
+      return res.status(400).json({
+        ok: false,
+        message: "Mã voicher và userId là bắt buộc",
+      });
+    }
+
+    // Find voicher
+    const voicher = await Voicher.findOne({ code });
+    if (!voicher) {
+      return res.status(404).json({
+        ok: false,
+        message: "Mã voicher không tồn tại",
+      });
+    }
+
+    // Check voicher status
+    if (voicher.status !== "active") {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher không còn hoạt động",
+      });
+    }
+
+    // Check if voicher has reached max users
+    if (voicher.usedCount >= voicher.maxUsers) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher đã hết số lượng sử dụng",
+      });
+    }
+
+    // Check voicher validity period
+    const now = new Date();
+    if (voicher.startDate > now) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher chưa đến thời gian sử dụng",
+      });
+    }
+    if (voicher.endDate < now) {
+      return res.status(400).json({
+        ok: false,
+        message: "Voicher đã hết hạn",
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        ok: false,
+        message: "Người dùng không tồn tại",
+      });
+    }
+
+    // Update voicher usage count
+    voicher.usedCount++;
+    if (voicher.usedCount >= voicher.maxUsers && voicher.status === "active") {
+      voicher.status = "inactive";
+    }
+    await voicher.save();
+
+    // Update user total spend and rank
+    let discountValue = 0;
+    if (voicher.discountValue.includes("%")) {
+      discountValue = parseInt(voicher.discountValue.replace("%", ""));
+    } else {
+      discountValue = parseInt(voicher.discountValue);
+    }
+    user.total_spend += discountValue;
     user.rank =
       user.total_spend >= 3000000
         ? "vip"
@@ -98,16 +241,26 @@ export const useVoicher = async (req, res) => {
         ? "regular"
         : "new";
     await user.save();
-    voicher.userCount++;
-    if (voicher.userCount >= voicher.maxUsers && voicher.status === "active") {
-      voicher.status = "inactive";
-    }
-    await voicher.save();
-    res
-      .status(200)
-      .json({ ok: true, message: "Sử dụng voicher thành công", voicher });
+
+    res.status(200).json({
+      ok: true,
+      message: "Sử dụng voicher thành công",
+      voicher: {
+        _id: voicher._id,
+        name: voicher.name,
+        code: voicher.code,
+        discountValue: voicher.discountValue,
+        usedCount: voicher.usedCount,
+        status: voicher.status,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi sử dụng voicher", error });
+    console.error("Voicher usage error:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Lỗi khi sử dụng voicher",
+      error: error.message,
+    });
   }
 };
 

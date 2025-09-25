@@ -5,7 +5,13 @@ import useCartStore from "@/store/cart-store";
 import useCheckoutStore from "@/store/checkout-store";
 import { useShallow } from "zustand/react/shallow";
 import Image from "next/image";
-import { createOrderAction, createPaymentAction } from "./action";
+import {
+  createOrderAction,
+  createPaymentAction,
+  getUserAction,
+  postValidateVoicherAction,
+  postUseVoicherAction,
+} from "./action";
 import { CreateOrderPayload } from "@/libs/order";
 import { App, Button, Input } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,28 +20,56 @@ const DiscountInput: React.FC = () => {
   const search = useSearchParams();
   const [code, setCode] = useState("");
   const setDiscount = useCheckoutStore((s) => s.setDiscount);
-  const appliedCode = useCheckoutStore((s) => s.discountCode);
   const appliedAmount = useCheckoutStore((s) => s.discountAmount) || 0;
+  const subtotal = useCartStore((s) => s.total)();
+  const { message } = App.useApp();
 
-  useEffect(() => {
-    if (appliedCode) setCode(appliedCode);
-  }, [appliedCode]);
+  // useEffect(() => {
+  //   if (appliedCode) setCode(appliedCode);
+  // }, [appliedCode]);
 
-  const apply = () => {
-    // Simple demo rule: 50K or 100K
-    const normalized = code.trim().toUpperCase();
-    const amount =
-      normalized === "50K" ? 50000 : normalized === "100K" ? 100000 : 0;
-    setDiscount(
-      amount > 0 ? normalized : undefined,
-      amount > 0 ? amount : undefined
-    );
+  const apply = async () => {
+    if (!code.trim()) {
+      message.error("Vui lòng nhập mã voicher");
+      return;
+    }
+
+    try {
+      const user = await getUserAction();
+      const userId = user.user._id;
+      const res = await postValidateVoicherAction(code.trim(), userId);
+
+      if (res.ok) {
+        const discountValueStr = res.voicher.discountValue;
+        let discountAmount = 0;
+
+        // Kiểm tra nếu là phần trăm (có ký tự %)
+        if (discountValueStr.includes("%")) {
+          const percentage = parseFloat(discountValueStr.replace("%", ""));
+          // Tính phần trăm của subtotal
+          discountAmount = Math.round((subtotal * percentage) / 100);
+        } else {
+          // Nếu là số tiền cố định
+          discountAmount = parseInt(discountValueStr);
+        }
+
+        setDiscount(code.trim(), discountAmount);
+        message.success(
+          `Áp dụng voicher thành công! Giảm ${discountAmount.toLocaleString()}đ`
+        );
+      } else {
+        message.error(res.message || "Voicher không hợp lệ");
+      }
+    } catch (error) {
+      console.error("Voicher error:", error);
+      message.error(`Lỗi khi sử dụng voicher ${error}`);
+    }
   };
 
   const clear = () => setDiscount(undefined, undefined);
 
   return search.size !== 0 ? null : (
-    <div className="flex flex-col justify-between  gap-2">
+    <div className="flex flex-col justify-between gap-2 my-2">
       <span>Mã giảm giá</span>
       <div className="flex items-center gap-2">
         <Input
@@ -155,15 +189,36 @@ const OrderSummary: React.FC = () => {
         (result.body as { order?: { orderCode?: string } })?.order?.orderCode ||
         "";
       if (result.ok) {
+        // Nếu có voicher được áp dụng, thực sự sử dụng voicher
+        if (discountCode) {
+          try {
+            const user = await getUserAction();
+            const userId = user.user._id;
+            await postUseVoicherAction(discountCode, userId);
+          } catch (voicherError) {
+            console.error("Voicher usage error:", voicherError);
+            // Không cần hiển thị lỗi cho user vì đơn hàng đã được tạo thành công
+          }
+        }
+
         const msg =
           (result.body as { message?: string })?.message ||
           "Đặt hàng thành công";
         message.success(msg);
         if (paymentMethod === "momo") {
           const result = await createPaymentAction(orderCode, grandTotal);
-          if (result.ok) {
-            window.location.href = result.data.payUrl;
-            clearCart();
+          console.log("result", result);
+          if (result.ok && result.data) {
+            // MoMo API trả về payUrl trực tiếp trong data
+            const payUrl = result.data.payUrl || result.data;
+            if (payUrl) {
+              window.location.href = payUrl;
+              clearCart();
+            } else {
+              message.error("Không thể tạo link thanh toán");
+            }
+          } else {
+            message.error("Không thể tạo link thanh toán");
           }
           return;
         }
@@ -211,10 +266,9 @@ const OrderSummary: React.FC = () => {
               </p>
             </div>
           </div>
-
-          <DiscountInput />
         </div>
       ))}
+      <DiscountInput />
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Tạm tính</span>

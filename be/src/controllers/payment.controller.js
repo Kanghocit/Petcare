@@ -12,10 +12,10 @@ export const createPayment = async (req, res) => {
   var orderInfo = "pay with MoMo";
   var partnerCode = process.env.MOMO_PARTNER_CODE;
   var redirectUrl = "http://localhost:3000/profile/orders";
-  var ipnUrl = process.env.IPN_URL;
+  var ipnUrl = process.env.MOMO_IPN_URL;
   var requestType = "payWithMethod";
   var orderId = orderCode;
-  var requestId = orderId;
+  var requestId = orderCode + "_" + Date.now(); // Tạo requestId unique
   var extraData = "";
 
   var orderGroupId = "";
@@ -148,7 +148,7 @@ export const transactionStatus = async (req, res) => {
   }
 };
 
-export const getStatusPayment = async (req, res) => {
+export const updateStatusPayment = async (req, res) => {
   const data = req.body;
   console.log("Đã nhận callback từ momo", data);
   if (data.resultCode === 0) {

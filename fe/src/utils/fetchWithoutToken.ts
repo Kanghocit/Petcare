@@ -23,12 +23,19 @@ export const fetchWithoutToken = async (
     let errorMessage = response.statusText;
 
     try {
-      const errorData = await response.json();
+      // Clone response để có thể đọc body nhiều lần
+      const responseClone = response.clone();
+      const errorData = await responseClone.json();
       errorMessage = errorData.message || errorMessage;
     } catch {
       // fallback nếu backend không trả JSON mà trả plain text
-      const errorText = await response.text();
-      errorMessage = errorText || errorMessage;
+      try {
+        const errorText = await response.text();
+        errorMessage = errorText || errorMessage;
+      } catch {
+        // Nếu không thể đọc text, giữ nguyên statusText
+        console.warn("Could not read response body");
+      }
     }
 
     throw new Error(`${errorMessage}`);

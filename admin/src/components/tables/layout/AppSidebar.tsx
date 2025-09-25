@@ -2,13 +2,13 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSidebar } from "../context/SidebarContext";
+import { useSidebar } from "../../../context/SidebarContext";
 import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   TableIcon,
-} from "../icons/index";
+} from "../../../icons/index";
 import Image from "next/image";
 
 type NavItem = {
@@ -21,8 +21,8 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    name: "Tổng quan",
+    path: "/",
   },
   {
     name: "Quản lý khách hàng",
@@ -110,6 +110,17 @@ const navItems: NavItem[] = [
       {
         name: "Chương trình khuyến mại",
         path: "/manage-sales-table",
+        pro: false,
+      },
+    ],
+  },
+  {
+    name: "Quản lý danh mục",
+    icon: <TableIcon />,
+    subItems: [
+      {
+        name: "Danh mục sản phẩm",
+        path: "/manage-category-table",
         pro: false,
       },
     ],
