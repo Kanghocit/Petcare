@@ -128,7 +128,7 @@ export default function ManageProductsTable({
                       <p
                         className={clsx(
                           "text-theme-sm line-clamp-1 font-medium text-gray-800 hover:!max-w-full dark:text-white/90",
-                          p.quantity < 20 && "text-red-500",
+                          p.quantity < 10 && "text-red-500",
                         )}
                       >
                         {p.title}
@@ -165,7 +165,7 @@ export default function ManageProductsTable({
                     <p
                       className={clsx(
                         "text-theme-sm line-clamp-2 font-medium text-gray-800 dark:text-white/90",
-                        p.quantity < 20 && "text-red-500",
+                        p.quantity < 10 && "text-red-500",
                       )}
                     >
                       {p.quantity === 0 ? "Hết hàng" : p.quantity}

@@ -18,10 +18,13 @@ import UploadFile from "@/components/upload-file";
 import BrandSelect from "@/components/form/BrandSelect";
 import { Product } from "@/interface/Products";
 import { Brand } from "@/interface/Brand";
+import CategorySelect from "./CategorySelect";
+import { Category } from "@/interface/Category";
 
 interface ProductFormProps {
   product?: Product;
   brands: { brands: Brand[]; total: number };
+  categories: { categories: Category[]; total: number };
   onSubmit: (values: Product) => Promise<void>;
   loading?: boolean;
   submitText?: string;
@@ -35,6 +38,7 @@ interface ProductFormProps {
 const ProductForm: React.FC<ProductFormProps> = ({
   product,
   brands,
+  categories,
   onSubmit,
   loading = false,
   submitText = "Lưu",
@@ -44,11 +48,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
   layout = "vertical",
   onCancel,
 }) => {
+  console.log("product", product);
   const { message } = App.useApp();
   const [form] = Form.useForm<Product>();
   const [images, setImages] = useState<string[]>(product?.images || []);
 
   const isSaleProduct = Form.useWatch("isSaleProduct", form);
+  const showDiscount =
+    typeof isSaleProduct === "boolean"
+      ? isSaleProduct
+      : (product?.isSaleProduct ?? false);
 
   useEffect(() => {
     if (product) {
@@ -59,7 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   useEffect(() => {
     // Khi bỏ check "Đang giảm giá" thì clear discount
-    if (!isSaleProduct) {
+    if (isSaleProduct === false) {
       form.setFieldValue("discount", undefined);
     }
   }, [isSaleProduct, form]);
@@ -128,8 +137,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item label="Số sao" name="star">
-                    <InputNumber min={1} max={5} style={{ width: "100%" }} />
+                  <Form.Item label="Danh mục" name="category">
+                    <CategorySelect categories={categories} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
@@ -159,24 +168,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </Col>
                   </Row>
                 </Col>
-                {isSaleProduct && (
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Giảm giá"
-                      name="discount"
-                      rules={[
-                        { required: true, message: "Vui lòng nhập % giảm giá" },
-                        { type: "number", min: 1, max: 100, message: "1–100%" },
-                      ]}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={100}
-                        style={{ width: "100%" }}
-                      />
-                    </Form.Item>
-                  </Col>
-                )}
                 <Col xs={24} md={12}>
                   <Form.Item label="Trạng thái" name="status">
                     <Select
@@ -234,7 +225,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   placeholder="Thêm giá sản phẩm"
                 />
               </Form.Item>
-              {isSaleProduct && (
+              {showDiscount && (
                 <Form.Item
                   label="Giảm giá (%)"
                   name="discount"
@@ -316,7 +307,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <Checkbox>Có</Checkbox>
           </Form.Item>
 
-          {isSaleProduct && (
+          {showDiscount && (
             <Form.Item
               label="Giảm giá"
               name="discount"
@@ -329,8 +320,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </Form.Item>
           )}
 
-          <Form.Item label="Số sao" name="star">
-            <InputNumber min={1} max={5} style={{ width: "100%" }} />
+          <Form.Item label="Danh mục" name="category">
+            <CategorySelect categories={categories} />
           </Form.Item>
 
           <Form.Item label="Hãng" name="brand">

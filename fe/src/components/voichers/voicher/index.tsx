@@ -48,10 +48,10 @@ const Voicher = ({ code, date, description, status }: VoicherProps) => {
           <Button variant="outline">Điều kiện</Button>
           {contextHolder}
           <Button
-            variant={status === "expired" ? "disabled" : "default"}
+            variant={status === "inactive" ? "disabled" : "default"}
             onClick={handleCopy}
           >
-            {status === "expired"
+            {status === "inactive"
               ? "Hết hạn"
               : isCopied
               ? "Đã sao chép"

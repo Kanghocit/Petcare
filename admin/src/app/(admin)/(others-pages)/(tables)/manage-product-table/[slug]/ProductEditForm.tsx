@@ -7,15 +7,18 @@ import { useRouter } from "next/navigation";
 import { UpdateProductAction } from "../action";
 import ProductForm from "@/components/form/ProductForm";
 import { Brand } from "@/interface/Brand";
+import { Category } from "@/interface/Category";
 
 interface ProductEditFormProps {
   product: Product;
   brands: { brands: Brand[]; total: number };
+  categories: { categories: Category[]; total: number };
 }
 
 const ProductEditForm: React.FC<ProductEditFormProps> = ({
   product,
   brands,
+  categories,
 }) => {
   const { message } = App.useApp();
   const router = useRouter();
@@ -44,6 +47,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     <ProductForm
       product={product}
       brands={brands}
+      categories={categories}
       onSubmit={handleSubmit}
       loading={loading}
       submitText="Lưu"

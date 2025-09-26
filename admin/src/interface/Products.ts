@@ -10,6 +10,7 @@ export interface Product {
   isSaleProduct: boolean;
   star: number;
   brand: string;
+  category: string;
   images: string[];
   flashSalePrice: number;
 }

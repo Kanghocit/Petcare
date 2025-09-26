@@ -12,12 +12,14 @@ const SearchBar: React.FC = () => {
     e.preventDefault();
     if (searchTerm.trim()) {
       router.push(`/products?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm("");
     }
   };
 
   const handleButtonClick = () => {
     if (searchTerm.trim()) {
       router.push(`/products?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm("");
     }
   };
 

@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=8000
-      - MONGO_URI="mongodb+srv://ankhangit06:681805@petcaredb.0yda76k.mongodb.net/PetDB?retryWrites=true&w=majority&appName=PetcareDB"
+      - MONGO_URI = ${MONGO_URI}
       - JWT_SECRET="jwtsecret681805"
       - NODE_ENV=production
     ports:

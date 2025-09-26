@@ -15,7 +15,16 @@ export const fetchData = async (
 
   if (!response.ok) {
     console.log("respone", response);
-    throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      const errorData = await response.json();
+      const message =
+        (errorData && (errorData.message || errorData.error)) ||
+        `HTTP error! status: ${response.status}`;
+      throw new Error(message);
+    } catch {
+      // Fallback if response has no JSON body
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
   }
 
   return await response.json();

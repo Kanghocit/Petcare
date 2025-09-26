@@ -7,7 +7,6 @@ export const getAllBrandsAction = async (page: number, limit: number) => {
   const data = await getAllBrands(page, limit);
   return data;
 };
-
 export const addBrandAction = async (brand: Brand) => {
   const data = await addBrand(brand);
   return data;

@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
 import Brand from "../models/Brand.js";
+import Category from "../models/Category.js";
 import { meiliClient, productIndex } from "../services/meilisearch.services.js";
 
 //tạo sản phẩm
@@ -12,12 +13,14 @@ export const createProduct = async (req, res) => {
       discount,
       isNewProduct,
       isSaleProduct,
+      category,
       star,
       status,
       quantity,
       brand,
       images,
     } = req.body;
+
     const existingProduct = await Product.findOne({ title });
     if (existingProduct) {
       return res.status(400).json({ message: "Sản phẩm đã tồn tại" });
@@ -27,6 +30,16 @@ export const createProduct = async (req, res) => {
     if (!brandDoc) {
       return res.status(400).json({ message: "Brand không tồn tại" });
     }
+    // Kiểm tra category name có tồn tại không
+    if (!category || String(category).trim() === "") {
+      return res.status(400).json({ message: "Vui lòng chọn danh mục" });
+    }
+
+    // Tìm category theo tên để lấy _id và xác thực
+    const categoryDoc = await Category.findOne({ name: category });
+    if (!categoryDoc) {
+      return res.status(400).json({ message: "Danh mục không tồn tại" });
+    }
 
     const productData = {
       title,
@@ -35,10 +48,11 @@ export const createProduct = async (req, res) => {
       discount,
       isNewProduct,
       isSaleProduct,
+      category: categoryDoc.name,
       star,
       status,
       quantity,
-      brand, // Sử dụng _id thay vì tên
+      brand,
       images,
     };
 
@@ -48,6 +62,13 @@ export const createProduct = async (req, res) => {
     await Brand.findByIdAndUpdate(brandDoc._id, {
       $inc: { numberProducts: 1 },
     });
+
+    // Cập nhật số lượng sản phẩm của category
+    if (categoryDoc?._id) {
+      await Category.findByIdAndUpdate(categoryDoc._id, {
+        $inc: { productCount: 1 },
+      });
+    }
     // thêm vào meilisearch (nếu có)
     if (productIndex) {
       try {
@@ -60,6 +81,7 @@ export const createProduct = async (req, res) => {
             discount,
             isNewProduct,
             isSaleProduct,
+            category,
             star,
             status,
             quantity,
@@ -181,7 +203,7 @@ export const getProducts = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .select(
-          "_id title slug description price discount quantity isNewProduct isSaleProduct star brand images status"
+          "_id title slug description price discount quantity isNewProduct category isSaleProduct star brand images status"
         )
         .collation({ locale: "vi", strength: 3 })
         .lean(),
@@ -211,7 +233,7 @@ export const searchProducts = async (req, res) => {
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
 
     const result = await meiliClient.index("products").search(query, {
-      attributesToHighlight: ["title", "description"],
+      attributesToHighlight: ["title", "description", "category"],
       limit,
       offset: (page - 1) * limit,
       showRankingScore: true,
@@ -266,6 +288,7 @@ export const updateProduct = async (req, res) => {
       discount,
       isNewProduct,
       isSaleProduct,
+      category,
       star,
       status,
       quantity,
@@ -281,6 +304,7 @@ export const updateProduct = async (req, res) => {
       ...(isNewProduct !== undefined && { isNewProduct }),
       ...(isSaleProduct !== undefined && { isSaleProduct }),
       ...(status !== undefined && { status }),
+      ...(category !== undefined && { category }),
       ...(star !== undefined && { star }),
       ...(quantity !== undefined && { quantity }),
       ...(brand !== undefined && { brand }),
@@ -309,38 +333,18 @@ export const updateProduct = async (req, res) => {
       context: "query",
     });
 
-    // Nếu brand thay đổi → update lại số lượng sản phẩm trong brand
-    console.log("Brand comparison:", {
-      newBrand: brand,
-      oldBrand: oldProduct.brand,
-      oldBrandType: typeof oldProduct.brand,
-      newBrandType: typeof brand,
-    });
-
     // Tìm brand cũ theo _id để lấy tên
     let oldBrandDoc = null;
     let oldBrandName = null;
 
-    if (
-      oldProduct.brand &&
-      typeof oldProduct.brand === "string" &&
-      oldProduct.brand.length === 24
-    ) {
+    if (oldProduct.brand) {
       try {
         oldBrandDoc = await Brand.findById(oldProduct.brand);
         oldBrandName = oldBrandDoc ? oldBrandDoc.name : null;
       } catch (error) {
         console.error("Lỗi khi tìm brand cũ:", error);
       }
-    } else {
-      console.log("Brand cũ không hợp lệ:", oldProduct.brand);
     }
-
-    console.log("Brand names comparison:", {
-      oldBrandName,
-      newBrandName: brand,
-      isDifferent: brand && brand !== oldBrandName,
-    });
 
     if (brand && brand !== oldBrandName) {
       try {
@@ -351,17 +355,8 @@ export const updateProduct = async (req, res) => {
           return res.status(400).json({ message: "Brand mới không tồn tại" });
         }
 
-        console.log("Updating brand counts:", {
-          oldBrandId: oldProduct.brand,
-          newBrandId: newBrandDoc._id,
-        });
-
         // Giảm số lượng sản phẩm của brand cũ
-        if (
-          oldProduct.brand &&
-          typeof oldProduct.brand === "string" &&
-          oldProduct.brand.length === 24
-        ) {
+        if (oldProduct.brand) {
           await Brand.findByIdAndUpdate(oldProduct.brand, {
             $inc: { numberProducts: -1 },
           });
@@ -379,6 +374,100 @@ export const updateProduct = async (req, res) => {
       }
     } else {
       console.log("Brand không thay đổi hoặc không có brand mới");
+    }
+
+    if (category && category !== oldProduct.category) {
+      try {
+        // Kiểm tra category mới có tồn tại không
+        const newCategoryDoc = await Category.findOne({ name: category });
+        if (!newCategoryDoc) {
+          console.error("Category mới không tồn tại:", category);
+          return res
+            .status(400)
+            .json({ message: "Category mới không tồn tại" });
+        }
+
+        console.log("Updating category counts:", {
+          oldCategory: oldProduct.category,
+          newCategory: category,
+        });
+
+        // Giảm số lượng sản phẩm của category cũ
+        if (oldProduct.category) {
+          const oldCatDoc = await Category.findOne({
+            name: oldProduct.category,
+          });
+          if (oldCatDoc?._id) {
+            await Category.findByIdAndUpdate(oldCatDoc._id, {
+              $inc: { productCount: -1 },
+            });
+          }
+        }
+
+        // Tăng số lượng sản phẩm của category mới
+        await Category.findByIdAndUpdate(newCategoryDoc._id, {
+          $inc: { productCount: 1 },
+        });
+
+        console.log("Category counts updated successfully");
+      } catch (categoryError) {
+        console.error("Lỗi khi update category count:", categoryError);
+        // Không throw error để không ảnh hưởng đến việc update product
+      }
+    } else {
+      console.log("Category không thay đổi hoặc không có category mới");
+    }
+
+    // Cập nhật MeiliSearch nếu có thay đổi category hoặc brand
+    if (productIndex && (category || brand)) {
+      try {
+        // Lấy thông tin category mới nếu có thay đổi
+        let newCategoryName = null;
+        if (category && category !== oldProduct.category) {
+          newCategoryName = category;
+        }
+
+        // Lấy thông tin brand mới nếu có thay đổi
+        let newBrandName = null;
+        if (brand && brand !== oldBrandName) {
+          const newBrandDoc = await Brand.findOne({ name: brand });
+          newBrandName = newBrandDoc ? newBrandDoc.name : null;
+        }
+
+        // Cập nhật document trong MeiliSearch
+        const meiliUpdateData = {
+          id: updated._id.toString(),
+          title: updated.title,
+          description: updated.description,
+          price: updated.price,
+          discount: updated.discount,
+          isNewProduct: updated.isNewProduct,
+          isSaleProduct: updated.isSaleProduct,
+          category: updated.category,
+          status: updated.status,
+          quantity: updated.quantity,
+          brand:
+            newBrandName ||
+            (updated.brand
+              ? await Brand.findById(updated.brand).then((b) => b?.name)
+              : null),
+          images: updated.images,
+        };
+
+        // Nếu có thay đổi category, cập nhật category name
+        if (newCategoryName) {
+          meiliUpdateData.category = newCategoryName;
+        }
+
+        await productIndex.updateDocuments([meiliUpdateData]);
+        console.log("Product updated in MeiliSearch successfully");
+      } catch (meiliError) {
+        console.warn(
+          "Failed to update product in MeiliSearch:",
+          meiliError.message
+        );
+        // Continue without throwing error - product is still updated in MongoDB
+      }
     }
 
     return res.status(200).json({
@@ -408,9 +497,24 @@ export const deleteProduct = async (req, res) => {
   }
   try {
     await Product.findOneAndDelete({ slug });
-    await Brand.findByIdAndUpdate(product.brand, {
-      $inc: { numberProducts: -1 },
-    });
+
+    // Giảm số lượng sản phẩm của brand
+    if (product.brand) {
+      await Brand.findByIdAndUpdate(product.brand, {
+        $inc: { numberProducts: -1 },
+      });
+    }
+
+    // Giảm số lượng sản phẩm của category (theo tên)
+    if (product.category) {
+      const catDoc = await Category.findOne({ name: product.category });
+      if (catDoc?._id) {
+        await Category.findByIdAndUpdate(catDoc._id, {
+          $inc: { productCount: -1 },
+        });
+      }
+    }
+
     res.status(200).json({
       ok: true,
       message: "Xóa sản phẩm thành công",

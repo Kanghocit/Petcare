@@ -8,6 +8,8 @@ import { CreateProductAction, UpdateProductAction } from "./action";
 import { useRouter } from "next/navigation";
 import { Product } from "@/interface/Products";
 import { Brand } from "@/interface/Brand";
+import CategorySelect from "@/components/form/CategorySelect";
+import { Category } from "@/interface/Category";
 
 type AppError = {
   message: string;
@@ -23,6 +25,7 @@ interface ProductFormData {
   isSaleProduct: boolean;
   star: number;
   brand: string;
+  category: string;
   images?: string[];
   quantity?: number;
 }
@@ -32,7 +35,8 @@ const ModalAddProduct: React.FC<{
   initialValues?: Product;
   action?: "create" | "update";
   brands: { brands: Brand[]; total: number };
-}> = ({ children, initialValues, action = "create", brands }) => {
+  categories: { categories: Category[]; total: number };
+}> = ({ children, initialValues, action = "create", brands, categories }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setIsLoading] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -164,6 +168,9 @@ const ModalAddProduct: React.FC<{
         <Form.Item label="Mô tả" name="description">
           <Input.TextArea rows={3} placeholder="Thêm mô tả" />
         </Form.Item>
+        <Form.Item label="Danh mục" name="category">
+          <CategorySelect categories={categories} />
+        </Form.Item>
 
         <Form.Item
           label="Giá"
@@ -212,10 +219,6 @@ const ModalAddProduct: React.FC<{
           }
         >
           <InputNumber min={1} max={100} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item label="Số sao" name="star">
-          <InputNumber min={1} max={5} style={{ width: "100%" }} />
         </Form.Item>
 
         <Form.Item label="Hãng" name="brand">
