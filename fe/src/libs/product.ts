@@ -1,9 +1,9 @@
 import { fetchWithoutToken } from "@/utils/fetchWithoutToken";
 
 export const getProducts = async (
-  page: number,
-  search: string,
-  limit: number,
+  page?: number | 1,
+  search?: string | "",
+  limit?: number | 10,
   extraQuery: string = ""
 ) => {
   const safePage = Math.max(1, Number(page) || 1);

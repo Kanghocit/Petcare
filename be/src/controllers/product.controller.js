@@ -144,6 +144,7 @@ export const getProducts = async (req, res) => {
     if (searchRaw) {
       query.$or = [
         { title: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
+        { category: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
         // { brand: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
         // { color: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
         // { isNewProduct: { $regex: new RegExp(escapeRegex(searchRaw), "i") } },
@@ -155,6 +156,11 @@ export const getProducts = async (req, res) => {
     const titles = parseMultiParam(req.query.title);
     if (titles.length > 0) {
       query.title = { $in: titles };
+    }
+
+    const categories = parseMultiParam(req.query.category);
+    if (categories.length > 0) {
+      query.category = { $in: categories };
     }
 
     const brands = parseMultiParam(req.query.brand);

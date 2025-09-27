@@ -3,9 +3,9 @@
 import { getProductBySlug, getProducts, searchProduct } from "@/libs/product";
 
 export const getProductsAction = async (
-  page: number,
-  search: string,
-  limit: number,
+  page?: number | 1,
+  search?: string | "",
+  limit?: number | 10,
   extraQuery: string = ""
 ) => {
   const data = await getProducts(page, search, limit, extraQuery);

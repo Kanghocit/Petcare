@@ -1,24 +1,41 @@
 "use client";
 import { useState } from "react";
 import ProductCard from "../product-card";
+import { Product } from "@/interface/product";
 
 interface TabProps {
   label: string;
-  content: {
-    img: string[];
-    title: string;
-    star: number;
-    price: number;
-    isSale: boolean;
-  }[];
+  key: string;
 }
 
 interface TabsProps {
   tabs: TabProps[];
+  catFoodData: Product[];
+  dogFoodData: Product[];
+  toysData: Product[];
 }
 
-const Tabs = ({ tabs }: TabsProps) => {
+const Tabs = ({ tabs, catFoodData, dogFoodData, toysData }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
+
+  // Function to get data based on active tab
+  const getCurrentData = () => {
+    const currentTab = tabs[activeTab];
+    if (!currentTab) return [];
+
+    switch (currentTab.key) {
+      case "cat-food":
+        return catFoodData;
+      case "dog-food":
+        return dogFoodData;
+      case "toys":
+        return toysData;
+      default:
+        return [];
+    }
+  };
+
+  const currentData = getCurrentData();
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
@@ -41,15 +58,18 @@ const Tabs = ({ tabs }: TabsProps) => {
 
       {/* Tab Content */}
       <div className="flex flex-wrap gap-4 items-center justify-center">
-        {tabs[activeTab].content
-          ? tabs[activeTab].content?.map((item, index) => (
+        {currentData && currentData.length > 0
+          ? currentData.map((item, index) => (
               <ProductCard
-                key={index}
-                img={item.img as [string, string]}
+                key={item._id || index}
+                img={item.images as [string, string]}
                 title={item.title}
                 star={item.star}
+                discount={item.discount}
+                salePrice={item.price * (1 - item.discount / 100)}
                 price={item.price}
-                isSale={item.isSale}
+                isSale={item.isSaleProduct}
+                slug={item.slug}
               />
             ))
           : "Hết hàng mất rồi bạn ơi"}

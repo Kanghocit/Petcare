@@ -74,9 +74,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         <div className="my-3">
-          <p className="text-black font-bold mb-1 line-clamp-2 group-hover:text-[#ffc226] cursor-pointer">
-            {title}
-          </p>
+          <div className="min-h-[50px]">
+            <p className="text-black font-bold mb-1 line-clamp-2 group-hover:text-[#ffc226] cursor-pointer">
+              {title}
+            </p>
+          </div>
 
           {/* Ant Design Rate */}
           <Rate
@@ -87,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
 
           {/* Giá tiền */}
-          <div className="text-sm font-semibold mt-1 flex items-center justify-between">
+          <div className="text-sm font-semibold mt-1 flex items-center justify-between min-h-[45px]">
             {isSale && typeof salePrice === "number" ? (
               <div className="flex flex-col">
                 <span className="text-red-500 text-xl">
