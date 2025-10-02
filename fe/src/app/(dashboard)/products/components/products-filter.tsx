@@ -9,28 +9,14 @@ import { Brand } from "@/interface/brand";
 
 const { Panel } = Collapse;
 
-const COLORS = [
-  "Red",
-  "Green",
-  "Yellow",
-  "Black",
-  "White",
-  "Orange",
-  "Blue",
-  "Pink",
-  "Purple",
-  "Grey",
-  "Dual Tone",
-  "Brown",
-];
-
 const VND_MAX = 1_000_000;
 
 const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
   const [priceRange, setPriceRange] = useState([0, VND_MAX]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [colorSearch, setColorSearch] = useState("");
+  // const [colorSearch, setColorSearch] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -110,8 +96,12 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
     pushParams(params);
   };
 
-  const filteredColors = COLORS.filter((color) =>
-    color.toLowerCase().includes(colorSearch.toLowerCase())
+  // const filteredColors = COLORS.filter((color) =>
+  //   color.toLowerCase().includes(colorSearch.toLowerCase())
+  // );
+
+  const filteredBrands = brands.filter((brand) =>
+    brand.name.toLowerCase().includes(brandSearch.toLowerCase())
   );
 
   const hasActiveFilters =
@@ -216,8 +206,8 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
       {/* Content */}
       <div className="p-4">
         <Collapse
-          defaultActiveKey={["price", "color"]}
           ghost
+          defaultActiveKey={["price", "brand", "flags"]}
           expandIconPosition="end"
           className="border-none"
         >
@@ -278,7 +268,7 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
             </div>
           </Panel>
 
-          {/* Color Filter */}
+          {/* Color Filter
           <Panel
             header={<span className="font-medium ">Màu sắc</span>}
             key="color"
@@ -319,7 +309,7 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
                 ))}
               </div>
             </div>
-          </Panel>
+          </Panel> */}
 
           {/* Brand Filter */}
           <Panel
@@ -328,8 +318,18 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
             className="border-b border-gray-100"
           >
             <div className="py-2">
+              <Input
+                placeholder="Tìm kiếu thương hiệu..."
+                prefix={<SearchOutlined className="text-blue-500" />}
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                size="large"
+                className="mb-3 rounded-xl border border-gray-300 bg-gray-50 
+             hover:bg-white focus-within:border-blue-500 focus-within:ring-2 
+             focus-within:ring-blue-200 transition-all"
+              />
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {brands.map((brand) => (
+                {filteredBrands.map((brand) => (
                   <Checkbox
                     key={brand._id}
                     checked={selectedBrands.includes(brand.name)}

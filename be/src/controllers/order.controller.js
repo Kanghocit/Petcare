@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/user.js";
 
 // Create order
 export const createOrder = async (req, res) => {
@@ -132,6 +133,13 @@ export const createOrder = async (req, res) => {
         product.quantity -= item.quantity;
         await product.save();
       }
+    }
+
+    // Cập nhật tổng tiền của user
+    const user = await User.findById(userId);
+    if (user) {
+      user.total_spend += created.totalAmount;
+      await user.save();
     }
 
     return res.status(201).json({

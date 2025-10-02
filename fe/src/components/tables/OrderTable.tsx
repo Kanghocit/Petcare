@@ -138,7 +138,7 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
       rowKey="_id"
       pagination={{
         pageSize: 10,
-        showSizeChanger: true,
+        showSizeChanger: false,
         showQuickJumper: true,
         showTotal: (total: number, range: [number, number]) =>
           `${range[0]}-${range[1]} của ${total} đơn hàng`,

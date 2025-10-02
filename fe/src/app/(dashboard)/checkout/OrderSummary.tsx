@@ -15,13 +15,12 @@ import {
 import { CreateOrderPayload } from "@/libs/order";
 import { App, Button, Input } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
+import useBuyStore from "@/store/buy-store";
 
-const DiscountInput: React.FC = () => {
-  const search = useSearchParams();
+const DiscountInput: React.FC<{ subtotal: number }> = ({ subtotal }) => {
   const [code, setCode] = useState("");
   const setDiscount = useCheckoutStore((s) => s.setDiscount);
   const appliedAmount = useCheckoutStore((s) => s.discountAmount) || 0;
-  const subtotal = useCartStore((s) => s.total)();
   const { message } = App.useApp();
 
   // useEffect(() => {
@@ -68,7 +67,7 @@ const DiscountInput: React.FC = () => {
 
   const clear = () => setDiscount(undefined, undefined);
 
-  return search.size !== 0 ? null : (
+  return (
     <div className="flex flex-col justify-between gap-2 my-2">
       <span>Mã giảm giá</span>
       <div className="flex items-center gap-2">
@@ -97,10 +96,12 @@ const OrderSummary: React.FC = () => {
   const { message } = App.useApp();
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
-  const totalFromStore = useCartStore((s) => s.total)();
   const clearCart = useCartStore((state) => state.clearCart);
+  const clearBuy = useBuyStore((state) => state.clearBuy);
 
   const [cartFromStorage, setCartFromStorage] = useState<typeof cart>([]);
+  const buy = useBuyStore((state) => state.buy);
+  const setBuy = useBuyStore((state) => state.setBuy);
 
   useEffect(() => {
     try {
@@ -114,14 +115,29 @@ const OrderSummary: React.FC = () => {
     }
   }, []);
 
-  const effectiveCart = cart.length > 0 ? cart : cartFromStorage;
+  // Determine which data to display based on checkout source
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromBuyNow = urlParams.get("from") === "buy-now";
+  const fromCart = urlParams.get("from") === "cart";
+
+  const effectiveCart = fromBuyNow
+    ? buy // For buy-now, always use buy store
+    : fromCart
+    ? buy.length > 0
+      ? buy
+      : cart // For cart, prefer synced buy store, fallback to cart
+    : buy.length > 0
+    ? buy
+    : cart.length > 0
+    ? cart
+    : cartFromStorage; // Default fallback logic
   const subtotal = useMemo(() => {
-    if (cart.length > 0) return totalFromStore;
+    // Calculate subtotal based on effectiveCart (what's actually displayed)
     return effectiveCart.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-  }, [cart.length, totalFromStore, effectiveCart]);
+  }, [effectiveCart]);
 
   const shippingFee = effectiveCart.length > 0 ? 30000 : 0;
   const discountCode = useCheckoutStore((s) => s.discountCode);
@@ -150,8 +166,43 @@ const OrderSummary: React.FC = () => {
     }))
   );
 
+  // Sync data based on checkout source and clear discount for new orders
+  useEffect(() => {
+    const setDiscount = useCheckoutStore.getState().setDiscount;
+
+    if (fromBuyNow) {
+      // If from buy-now, buy store already has the single item we want to purchase
+      // Clear discount since this is a new "buy now" order
+      setDiscount(undefined, undefined);
+    } else if (fromCart) {
+      // If from cart drawer, cart should already be synced to buy store
+      // But double-check in case of timing issues
+      if (buy.length === 0 && cart.length > 0) {
+        setBuy(cart);
+      }
+      // Clear discount since we're coming from cart (new checkout session)
+      setDiscount(undefined, undefined);
+    } else {
+      // Direct access to checkout page, try to sync from available data
+      if (buy.length === 0 && cart.length > 0) {
+        setBuy(cart);
+      } else if (buy.length === 0 && cartFromStorage.length > 0) {
+        setBuy(cartFromStorage);
+      }
+      // Don't clear discount for direct access (user might be refreshing)
+    }
+  }, [fromBuyNow, fromCart, buy.length, cart, cartFromStorage, setBuy]);
+
   const handlePlaceOrder = async () => {
-    const items = effectiveCart.map((i) => ({
+    // Use effectiveCart for order creation (what user sees is what they get)
+    const itemsToOrder = effectiveCart;
+
+    if (itemsToOrder.length === 0) {
+      message.error("Giỏ hàng trống!");
+      return;
+    }
+
+    const items = itemsToOrder.map((i) => ({
       product: i.id,
       quantity: i.quantity,
       priceAtPurchase: i.price,
@@ -214,6 +265,7 @@ const OrderSummary: React.FC = () => {
             if (payUrl) {
               window.location.href = payUrl;
               clearCart();
+              clearBuy();
             } else {
               message.error("Không thể tạo link thanh toán");
             }
@@ -223,6 +275,7 @@ const OrderSummary: React.FC = () => {
           return;
         }
         clearCart();
+        clearBuy();
         router.push("/profile/orders");
       } else {
         const msg =
@@ -268,7 +321,7 @@ const OrderSummary: React.FC = () => {
           </div>
         </div>
       ))}
-      <DiscountInput />
+      <DiscountInput subtotal={subtotal} />
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Tạm tính</span>

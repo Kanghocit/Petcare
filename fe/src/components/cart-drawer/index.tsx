@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import Image from "next/image";
 import useCartStore from "@/store/cart-store";
+import useBuyStore from "@/store/buy-store";
 import { useRouter } from "next/navigation";
 
 const PROMO_MILESTONES = [
@@ -23,10 +24,11 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
 
   const cart = useCartStore((state) => state.cart);
-
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const total = useCartStore((state) => state.total)();
+
+  const setBuy = useBuyStore((state) => state.setBuy);
 
   const showDrawer = () => setOpen(true);
   const onClose = () => setOpen(false);
@@ -213,7 +215,9 @@ const CartDrawer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 borderRadius: 999,
               }}
               onClick={() => {
-                router.push("/checkout");
+                // Sync cart to buy store before going to checkout
+                setBuy(cart);
+                router.push("/checkout?from=cart");
                 setOpen(false);
               }}
             >

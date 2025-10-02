@@ -14,9 +14,12 @@ import { HiMinus, HiPlus } from "react-icons/hi";
 import useCartStore from "@/store/cart-store";
 import { Product } from "../../../../../interface/product";
 import resolveImageSrc from "@/utils/resolveImageSrc";
+import { useRouter } from "next/navigation";
+import useBuyStore from "@/store/buy-store";
 
 const ProductDetailInfo = ({ product }: { product: Product }) => {
   // Dữ liệu mẫu, có thể thay bằng props sau này
+  const router = useRouter();
   const productName = product.title;
   const productType = [{ name: product.brand, url: "#" }];
   const [quantity, setQuantity] = useState("1");
@@ -31,7 +34,15 @@ const ProductDetailInfo = ({ product }: { product: Product }) => {
 
   const getQuantity = () => Math.max(1, parseInt(quantity) || 1);
   const addToCart = useCartStore((state) => state.addToCart);
+  const setBuyNow = useBuyStore((state) => state.setBuyNow);
 
+  // Calculate actual price (with discount if applicable)
+  const getActualPrice = () => {
+    if (product.isSaleProduct && product.discount > 0) {
+      return product.price * (1 - product.discount / 100);
+    }
+    return product.price;
+  };
   return (
     <div className="flex flex-col gap-4">
       {/* Tên sản phẩm */}
@@ -110,24 +121,39 @@ const ProductDetailInfo = ({ product }: { product: Product }) => {
       {/* Nút hành động */}
       <div className="flex gap-4 mt-4">
         <button
-          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-500 hover:to-yellow-500 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
+          className="flex-1 py-3 cursor-pointer rounded-xl bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-500 hover:to-yellow-500 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
           onClick={() =>
             addToCart({
               id: product._id,
               name: product.title,
               desc: product.description,
-              price: product.price,
+              price: getActualPrice(),
               img:
                 resolveImageSrc(product.images?.[0]) ||
                 "/images/product-fallback.png",
-              quantity: 1, // hoặc số lượng chọn
+              quantity: getQuantity(),
             })
           }
         >
           <FaShoppingCart className="text-xl" />
           Thêm vào giỏ hàng
         </button>
-        <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all">
+        <button
+          className="flex-1 py-3 rounded-xl cursor-pointer bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
+          onClick={() => {
+            setBuyNow({
+              id: product._id,
+              name: product.title,
+              desc: product.description,
+              price: getActualPrice(),
+              img:
+                resolveImageSrc(product.images?.[0]) ||
+                "/images/product-fallback.png",
+              quantity: getQuantity(), // Sử dụng số lượng user chọn
+            });
+            router.push("/checkout?from=buy-now");
+          }}
+        >
           <MdPayment className="text-xl" />
           Mua ngay
         </button>

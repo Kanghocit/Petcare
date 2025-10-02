@@ -24,6 +24,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
+  console.log("user", user);
   const { message } = App.useApp();
   const router = useRouter();
   const cartCount = useCartStore((s) => s.cart.length);
@@ -97,12 +98,14 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         <SearchBar />
         <div className="flex items-center justify-around gap-2">
           <Language />
+
           {user ? (
             <Dropdown menu={{ items }} placement="bottomRight" arrow>
               <div className="flex items-center gap-2 cursor-pointer">
-                <Avatar size="large" src={user?.avatar}>
-                  {user?.name?.charAt(0)}
+                <Avatar size="large" style={{ backgroundColor: "#f56a00" }}>
+                  {user?.name.charAt(0).toUpperCase()}
                 </Avatar>
+
                 <div className="flex flex-col items-start text-sm ">
                   <p>Tài khoản</p>
                   <p className="font-semibold">{user.name}</p>
@@ -115,6 +118,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                 <Avatar size="large">
                   <UserOutlined />
                 </Avatar>
+
                 <div className="flex flex-col items-start text-sm ">
                   <p>Tài khoản</p>
                   <p className="font-semibold">Đăng nhập</p>
@@ -122,6 +126,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
               </div>
             </Dropdown>
           )}
+
           <CartDrawer>
             <button className="text-xl flex items-center gap-2 cursor-pointer  rounded-xl p-3 ">
               <Badge count={cartCount}>

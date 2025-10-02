@@ -1,7 +1,7 @@
 "use client";
 
 import { EyeOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-import { Rate, Tooltip } from "antd";
+import { App, Rate, Tooltip } from "antd";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -39,12 +39,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const text = <span>Xem nhanh</span>;
   const addToCart = useCartStore((state) => state.addToCart);
 
+  const { message } = App.useApp();
+
+  // Calculate actual price (use salePrice if available, otherwise calculate from discount)
+  const getActualPrice = () => {
+    if (salePrice) return salePrice;
+    if (isSale && discount && discount > 0) {
+      return price * (1 - discount / 100);
+    }
+    return price;
+  };
+
   const primaryImg = resolveImageSrc(img?.[0]);
   const hoverImg = resolveImageSrc(img?.[1]);
 
   return (
     <div
-      className={`w-64 !rounded-2xl p-3 shadow-sm hover:shadow-lg transition relative group bg-white  ${className}`}
+      className={`w-64 h-[420px] !rounded-2xl px-3 pt-3 shadow-sm hover:shadow-lg transition relative group bg-white flex flex-col ${className}`}
     >
       <Link href={`/product/${slug}`}>
         <div className="relative w-full overflow-hidden group rounded-md">
@@ -89,47 +100,52 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
 
           {/* Giá tiền */}
-          <div className="text-sm font-semibold mt-1 flex items-center justify-between min-h-[45px]">
+          <div className="text-sm font-semibold mt-1 flex items-end justify-between">
             {isSale && typeof salePrice === "number" ? (
-              <div className="flex flex-col">
-                <span className="text-red-500 text-xl">
+              <div className="flex flex-col gap-1 flex-1">
+                <span className="text-red-500 text-xl font-bold">
                   {salePrice.toLocaleString()}₫
                 </span>
                 <div className="flex gap-2 items-center">
-                  <span className="line-through text-gray-500">
+                  <span className="line-through text-gray-500 text-sm">
                     {price.toLocaleString()}₫
                   </span>
-                  <span className="text-white bg-red-500 rounded-xl px-2">
-                    {discount.toLocaleString()}%
+                  <span className="text-white bg-red-500 rounded-md px-2 py-0.5 text-xs font-medium">
+                    -{discount}%
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between gap-2 ">
-                <span className="text-red-500 text-xl">
+              <div className="flex flex-col gap-1 flex-1">
+                <span className="text-red-500 text-xl font-bold">
                   {price.toLocaleString()}₫
                 </span>
               </div>
             )}
             <button
-              className="!rounded-full !w-10 h-10 !bg-[#FFEDE5] !text-[#ff8662] hover:!bg-[#FFEDE5]/80 cursor-pointer"
-              onClick={() =>
+              className="rounded-full flex items-center justify-center w-10 h-10 bg-[#FFEDE5] text-[#ff8662] hover:bg-[#FFEDE5]/80 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-red-200 hover:scale-110 ml-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 addToCart({
                   id: id || slug,
                   name: title,
                   desc: title,
-                  price: price,
+                  price: getActualPrice(),
                   img: primaryImg || "/images/account.webp",
                   quantity: 1,
-                })
-              }
+                });
+                message.success(`Sản phẩm đã được thêm vào giỏ hàng!`);
+              }}
             >
               <ShoppingCartOutlined />
             </button>
           </div>
 
-          {/* Vừa mở bán */}
-          {isNew && <p className="text-sm text-gray-500 !mb-0">Vừa mở bán</p>}
+          {/* Label "Vừa mở bán" */}
+          {isNew && (
+            <p className="text-sm text-gray-500 mt-2 mb-0">Vừa mở bán</p>
+          )}
         </div>
       </Link>
     </div>
