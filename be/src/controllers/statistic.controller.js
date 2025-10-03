@@ -5,21 +5,25 @@ import User from "../models/user.js";
 
 export const getStatistic = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, type = "date" } = req.query;
 
     const end = endDate ? new Date(endDate) : new Date();
     const start = startDate
       ? new Date(startDate)
-      : new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 ngày trước
+      : new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 ngày
 
-    // 1) Tổng quan theo Order
+    // =============================
+    // 1) Tổng quan
+    // =============================
     const [orderAgg] = await Order.aggregate([
       { $match: { createdAt: { $gte: start, $lte: end } } },
       {
         $group: {
           _id: null,
-          revenue: { $sum: "$totalAmount" },
-          sales: { $sum: 1 },
+          sales: { $sum: "$totalAmount" },
+          revenue: {
+            $sum: { $sum: ["$subtotal", "$shipping.fee"] },
+          },
           canceled: {
             $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
           },
@@ -27,7 +31,6 @@ export const getStatistic = async (req, res) => {
       },
     ]);
 
-    // 2) Tính sold (tổng số lượng đã bán) và số lượng trả hàng (refund count)
     const [itemsAgg] = await Order.aggregate([
       { $match: { createdAt: { $gte: start, $lte: end } } },
       { $unwind: "$items" },
@@ -40,32 +43,78 @@ export const getStatistic = async (req, res) => {
       },
     ]);
 
-    // 3) Đếm khách hàng mới
     const newCustomers = await User.countDocuments({
       createdAt: { $gte: start, $lte: end },
     });
 
-    // Lấy ra sản phẩm sắp hết hàng và đã hết hàng
-    const lowStock = await Product.find({
-      quantity: { $gte: 1, $lte: 10 },
-    });
-    const outOfStock = await Product.find({
-      quantity: 0,
-    });
+    const lowStock = await Product.find({ quantity: { $gte: 1, $lte: 10 } });
+    const outOfStock = await Product.find({ quantity: 0 });
 
+    // =============================
+    // 2) Thống kê theo mốc thời gian
+    // =============================
+    let dateGroup = {};
+    switch (type) {
+      case "year":
+        dateGroup = { $dateToString: { format: "%Y", date: "$createdAt" } };
+        break;
+      case "quarter":
+        // Lấy quý theo tháng
+        dateGroup = {
+          $concat: [
+            { $toString: { $year: "$createdAt" } },
+            "-Q",
+            {
+              $toString: { $ceil: { $divide: [{ $month: "$createdAt" }, 3] } },
+            },
+          ],
+        };
+        break;
+      case "month":
+        dateGroup = { $dateToString: { format: "%Y-%m", date: "$createdAt" } };
+        break;
+      case "week":
+        dateGroup = {
+          $concat: [
+            { $toString: { $isoWeekYear: "$createdAt" } },
+            "-W",
+            { $toString: { $isoWeek: "$createdAt" } },
+          ],
+        };
+        break;
+      default: // "date"
+        dateGroup = {
+          $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+        };
+    }
+
+    const timeSeries = await Order.aggregate([
+      { $match: { createdAt: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: dateGroup,
+          sales: { $sum: "$totalAmount" },
+          revenue: {
+            $sum: { $subtract: ["$totalAmount", "$discount.amount"] },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // =============================
+    // 3) Kết quả trả về
+    // =============================
     const stats = {
       revenue: orderAgg?.revenue || 0,
       sales: orderAgg?.sales || 0,
       sold: itemsAgg?.sold || 0,
-      // Theo UI, "Trả hàng" là số lượng trả về.
       refund: itemsAgg?.returnedQty || 0,
       canceled: orderAgg?.canceled || 0,
       newCustomers,
       range: { start, end },
-      products: {
-        lowStock,
-        outOfStock,
-      },
+      products: { lowStock, outOfStock },
+      chart: timeSeries, // << dữ liệu cho biểu đồ
     };
 
     res

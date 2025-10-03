@@ -11,13 +11,20 @@ export const metadata: Metadata = {
   description: "This is Next.js Home for TailAdmin Dashboard Template",
 };
 
-export default async function Ecommerce() {
-  const statisticData = await getStatisticsAction();
-  const { products } = statisticData;
+export default async function Ecommerce({
+  searchParams,
+}: {
+  searchParams: Promise<{ startDate: string; endDate: string; type: string }>;
+}) {
+  const { startDate, endDate, type } = await searchParams;
+
+  const statisticData = await getStatisticsAction(startDate, endDate, type);
+  const { products, chart } = statisticData;
+
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12">
-        <MonthlySalesChart />
+        <MonthlySalesChart chart={chart} />
       </div>
       <div className="col-span-12 space-y-6">
         <EcommerceMetrics data={statisticData} />

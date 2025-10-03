@@ -8,8 +8,24 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 type PickerType = "date" | "week" | "month" | "quarter" | "year";
-
 type RangeOnChange = React.ComponentProps<typeof RangePicker>["onChange"];
+
+const formatByType = (type: PickerType) => {
+  switch (type) {
+    case "date":
+      return "YYYY-MM-DD";
+    case "week":
+      return "YYYY-wo"; // tuần
+    case "month":
+      return "YYYY-MM";
+    case "quarter":
+      return "YYYY-[Q]Q";
+    case "year":
+      return "YYYY";
+    default:
+      return "YYYY-MM-DD";
+  }
+};
 
 const PickerWithType = ({
   type,
@@ -27,21 +43,31 @@ const SelectTime: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleChangeDate: RangeOnChange = (value, dateString) => {
-    if (!value) return;
-    console.log("typehehe", type, dateString);
-
-    const [start, end] = value;
-    const dateStart = start?.format("YYYY-MM-DD");
-    const dateEnd = end?.format("YYYY-MM-DD");
-    if (!dateStart || !dateEnd) return;
-
+  const handleChangeDate: RangeOnChange = (value) => {
     // copy query hiện tại
     const params = new URLSearchParams(searchParams.toString());
-    params.set("from", dateStart);
-    params.set("to", dateEnd);
 
-    router.push(`?${params.toString()}`);
+    if (!value) {
+      // clear filter
+      params.delete("from");
+      params.delete("to");
+      params.delete("type");
+    } else {
+      const [start, end] = value;
+      const format = formatByType(type);
+
+      const dateStart = start?.format(format);
+      const dateEnd = end?.format(format);
+
+      if (!dateStart || !dateEnd) return;
+
+      params.set("from", dateStart);
+      params.set("to", dateEnd);
+      params.set("type", type);
+    }
+
+    // giữ nguyên pathname
+    router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
   return (

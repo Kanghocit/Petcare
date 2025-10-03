@@ -39,7 +39,7 @@ export const EcommerceMetrics = ({ data }: { data: EcommerceStats }) => {
 
       <StatisticCard
         title="Doanh số"
-        value={data.sales}
+        value={formatCurrency(data.sales)}
         icon={
           <ShoppingCartOutlined className="text-xl text-blue-600! dark:text-blue-500!" />
         }

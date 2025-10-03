@@ -15,37 +15,47 @@ import { getFlashSaleAction } from "@/actions";
 
 export default async function Home() {
   const flashSale = await getFlashSaleAction();
+
   return (
     <div className="flex flex-col w-full ">
       <MotionDiv>
         <Carousel />
       </MotionDiv>
+
       <MotionDiv>
         <Banner />
       </MotionDiv>
+
       <MotionDiv>
         <Services />
       </MotionDiv>
+
       <MotionDiv>
         <Voichers />
       </MotionDiv>
-      {flashSale && (
+
+      {flashSale?.status === "active" && (
         <MotionDiv>
           <PlashSale flashSale={flashSale} />
         </MotionDiv>
       )}
+
       <MotionDiv>
         <Products />
       </MotionDiv>
+
       <MotionDiv>
         <Foods title="Thức ăn cho mèo" tabs={FOOD_TABS.tabs} />
       </MotionDiv>
+
       <MotionDiv>
         <News />
       </MotionDiv>
+
       <MotionDiv>
         <ProductBrand />
       </MotionDiv>
+
       <MotionDiv>
         <Address />
       </MotionDiv>

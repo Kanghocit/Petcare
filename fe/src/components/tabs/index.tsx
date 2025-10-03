@@ -62,6 +62,7 @@ const Tabs = ({ tabs, catFoodData, dogFoodData, toysData }: TabsProps) => {
           ? currentData.map((item, index) => (
               <ProductCard
                 key={item._id || index}
+                id={String(item._id)}
                 img={item.images as [string, string]}
                 title={item.title}
                 star={item.star}

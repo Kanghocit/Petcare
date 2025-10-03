@@ -2,19 +2,33 @@
 import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
 import SelectTime from "../select-time";
-import { useSearchParams } from "next/navigation";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-export default function MonthlySalesChart() {
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
+type ChartType = {
+  _id: string;
+  sales: number;
+  revenue: number;
+};
 
-  console.log(from, to);
+export default function MonthlySalesChart({ chart }: { chart: ChartType[] }) {
+  // build categories từ _id (theo tháng, năm...)
+  const categories = chart?.map((item) => item._id);
+
+  // series cho chart
+  const series = [
+    {
+      name: "Doanh thu",
+      data: chart?.map((item) => item.revenue),
+    },
+    {
+      name: "Doanh số",
+      data: chart?.map((item) => item.sales),
+    },
+  ];
 
   const options: ApexOptions = {
     colors: ["#465fff", "#ff9800"], // Sales (xanh), Revenue (cam)
@@ -35,20 +49,7 @@ export default function MonthlySalesChart() {
     dataLabels: { enabled: false },
     stroke: { show: true, width: 4, colors: ["transparent"] },
     xaxis: {
-      categories: [
-        "Tháng 1",
-        "Tháng 2",
-        "Tháng 3",
-        "Tháng 4",
-        "Tháng 5",
-        "Tháng 6",
-        "Tháng 7",
-        "Tháng 8",
-        "Tháng 9",
-        "Tháng 10",
-        "Tháng 11",
-        "Tháng 12",
-      ],
+      categories,
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
@@ -77,23 +78,9 @@ export default function MonthlySalesChart() {
     fill: { opacity: 1 },
     tooltip: {
       x: { show: false },
-      y: { formatter: (val: number) => `${val}` },
+      y: { formatter: (val: number) => `${val.toLocaleString()} VNĐ` },
     },
   };
-
-  // Mock data cho 2 series
-  const series = [
-    {
-      name: "Doanh thu",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
-    },
-    {
-      name: "Doanh số",
-      data: [
-        1200, 2500, 1800, 2200, 1600, 2100, 2800, 900, 1700, 3200, 2300, 1000,
-      ],
-    },
-  ];
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 sm:px-6 sm:pt-6 dark:border-gray-800 dark:bg-white/[0.03]">

@@ -11,7 +11,7 @@ import resolveImageSrc from "@/utils/resolveImageSrc";
 
 type ProductCardProps = {
   img?: [string, string];
-  id?: string;
+  id: string;
   title: string;
   slug: string;
   star: number; // từ 1 đến 5
@@ -128,7 +128,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 e.stopPropagation();
                 e.preventDefault();
                 addToCart({
-                  id: id || slug,
+                  id,
                   name: title,
                   desc: title,
                   price: getActualPrice(),
