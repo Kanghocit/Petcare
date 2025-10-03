@@ -5,7 +5,7 @@ import { VoicherInterface } from "@/interface/voicher";
 import Voicher from "./voicher";
 
 const Voichers = async () => {
-  const data = await getAllVoichers();
+  const data = await getAllVoichers(4);
   const voicherData = data.voichers;
 
   return (

@@ -3,8 +3,16 @@ import User from "../models/user.js";
 
 export const createVoicher = async (req, res) => {
   try {
-    const { name, code, discountValue, startDate, endDate, maxUsers, status } =
-      req.body;
+    const {
+      name,
+      code,
+      discountValue,
+      startDate,
+      endDate,
+      maxUsers,
+      status,
+      minOrderValue,
+    } = req.body;
     const existedVoicher = await Voicher.findOne({ $or: [{ name }, { code }] });
     if (existedVoicher) {
       return res.status(409).json({ ok: false, message: "Voicher đã tồn tại" });
@@ -15,6 +23,7 @@ export const createVoicher = async (req, res) => {
       discountValue,
       startDate,
       endDate,
+      minOrderValue,
       maxUsers,
       usedCount: 0,
       status,
@@ -52,7 +61,7 @@ export const getVoichers = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .select(
-        "_id name code discountValue startDate endDate maxUsers usedCount status"
+        "_id name code discountValue startDate endDate maxUsers usedCount status minOrderValue"
       );
     const total = await Voicher.countDocuments(query);
     res.status(200).json({
@@ -71,13 +80,13 @@ export const getVoichers = async (req, res) => {
 
 export const validateVoicher = async (req, res) => {
   try {
-    const { code, userId } = req.body;
+    const { code, userId, orderTotal } = req.body;
 
     // Validate input
-    if (!code || !userId) {
+    if (!code || !userId || orderTotal === undefined) {
       return res.status(400).json({
         ok: false,
-        message: "Mã voicher và userId là bắt buộc",
+        message: "Mã voicher, userId và orderTotal là bắt buộc",
       });
     }
 
@@ -127,6 +136,14 @@ export const validateVoicher = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Người dùng không tồn tại",
+      });
+    }
+
+    // Check if order total meets minimum order value requirement
+    if (voicher.minOrderValue > orderTotal) {
+      return res.status(400).json({
+        ok: false,
+        message: "Đơn hàng không đủ giá trị để sử dụng voicher",
       });
     }
 
@@ -158,13 +175,13 @@ export const validateVoicher = async (req, res) => {
 
 export const useVoicher = async (req, res) => {
   try {
-    const { code, userId } = req.body;
+    const { code, userId, orderTotal } = req.body;
 
     // Validate input
-    if (!code || !userId) {
+    if (!code || !userId || orderTotal === undefined) {
       return res.status(400).json({
         ok: false,
-        message: "Mã voicher và userId là bắt buộc",
+        message: "Mã voicher, userId và orderTotal là bắt buộc",
       });
     }
 
@@ -214,6 +231,14 @@ export const useVoicher = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Người dùng không tồn tại",
+      });
+    }
+
+    // Check if order total meets minimum order value requirement
+    if (voicher.minOrderValue > orderTotal) {
+      return res.status(400).json({
+        ok: false,
+        message: "Đơn hàng không đủ giá trị để sử dụng voicher",
       });
     }
 
@@ -249,6 +274,7 @@ export const useVoicher = async (req, res) => {
         _id: voicher._id,
         name: voicher.name,
         code: voicher.code,
+        minOrderValue: voicher.minOrderValue,
         discountValue: voicher.discountValue,
         usedCount: voicher.usedCount,
         status: voicher.status,
@@ -267,11 +293,28 @@ export const useVoicher = async (req, res) => {
 export const updateVoicher = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, code, discountValue, startDate, endDate, maxUsers, status } =
-      req.body;
+    const {
+      name,
+      code,
+      discountValue,
+      startDate,
+      endDate,
+      maxUsers,
+      status,
+      minOrderValue,
+    } = req.body;
     const voicher = await Voicher.findByIdAndUpdate(
       id,
-      { name, code, discountValue, startDate, endDate, maxUsers, status },
+      {
+        name,
+        code,
+        discountValue,
+        startDate,
+        endDate,
+        maxUsers,
+        status,
+        minOrderValue,
+      },
       { new: true }
     );
     res

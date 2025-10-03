@@ -15,6 +15,7 @@ interface AddDrawerProps {
   onChangeSearch: (value: string) => void;
   products: Product[];
   total: number;
+  action?: "create" | "update";
 }
 
 type RowType = Product & { key: string };
@@ -27,6 +28,7 @@ const AddDrawer: React.FC<AddDrawerProps> = ({
   onChangeSearch,
   products,
   total,
+  action,
 }) => {
   const [open, setOpen] = useState(false);
   const [loading] = useState(false);
@@ -117,7 +119,11 @@ const AddDrawer: React.FC<AddDrawerProps> = ({
         />
         <TablePagination
           total={total || 0}
-          link="/manage-sales-table/add"
+          link={
+            action === "update"
+              ? `/manage-sales-table/edit`
+              : "/manage-sales-table/add"
+          }
           limit={10}
         />
       </Drawer>

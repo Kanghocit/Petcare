@@ -32,13 +32,18 @@ export const createPaymentAction = async (
 
 export const postValidateVoicherAction = async (
   code: string,
-  userId: string
+  userId: string,
+  orderTotal: number
 ) => {
-  const data = await postValidateVoicher(code, userId);
+  const data = await postValidateVoicher(code, userId, orderTotal);
   return data;
 };
 
-export const postUseVoicherAction = async (code: string, userId: string) => {
-  const data = await postUseVoicher(code, userId);
+export const postUseVoicherAction = async (
+  code: string,
+  userId: string,
+  orderTotal: number
+) => {
+  const data = await postUseVoicher(code, userId, orderTotal);
   return data;
 };

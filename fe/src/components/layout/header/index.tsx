@@ -24,7 +24,6 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
-  console.log("user", user);
   const { message } = App.useApp();
   const router = useRouter();
   const cartCount = useCartStore((s) => s.cart.length);

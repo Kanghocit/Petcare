@@ -244,6 +244,28 @@ export const searchProducts = async (req, res) => {
       offset: (page - 1) * limit,
       showRankingScore: true,
     });
+
+    if (result.hits.length === 0) {
+      const data = await Product.find({
+        $or: [
+          { title: { $regex: new RegExp(query, "i") } },
+          { description: { $regex: new RegExp(query, "i") } },
+          { category: { $regex: new RegExp(query, "i") } },
+        ],
+      })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+
+      return res.status(200).json({
+        ok: true,
+        message: "Tìm sản phẩm thành công",
+        products: data,
+        total: data.length,
+        page,
+        totalPages: Math.ceil(data.length / limit),
+      });
+    }
     res.status(200).json({
       ok: true,
       message: "Tìm sản phẩm thành công",

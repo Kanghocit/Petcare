@@ -1,4 +1,7 @@
 import { MeiliSearch } from "meilisearch";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Create MeiliSearch client with proper error handling
 const createMeiliClient = () => {

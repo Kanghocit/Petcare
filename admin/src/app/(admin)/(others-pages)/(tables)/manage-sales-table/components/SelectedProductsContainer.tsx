@@ -173,6 +173,7 @@ const SelectedProductsContainer = ({
               products={products}
               page={page}
               total={total}
+              action={action === "edit" ? "update" : "create"}
             >
               <Button variant="outlined" color="primary">
                 Tìm sản phẩm

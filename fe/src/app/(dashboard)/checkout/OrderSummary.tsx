@@ -36,7 +36,11 @@ const DiscountInput: React.FC<{ subtotal: number }> = ({ subtotal }) => {
     try {
       const user = await getUserAction();
       const userId = user.user._id;
-      const res = await postValidateVoicherAction(code.trim(), userId);
+      const res = await postValidateVoicherAction(
+        code.trim(),
+        userId,
+        subtotal
+      );
 
       if (res.ok) {
         const discountValueStr = res.voicher.discountValue;
@@ -245,7 +249,7 @@ const OrderSummary: React.FC = () => {
           try {
             const user = await getUserAction();
             const userId = user.user._id;
-            await postUseVoicherAction(discountCode, userId);
+            await postUseVoicherAction(discountCode, userId, subtotal);
           } catch (voicherError) {
             console.error("Voicher usage error:", voicherError);
             // Không cần hiển thị lỗi cho user vì đơn hàng đã được tạo thành công
