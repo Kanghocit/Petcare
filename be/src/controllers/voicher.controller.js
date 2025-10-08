@@ -261,10 +261,10 @@ export const useVoicher = async (req, res) => {
       user.total_spend >= 3000000
         ? "vip"
         : user.total_spend >= 500000
-        ? "loyal"
-        : user.total_spend >= 100000
-        ? "regular"
-        : "new";
+          ? "loyal"
+          : user.total_spend >= 100000
+            ? "regular"
+            : "new";
     await user.save();
 
     res.status(200).json({

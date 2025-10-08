@@ -11,8 +11,8 @@ import { getAllBrandsAction } from "./action";
 import ModalAddBrand from "./ModalAddBrand";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Brand ",
-  description: "Petcare",
+  title: "Kangdy Admin | Brand ",
+  description: "Kangdy",
   // other metadata
 };
 const ManageBannerTablePage = async ({

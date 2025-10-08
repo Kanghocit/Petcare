@@ -1,11 +1,11 @@
 export interface Customer {
     _id: string;
     name: string;
-    email:string;
-    avatar?:string;
-    username?:string;
-    phone:string;
-    address: string;
+    email: string;
+    avatar?: string;
+    username?: string;
+    phone: string;
+    address: any[];
     createdAt: string;
     status: string;
     isVerified?: boolean;

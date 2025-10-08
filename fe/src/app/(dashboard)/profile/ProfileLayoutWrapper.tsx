@@ -17,6 +17,8 @@ export default function ProfileLayoutWrapper({
 }: ProfileLayoutWrapperProps) {
   const pathname = usePathname();
 
+  console.log('user', user);
+
   // Nếu là order detail page thì chỉ render children
   if (
     pathname?.includes("/profile/orders/") &&
@@ -60,12 +62,14 @@ export default function ProfileLayoutWrapper({
                   height={100}
                   className="w-8 h-8 rounded-full"
                 />
-                <p className="font-semibold ">
-                  Xin chào,{" "}
-                  <span className="text-blue-700 font-semibold">
-                    {user?.name}!
-                  </span>
-                </p>
+                <Link href="/profile">
+                  <p className="font-semibold hover:text-[#FF8661] cursor-pointer">
+                    Xin chào,{" "}
+                    <span className="font-semibold">
+                      {user?.name}!
+                    </span>
+                  </p>
+                </Link>
               </div>
             </div>
             {children}
@@ -81,7 +85,7 @@ export default function ProfileLayoutWrapper({
                 href="/profile/addresses"
                 className="border-b border-gray-200 pb-4 cursor-pointer hover:!text-[#FF8661] !text-gray-800"
               >
-                📍 Địa chỉ đã lưu (0)
+                📍 Địa chỉ đã lưu ({user?.address?.length || 0})
               </Link>
               <Link
                 href="/profile/change-password"

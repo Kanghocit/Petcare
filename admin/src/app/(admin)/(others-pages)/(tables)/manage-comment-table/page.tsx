@@ -7,8 +7,8 @@ import { Metadata } from "next";
 import { getCommentsInAdminAction } from "./action";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Comment",
-  description: "Petcare",
+  title: "Kangdy Admin | Comment",
+  description: "Kangdy",
 };
 
 const ManageCommentTablePage = async ({

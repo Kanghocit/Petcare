@@ -7,7 +7,7 @@ import { getStatisticsAction } from "../action";
 
 export const metadata: Metadata = {
   title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
+    "Kangdy PetShop Admin",
   description: "This is Next.js Home for TailAdmin Dashboard Template",
 };
 

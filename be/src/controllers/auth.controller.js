@@ -42,8 +42,8 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Không tìm thấy tài khoản" });
     }
     //check trạng thái 
-    if(user.status === "blocked"){
-      return res.status(400).json({ message: "Tài khoản đã bị vô hiệu hóa"})
+    if (user.status === "blocked") {
+      return res.status(400).json({ message: "Tài khoản đã bị vô hiệu hóa" })
     }
     //so sánh mật khẩu
     const isMatch = await authService.matchPassword(password, user.password);

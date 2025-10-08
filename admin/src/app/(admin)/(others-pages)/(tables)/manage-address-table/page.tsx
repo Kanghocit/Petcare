@@ -11,8 +11,8 @@ import ModalAddAddress from "./ModalAddAddress";
 import ManageAddressTable from "@/components/tables/ManageAddressesTable";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Address ",
-  description: "Petcare",
+  title: "Kangdy Admin | Address ",
+  description: "Kangdy",
   // other metadata
 };
 

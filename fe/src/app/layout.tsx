@@ -3,8 +3,8 @@ import "./globals.css";
 import { Quicksand } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "PetCare",
-  description: "PetCare",
+  title: "Kangdy - PetShop",
+  description: "Kangdy - PetShop",
 };
 
 const quicksand = Quicksand({

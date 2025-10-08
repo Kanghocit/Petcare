@@ -8,7 +8,7 @@ const branches = [
   {
     id: 1,
     city: "Nghệ An",
-    name: "PetCare - 82 Nguyễn Sỹ Sách",
+    name: "Kangdy - 82 Nguyễn Sỹ Sách",
     address:
       "82 Nguyễn Sỹ Sách, Phường Hưng Dũng, Thành phố Vinh, Tỉnh Nghệ An",
     phone: "0329 818 268",
@@ -21,7 +21,7 @@ const branches = [
   {
     id: 2,
     city: "Nghệ An",
-    name: "PetCare - 10 Hà Huy Tập",
+    name: "Kangdy - 10 Hà Huy Tập",
     address: "10 Hà Huy Tập, Phường Hưng Bình, Thành phố Vinh, Tỉnh Nghệ An",
     phone: "0386 355 246",
     hotline: "0975 135 036",
@@ -65,11 +65,10 @@ const ContactPage = () => {
               {branches.map((branch) => (
                 <div
                   key={branch.id}
-                  className={`p-4 rounded-lg cursor-pointer border-2 transition-all duration-300 hover:shadow-md ${
-                    selectedBranch.id === branch.id
+                  className={`p-4 rounded-lg cursor-pointer border-2 transition-all duration-300 hover:shadow-md ${selectedBranch.id === branch.id
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-white text-gray-700 border-gray-200 hover:border-blue-300"
-                  }`}
+                    }`}
                   onClick={() => setSelectedBranch(branch)}
                 >
                   <div className="font-bold text-lg mb-2">{branch.name}</div>

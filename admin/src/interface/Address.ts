@@ -4,4 +4,11 @@ export interface Address {
   image: string | string[];
   address: string;
   addressLink: string;
+
+}
+
+export interface CustomerAddress {
+  _id: string;
+  name: string;
+  isDefault: boolean;
 }

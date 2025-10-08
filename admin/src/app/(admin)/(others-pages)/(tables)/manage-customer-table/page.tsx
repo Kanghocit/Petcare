@@ -6,8 +6,8 @@ import React from "react";
 import { GetAllUsersAction } from "./action";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin ",
-  description: "Petcare",
+  title: "Kangdy Admin ",
+  description: "Kangdy",
   // other metadata
 };
 

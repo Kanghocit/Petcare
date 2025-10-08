@@ -1,8 +1,12 @@
 import express from "express";
 import {
+  addAddress,
+  deleteAddress,
   getAllUser,
   getUser,
   getUserById,
+  setDefaultAddress,
+  updateAddress,
   updateUser,
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../middlewares/auth.js";
@@ -17,4 +21,14 @@ router.get("/profile", verifyToken, getUser);
 router.get("/:id", getUserById);
 // update user
 router.patch("/:id", updateUser);
+
+//address
+router.post("/address", verifyToken, addAddress);
+
+router.put("/address/:addressId", verifyToken, updateAddress);
+
+router.delete("/address/:addressId", verifyToken, deleteAddress);
+
+router.patch("/address/:addressId/default", verifyToken, setDefaultAddress);
+
 export default router;

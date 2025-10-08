@@ -8,8 +8,8 @@ import { getFlashSaleAction } from "./action";
 import ButtonChangeRouter from "./ButtonChangeRouter";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Flash Sale ",
-  description: "Petcare",
+  title: "Kangdy Admin | Flash Sale ",
+  description: "Kangdy",
   // other metadata
 };
 const ManageSalesTablePage = async ({

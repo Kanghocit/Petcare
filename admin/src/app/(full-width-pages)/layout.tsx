@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin ",
-  description: "Petcare",
+  title: "Kangdy Admin ",
+  description: "Kangdy",
   // other metadata
 };
 

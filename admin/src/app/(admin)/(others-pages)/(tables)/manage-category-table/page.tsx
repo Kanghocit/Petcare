@@ -8,8 +8,8 @@ import { getCategoryAction } from "./action";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Category ",
-  description: "Petcare",
+  title: "Kangdy Admin | Category ",
+  description: "Kangdy",
   // other metadata
 };
 

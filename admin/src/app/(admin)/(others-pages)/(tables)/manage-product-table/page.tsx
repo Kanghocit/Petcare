@@ -10,8 +10,8 @@ import { getAllBrandsAction } from "../manage-brand-table/action";
 import { getCategoryAction } from "../manage-category-table/action";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Products ",
-  description: "Petcare",
+  title: "Kangdy Admin | Products ",
+  description: "Kangdy",
   // other metadata
 };
 

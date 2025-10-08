@@ -1,6 +1,24 @@
 import mongoose from "mongoose";
 import User from "../models/user.js";
 
+// Chuẩn hóa mảng địa chỉ: nếu phần tử là string thì chuyển về object { name, isDefault }
+const normalizeAddresses = (addressArray) => {
+  if (!Array.isArray(addressArray)) return [];
+  return addressArray.map((addr) => {
+    if (typeof addr === "string") {
+      return { name: addr, isDefault: false };
+    }
+    if (addr && typeof addr === "object") {
+      return {
+        ...addr,
+        name: typeof addr.name === "string" ? addr.name : "",
+        isDefault: !!addr.isDefault,
+      };
+    }
+    return { name: "", isDefault: false };
+  });
+};
+
 export const getUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
@@ -9,7 +27,6 @@ export const getUser = async (req, res) => {
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
-
 // lấy danh sách người dùng
 export const getAllUser = async (req, res) => {
   try {
@@ -147,3 +164,135 @@ export const updateUser = async (req, res) => {
       .json({ ok: false, message: error.message || "Lỗi server" });
   }
 };
+
+//thêm địa chỉ của người dùng 
+export const addAddress = async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== "object") {
+      return res.status(400).json({ ok: false, message: "Dữ liệu không hợp lệ" });
+    }
+    const { name, isDefault } = req.body;
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ ok: false, message: "Tên địa chỉ không hợp lệ" });
+    }
+    const user = await User.findById(req.user.userId);
+
+    if (!user)
+      return res.status(404).json({ ok: false, message: "Người dùng không tồn tại" });
+
+    // Đảm bảo mảng địa chỉ luôn tồn tại
+    if (!Array.isArray(user.address)) {
+      user.address = [];
+    }
+
+    // Chuẩn hóa dữ liệu địa chỉ cũ (trường hợp lưu dạng string)
+    user.address = normalizeAddresses(user.address);
+
+    // nếu là địa chỉ mặc định -> reset các địa chỉ khác
+    if (isDefault) {
+      user.address.forEach((addr) => (addr.isDefault = false));
+    }
+
+    user.address.push({ name, isDefault });
+    await user.save();
+
+    res.status(200).json({ ok: true, message: "Thêm địa chỉ thành công", data: user.address });
+  } catch (error) {
+    res.status(500).json({ ok: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+//cập nhật địa chỉ
+export const updateAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params
+    if (!req.body || typeof req.body !== "object") {
+      return res.status(400).json({ ok: false, message: "Dữ liệu không hợp lệ" })
+    }
+    const { name, isDefault } = req.body
+
+    const user = await User.findById(req.user.userId)
+    if (!user) {
+      return res.status(404).json({ ok: false, message: "Người dùng không tồn tại" })
+    }
+
+    if (!Array.isArray(user.address)) {
+      user.address = []
+    }
+
+    // Chuẩn hóa trước khi thao tác
+    user.address = normalizeAddresses(user.address)
+
+    const addr = user.address.id(addressId)
+    if (!addr) {
+      return res.status(404).json({ ok: false, message: "Không tìm thấy địa chỉ" })
+    }
+
+    if (isDefault) {
+      user.address.forEach((addr) => (addr.isDefault = false))
+    }
+
+    addr.name = name || addr.name
+    addr.isDefault = isDefault ?? addr.isDefault
+
+    await user.save()
+
+    res.status(200).json({ ok: true, message: "Cập nhật địa chỉ thành công", data: user.address })
+  } catch (error) {
+    res.status(500).json({ ok: false, messsage: "Lỗi server", error: error.message })
+  }
+}
+
+//xóa địa chỉ 
+export const deleteAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params
+
+    const user = await User.findById(req.user.userId)
+    if (!user) {
+      return res.status(404).json({ ok: false, message: "Người dùng không tồn tại" })
+    }
+
+    if (!Array.isArray(user.address)) {
+      user.address = []
+    }
+
+    // Chuẩn hóa trước khi thao tác
+    user.address = normalizeAddresses(user.address)
+
+    user.address = user.address.filter((addr) => addr._id.toString() !== addressId)
+    await user.save()
+
+    res.status(200).json({ ok: true, message: "Xóa địa chỉ thành công", data: user.address })
+  } catch (error) {
+    res.status(500).json({ ok: false, message: "Lỗi server" })
+  }
+
+}
+
+// đặt địa chỉ mặc định
+
+export const setDefaultAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params
+
+    const user = await User.findById(req.user.userId)
+    if (!user) {
+      return res.status(404).json({ ok: false, message: "Người dùng không tồn tại" })
+    }
+
+    if (!Array.isArray(user.address)) {
+      user.address = []
+    }
+
+    // Chuẩn hóa trước khi thao tác
+    user.address = normalizeAddresses(user.address)
+
+    user.address.forEach((addr) => (addr.isDefault = addr._id.toString() === addressId))
+    await user.save()
+
+    res.status(200).json({ ok: true, message: "Đã đặt địa chỉ mặc định", data: user.address })
+  } catch (error) {
+    res.status(500).json({ ok: false, message: "Lỗi server" })
+  }
+}

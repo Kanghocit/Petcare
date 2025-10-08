@@ -12,8 +12,8 @@ import ModalAddVoicher from "./ModalAddVoicher";
 // import SearchProducts from "./SearchProducts";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Products ",
-  description: "Petcare",
+  title: "Kangdy Admin | Products ",
+  description: "Kangdy",
   // other metadata
 };
 

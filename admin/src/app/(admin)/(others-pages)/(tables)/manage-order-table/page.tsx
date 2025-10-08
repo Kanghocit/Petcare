@@ -7,8 +7,8 @@ import SelectAction from "./components/SelectAction";
 import SearchOrders from "./components/SearchOrders";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin ",
-  description: "Petcare",
+  title: "Kangdy Admin ",
+  description: "Kangdy",
   // other metadata
 };
 

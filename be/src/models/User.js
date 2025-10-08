@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const addressSchema = new mongoose.Schema({
+  name: String,
+  isDefault: { type: Boolean, default: false }
+})
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -29,7 +34,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user"],
+      enum: ["admin", "staff", "user"],
       default: "user",
     },
     rank: {
@@ -63,8 +68,8 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     address: {
-      type: String,
-      default: "",
+      type: [addressSchema],
+      default: [],
     },
   },
   {
@@ -82,6 +87,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

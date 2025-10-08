@@ -10,8 +10,8 @@ import { Metadata } from "next";
 import { getAllBannersAction } from "./action";
 
 export const metadata: Metadata = {
-  title: "Petcare Admin | Banner ",
-  description: "Petcare",
+  title: "Kangdy Admin | Banner ",
+  description: "Kangdy",
   // other metadata
 };
 const ManageBannerTablePage = async () => {

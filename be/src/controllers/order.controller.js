@@ -54,8 +54,8 @@ export const createOrder = async (req, res) => {
         typeof i.image === "string" && i.image.trim()
           ? i.image.trim()
           : Array.isArray(product.images) && product.images[0]
-          ? product.images[0]
-          : "/images/product/placeholder.png";
+            ? product.images[0]
+            : "/images/product/placeholder.png";
 
       return {
         product: i.product,
