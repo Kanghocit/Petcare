@@ -1,5 +1,5 @@
 import Voicher from "../models/Voicher.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export const createVoicher = async (req, res) => {
   try {

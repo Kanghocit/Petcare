@@ -6,6 +6,11 @@ const addressSchema = new mongoose.Schema({
   isDefault: { type: Boolean, default: false }
 })
 
+const roleSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+})
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -71,6 +76,10 @@ const userSchema = new mongoose.Schema(
       type: [addressSchema],
       default: [],
     },
+    roles: {
+      type: [roleSchema],
+      default: [{ name: "user", description: "User" }],
+    }
   },
   {
     timestamps: true,

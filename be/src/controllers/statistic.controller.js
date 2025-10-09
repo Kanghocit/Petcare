@@ -1,7 +1,7 @@
 // controllers/statistic.controller.js
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 export const getStatistic = async (req, res) => {
   try {
@@ -20,9 +20,9 @@ export const getStatistic = async (req, res) => {
       {
         $group: {
           _id: null,
-          sales: { $sum: "$totalAmount" },
+          sales: { $sum: { $add: ["$subtotal", "$shipping.fee"] } },
           revenue: {
-            $sum: { $sum: ["$subtotal", "$shipping.fee"] },
+            $sum: "$totalAmount",
           },
           canceled: {
             $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
@@ -93,9 +93,9 @@ export const getStatistic = async (req, res) => {
       {
         $group: {
           _id: dateGroup,
-          sales: { $sum: "$totalAmount" },
+          sales: { $sum: { $add: ["$subtotal", "$shipping.fee"] } },
           revenue: {
-            $sum: { $subtract: ["$totalAmount", "$discount.amount"] },
+            $sum: "$totalAmount",
           },
         },
       },
