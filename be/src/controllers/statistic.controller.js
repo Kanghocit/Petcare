@@ -44,6 +44,7 @@ export const getStatistic = async (req, res) => {
     ]);
 
     const newCustomers = await User.countDocuments({
+      role: 'user',
       createdAt: { $gte: start, $lte: end },
     });
 
