@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "../models/User.js";
+import User from "../models/user.js";
 
 // Chuẩn hóa mảng địa chỉ: nếu phần tử là string thì chuyển về object { name, isDefault }
 const normalizeAddresses = (addressArray) => {
@@ -27,9 +27,11 @@ export const getUser = async (req, res) => {
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
+
 // lấy danh sách người dùng
 export const getAllUser = async (req, res) => {
   try {
+    const { role } = req.query;
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
     const searchRaw = (req.query.search || "").trim();
@@ -37,7 +39,7 @@ export const getAllUser = async (req, res) => {
     // Escape ký tự regex đặc biệt để tìm kiếm an toàn
     const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const filter = { role: "user" };
+    const filter = { role };
     if (searchRaw) {
       const rx = new RegExp(escapeRegex(searchRaw), "i");
       filter.$or = [
@@ -70,6 +72,7 @@ export const getAllUser = async (req, res) => {
       .json({ ok: false, message: error.message || "Lỗi server!" });
   }
 };
+
 //lấy thông tin người dùng bằng id
 export const getUserById = async (req, res) => {
   const id = req.params.id;
@@ -89,6 +92,7 @@ export const getUserById = async (req, res) => {
       .json({ message: "Lỗi khi lấy người dùng", ok: false });
   }
 };
+
 // cập nhật người dùng
 export const updateUser = async (req, res) => {
   try {
@@ -271,7 +275,6 @@ export const deleteAddress = async (req, res) => {
 }
 
 // đặt địa chỉ mặc định
-
 export const setDefaultAddress = async (req, res) => {
   try {
     const { addressId } = req.params

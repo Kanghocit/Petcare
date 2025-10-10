@@ -16,13 +16,19 @@ export const fetchData = async (
   if (!response.ok) {
     console.log("respone", response);
     try {
-      const errorData = await response.json();
-      const message =
-        (errorData && (errorData.message || errorData.error)) ||
-        `HTTP error! status: ${response.status}`;
-      throw new Error(message);
+      const text = await response.text();
+      try {
+        const errorData = JSON.parse(text);
+        const message =
+          (errorData && (errorData.message || errorData.error || errorData?.errors?.[0]?.msg)) ||
+          `HTTP error! status: ${response.status}`;
+        throw new Error(message);
+      } catch {
+        // Not JSON, return raw text for visibility
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
     } catch {
-      // Fallback if response has no JSON body
+      // Fallback if response body can't be read
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   }

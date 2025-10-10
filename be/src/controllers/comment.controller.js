@@ -1,7 +1,7 @@
 import Comment from "../models/Comment.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { getIo } from "../socket/index.js";
 
 export const createComment = async (req, res) => {

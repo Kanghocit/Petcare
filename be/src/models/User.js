@@ -6,10 +6,6 @@ const addressSchema = new mongoose.Schema({
   isDefault: { type: Boolean, default: false }
 })
 
-const roleSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-})
 
 const userSchema = new mongoose.Schema(
   {
@@ -76,10 +72,11 @@ const userSchema = new mongoose.Schema(
       type: [addressSchema],
       default: [],
     },
-    roles: {
-      type: [roleSchema],
-      default: [{ name: "user", description: "User" }],
-    }
+    role: {
+      type: String,
+      enum: ["user", "staff", "admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,

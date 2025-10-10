@@ -36,6 +36,17 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "Quản lý nhân viên",
+    icon: <TableIcon />,
+    subItems: [
+      {
+        name: "Danh sách nhân viên",
+        path: "/manage-staff-table",
+        pro: false,
+      },
+    ],
+  },
+  {
     name: "Quản lý sản phẩm",
     icon: <TableIcon />,
     subItems: [

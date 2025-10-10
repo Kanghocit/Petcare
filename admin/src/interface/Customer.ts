@@ -14,3 +14,16 @@ export interface Customer {
     userLevel?: string;
     note: string;
 }
+
+export interface Staff {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    username?: string;
+    phone: string;
+    createdAt: string;
+    status: string;
+
+    note: string;
+}
