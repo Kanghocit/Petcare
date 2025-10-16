@@ -21,7 +21,6 @@ const ModalAddStaff: React.FC<{
     children?: React.ReactNode;
     initialValues?: Partial<StaffFormData>;
     action?: "create";
-
 }> = ({ children, initialValues, action = "create" }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setIsLoading] = useState(false);

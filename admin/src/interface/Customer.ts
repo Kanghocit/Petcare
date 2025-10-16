@@ -24,6 +24,5 @@ export interface Staff {
     phone: string;
     createdAt: string;
     status: string;
-
     note: string;
 }

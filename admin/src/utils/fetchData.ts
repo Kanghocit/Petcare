@@ -1,37 +1,52 @@
 export const fetchData = async (
   url: string,
   method: string = "GET",
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any = null,
 ) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Include cookies for authentication
-    body: data ? JSON.stringify(data) : null,
-  });
+  const baseHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
 
-  if (!response.ok) {
-    console.log("respone", response);
+  // Forward cookies on the server (SSR) so backend can read session
+  if (typeof window === "undefined") {
     try {
-      const text = await response.text();
-      try {
-        const errorData = JSON.parse(text);
-        const message =
-          (errorData && (errorData.message || errorData.error || errorData?.errors?.[0]?.msg)) ||
-          `HTTP error! status: ${response.status}`;
-        throw new Error(message);
-      } catch {
-        // Not JSON, return raw text for visibility
-        throw new Error(text || `HTTP error! status: ${response.status}`);
+
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const cookieHeader = cookieStore.toString()
+
+      if (cookieHeader) {
+        baseHeaders["cookie"] = cookieHeader;
       }
     } catch {
-      // Fallback if response body can't be read
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // noop: not in a Next.js server context
     }
   }
 
-  return await response.json();
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    method,
+    headers: baseHeaders,
+    credentials: "include", // keep cookies on client-side requests
+    body: data ? JSON.stringify(data) : null,
+  });
+
+  let json;
+
+  try {
+    json = await response.json(); // cố parse JSON trước
+  } catch {
+    json = null; // nếu không parse được
+  }
+
+  if (!response.ok) {
+    // Nếu backend có message => throw Error đó
+    const message =
+      json?.message ||
+      json?.error ||
+      json?.errors?.[0]?.msg ||
+      `HTTP error! status: ${response.status}`;
+    throw new Error(message);
+  }
+
+  return json;
 };

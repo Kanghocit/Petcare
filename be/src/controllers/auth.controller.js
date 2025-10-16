@@ -177,33 +177,41 @@ export const loginAdmin = async (req, res) => {
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      console.log("Không tìm thấy tài khoản");
       return res.status(400).json({ ok: false, message: "Không tìm thấy tài khoản" });
     }
 
     //check trạng thái tài khoản
     if (user.status === "blocked") {
+      console.log("Tài khoản đã bị vô hiệu hóa");
       return res.status(400).json({ ok: false, message: "Tài khoản đã bị vô hiệu hóa" });
     }
 
     //check role account 
     if (user.role !== "admin" && user.role !== "staff") {
+      console.log("Không có quyền truy cập trang quản trị");
       return res.status(403).json({ ok: false, message: "Không có quyền truy cập trang quản trị" });
     }
 
     //check pass 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log("Sai mật khẩu");
       return res.status(400).json({ ok: false, message: "Sai mật khẩu" });
     }
 
-    res.setHeader(
-      "Set-Cookie",
-      `user=${JSON.stringify({
-        id: user._id,
-        name: user.name,
-        role: user.role,
-      })}; Path=/; HttpOnly; SameSite=Lax`
-    );
+    // Set a URL-encoded cookie via Express helper to avoid malformed values
+    res.cookie("user", encodeURIComponent(JSON.stringify({
+      id: user._id,
+      name: user.name,
+      role: user.role,
+    })), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    });
 
     return res.status(200).json({
       ok: true,
@@ -223,17 +231,9 @@ export const loginAdmin = async (req, res) => {
 //Lấy tài khoản admin
 export const getAdminAccount = async (req, res) => {
   try {
-    // Lấy thông tin user từ cookie
-    const userCookie = req.headers.cookie;
-    if (!userCookie) {
-      return res.status(401).json({ message: "Chưa đăng nhập" });
-    }
-
-    // Parse cookie để lấy thông tin user
-    const userData = userCookie
-      .split(';')
-      .find(cookie => cookie.trim().startsWith('user='))
-      ?.split('=')[1];
+    // Lấy thông tin user từ cookie đã được cookie-parser parse
+    const rawUserCookie = req.cookies?.user;
+    const userData = rawUserCookie || null;
 
     if (!userData) {
       return res.status(401).json({ message: "Chưa đăng nhập" });
@@ -283,7 +283,8 @@ export const logoutAdmin = async (req, res) => {
     res.clearCookie("user", {
       path: "/",
       httpOnly: true,
-      sameSite: "lax"
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
     });
 
     res.status(200).json({
