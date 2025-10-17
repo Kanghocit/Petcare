@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import NewsArticlePreview from "../news/NewsArticlePreview";
 import TablePagination from "./TablePagination";
 import { News } from "@/interface/News";
+import { useUserStore } from "@/store/user-store";
 
 export default function ManageNewsTable({
   news,
@@ -28,6 +29,7 @@ export default function ManageNewsTable({
 
   const { message, modal } = App.useApp();
   const router = useRouter();
+  const { user } = useUserStore()
 
   const handleDelete = async (slug: string) => {
     modal.confirm({
@@ -156,33 +158,38 @@ export default function ManageNewsTable({
                     {/* Preview button - chỉ hiển thị cho tin đã duyệt */}
                     <NewsArticlePreview news={news} />
 
-                    {/* Approve button - chỉ hiển thị cho tin chờ duyệt */}
-                    {news.status === "pending" && (
-                      <Button
-                        className="!color-green-500 !border-green-500 hover:!border-green-400 hover:!text-green-400"
-                        size="small"
-                        shape="circle"
-                        variant="outlined"
-                        icon={<CheckOutlined className="!text-green-400" />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleApprove(news.slug);
-                        }}
-                      />
-                    )}
+                    <>
+                      {user?.role === "admin" && (
+                        <>
+                          {news?.status === "pending" && (
+                            <Button
+                              className="!color-green-500 !border-green-500 hover:!border-green-400 hover:!text-green-400"
+                              size="small"
+                              shape="circle"
+                              variant="outlined"
+                              icon={<CheckOutlined className="!text-green-400" />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApprove(news.slug);
+                              }}
+                            />
+                          )}
 
-                    {/* Delete button */}
-                    <Button
-                      size="small"
-                      shape="circle"
-                      color="danger"
-                      variant="outlined"
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(news.slug);
-                      }}
-                    />
+                          <Button
+                            size="small"
+                            shape="circle"
+                            color="danger"
+                            variant="outlined"
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(news.slug);
+                            }}
+                          />
+                        </>
+                      )}
+                    </>
+
                   </TableCell>
                 </TableRow>
               ))}

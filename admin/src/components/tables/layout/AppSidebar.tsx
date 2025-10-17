@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +11,7 @@ import {
   TableIcon,
 } from "../../../icons/index";
 import Image from "next/image";
+import { useUserStore } from "@/store/user-store";
 
 type NavItem = {
   name: string;
@@ -18,129 +20,133 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Tổng quan",
-    path: "/",
-  },
-  {
-    name: "Quản lý khách hàng",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh sách khách hàng",
-        path: "/manage-customer-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý nhân viên",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh sách nhân viên",
-        path: "/manage-staff-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý sản phẩm",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Danh sách sản phẩm", path: "/manage-product-table", pro: false },
-    ],
-  },
-  {
-    name: "Quản lý tin tức",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Duyệt tin tức", path: "/manage-new-table", pro: false },
-    ],
-  },
-  {
-    name: "Quản lý đơn hàng",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Danh sách đơn hàng", path: "/manage-order-table", pro: false },
-    ],
-  },
-  {
-    name: "Quản lý banner",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Home Banner", path: "/manage-banner-table", pro: false },
-    ],
-  },
-  {
-    name: "Quản lý voicher",
-    icon: <TableIcon />,
-    subItems: [
-      { name: "Danh sách voicher", path: "/manage-voicher-table", pro: false },
-    ],
-  },
-  {
-    name: "Quản lý thương hiệu",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh sách thương hiệu",
-        path: "/manage-brand-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý địa chỉ",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh sách địa chỉ",
-        path: "/manage-address-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý đánh giá",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh sách đánh giá",
-        path: "/manage-comment-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý chương trình",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Chương trình khuyến mại",
-        path: "/manage-sales-table",
-        pro: false,
-      },
-    ],
-  },
-  {
-    name: "Quản lý danh mục",
-    icon: <TableIcon />,
-    subItems: [
-      {
-        name: "Danh mục sản phẩm",
-        path: "/manage-category-table",
-        pro: false,
-      },
-    ],
-  },
-];
-
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { user } = useUserStore();
+
+  const navItems: NavItem[] = [
+    {
+      icon: <GridIcon />,
+      name: "Tổng quan",
+      path: "/",
+    },
+
+    ...(user?.role === 'admin' ? [{
+      name: "Quản lý nhân viên",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Danh sách nhân viên",
+          path: "/manage-staff-table",
+          pro: false,
+        },
+      ],
+    },] : []),
+
+    {
+      name: "Quản lý sản phẩm",
+      icon: <TableIcon />,
+      subItems: [
+        { name: "Danh sách sản phẩm", path: "/manage-product-table", pro: false },
+      ],
+    },
+
+    {
+      name: "Quản lý tin tức",
+      icon: <TableIcon />,
+      subItems: [
+        { name: "Duyệt tin tức", path: "/manage-new-table", pro: false },
+      ],
+    },
+
+    {
+      name: "Quản lý đơn hàng",
+      icon: <TableIcon />,
+      subItems: [
+        { name: "Danh sách đơn hàng", path: "/manage-order-table", pro: false },
+      ],
+    },
+
+    ...(user?.role === 'admin' ? [{
+      name: "Quản lý banner",
+      icon: <TableIcon />,
+      subItems: [
+        { name: "Home Banner", path: "/manage-banner-table", pro: false },
+      ],
+    },
+
+    {
+      name: "Quản lý voicher",
+      icon: <TableIcon />,
+      subItems: [
+        { name: "Danh sách voicher", path: "/manage-voicher-table", pro: false },
+      ],
+    },
+
+    {
+      name: "Quản lý thương hiệu",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Danh sách thương hiệu",
+          path: "/manage-brand-table",
+          pro: false,
+        },
+      ],
+    },
+    ] : []),
+
+    {
+      name: "Quản lý địa chỉ",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Danh sách địa chỉ",
+          path: "/manage-address-table",
+          pro: false,
+        },
+      ],
+    },
+
+    {
+      name: "Quản lý đánh giá",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Danh sách đánh giá",
+          path: "/manage-comment-table",
+          pro: false,
+        },
+      ],
+    },
+
+    ...(user?.role === 'admin' ? [{
+      name: "Quản lý chương trình",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Chương trình khuyến mại",
+          path: "/manage-sales-table",
+          pro: false,
+        },
+      ],
+    },
+    {
+      name: "Quản lý danh mục",
+      icon: <TableIcon />,
+      subItems: [
+        {
+          name: "Danh mục sản phẩm",
+          path: "/manage-category-table",
+          pro: false,
+        },
+      ],
+    },
+    ] : []),
+
+
+  ];
 
   const renderMenuItems = (
     navItems: NavItem[],

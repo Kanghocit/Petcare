@@ -10,6 +10,7 @@ import { Product } from "@/interface/Products";
 import { Brand } from "@/interface/Brand";
 import CategorySelect from "@/components/form/CategorySelect";
 import { Category } from "@/interface/Category";
+import { useUserStore } from "@/store/user-store";
 
 type AppError = {
   message: string;
@@ -43,6 +44,7 @@ const ModalAddProduct: React.FC<{
   const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm();
+  const { user } = useUserStore()
 
   // 👉 theo dõi trạng thái checkbox
   const isSaleProduct = Form.useWatch("isSaleProduct", form);
@@ -83,9 +85,9 @@ const ModalAddProduct: React.FC<{
         action === "create"
           ? await CreateProductAction(finalFormData as unknown as Product)
           : await UpdateProductAction(
-              initialValues?.slug || "",
-              finalFormData as unknown as Product,
-            );
+            initialValues?.slug || "",
+            finalFormData as unknown as Product,
+          );
       if (res?.ok) {
         message.success(
           action === "create"
@@ -115,14 +117,16 @@ const ModalAddProduct: React.FC<{
 
   return (
     <>
-      {children ? (
-        <div className="cursor-pointer" onClick={showModal}>
-          {children}
-        </div>
-      ) : (
-        <Button color="primary" variant="outlined" onClick={showModal}>
-          Thêm
-        </Button>
+      {user?.role === "admin" && (
+        children ? (
+          <div className="cursor-pointer" onClick={showModal}>
+            {children}
+          </div>
+        ) : (
+          <Button color="primary" variant="outlined" onClick={showModal}>
+            Thêm
+          </Button>
+        )
       )}
       <Modal
         title={action === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
@@ -212,9 +216,9 @@ const ModalAddProduct: React.FC<{
           rules={
             isSaleProduct
               ? [
-                  { required: true, message: "Vui lòng nhập % giảm giá" },
-                  { type: "number", min: 1, max: 100, message: "1–100%" },
-                ]
+                { required: true, message: "Vui lòng nhập % giảm giá" },
+                { type: "number", min: 1, max: 100, message: "1–100%" },
+              ]
               : []
           }
         >

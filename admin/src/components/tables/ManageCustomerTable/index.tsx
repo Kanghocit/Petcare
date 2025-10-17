@@ -31,8 +31,6 @@ const NoteModal = dynamic(
 export default function ManageCustomerTable({ customer }: { customer?: { users: Customer[], total: number } }) {
   const { users: customers, total } = customer || {}
 
-  console.log('customers', customers);
-
   const { message, modal } = App.useApp();
   const router = useRouter();
 

@@ -48,12 +48,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
   layout = "vertical",
   onCancel,
 }) => {
-  console.log("product", product);
   const { message } = App.useApp();
+
   const [form] = Form.useForm<Product>();
+
   const [images, setImages] = useState<string[]>(product?.images || []);
 
   const isSaleProduct = Form.useWatch("isSaleProduct", form);
+
   const showDiscount =
     typeof isSaleProduct === "boolean"
       ? isSaleProduct
@@ -97,9 +99,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const formLayout =
     layout === "horizontal"
       ? {
-          labelCol: { span: 6 },
-          wrapperCol: { span: 18 },
-        }
+        labelCol: { span: 6 },
+        wrapperCol: { span: 18 },
+      }
       : {};
 
   return (

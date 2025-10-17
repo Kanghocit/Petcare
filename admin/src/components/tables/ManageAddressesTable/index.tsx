@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { Address } from "@/interface/Address";
 import { deleteAddressAction } from "@/app/(admin)/(others-pages)/(tables)/manage-address-table/action";
 import ModalAddAddress from "@/app/(admin)/(others-pages)/(tables)/manage-address-table/ModalAddAddress";
+import { useUserStore } from "@/store/user-store";
 
 const ManageAddressTable = ({
   addresses,
@@ -26,6 +27,7 @@ const ManageAddressTable = ({
   const imageBase = apiBase?.replace(/\/api\/?$/, "");
   const router = useRouter();
   const { modal, message } = App.useApp();
+  const { user } = useUserStore()
 
   const handleDeleteaddress = async (id: string) => {
     modal.confirm({
@@ -69,12 +71,13 @@ const ManageAddressTable = ({
                 >
                   Địa chỉ
                 </TableCell>
-                <TableCell
-                  isHeader
-                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Hành động
-                </TableCell>
+                {user?.role === 'admin' && (
+                  <TableCell
+                    isHeader
+                    className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                  >
+                    Hành động
+                  </TableCell>)}
               </TableRow>
             </TableHeader>
 
@@ -128,26 +131,28 @@ const ManageAddressTable = ({
                     {address.address}
                   </TableCell>
 
-                  <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
-                    {/* View button */}
-                    <ModalAddAddress action="update" initialValues={address}>
+                  {user?.role === 'admin' && (
+                    <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
+                      {/* View button */}
+                      <ModalAddAddress action="update" initialValues={address}>
+                        <Button
+                          className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
+                          size="small"
+                          shape="circle"
+                          variant="outlined"
+                          icon={<EditOutlined className="!text-blue-400" />}
+                        />
+                      </ModalAddAddress>
                       <Button
-                        className="!color-blue-500 !border-blue-500 hover:!border-blue-400 hover:!text-blue-400"
+                        className="!color-red-500 !border-red-500 hover:!border-red-400 hover:!text-red-400"
                         size="small"
                         shape="circle"
                         variant="outlined"
-                        icon={<EditOutlined className="!text-blue-400" />}
+                        icon={<DeleteOutlined className="!text-red-400" />}
+                        onClick={() => handleDeleteaddress(address._id)}
                       />
-                    </ModalAddAddress>
-                    <Button
-                      className="!color-red-500 !border-red-500 hover:!border-red-400 hover:!text-red-400"
-                      size="small"
-                      shape="circle"
-                      variant="outlined"
-                      icon={<DeleteOutlined className="!text-red-400" />}
-                      onClick={() => handleDeleteaddress(address._id)}
-                    />
-                  </TableCell>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

@@ -10,10 +10,12 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { App } from "antd";
 import { loginAdmin } from "@/libs/auth";
+import { useUserStore } from '@/store/user-store'
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { message } = App.useApp()
   const router = useRouter();
 
@@ -22,16 +24,30 @@ export default function SignInForm() {
     const formData = new FormData(e.target as HTMLFormElement);
     const { email, password } = Object.fromEntries(formData.entries());
 
+    // Validation
+    if (!email || !password) {
+      message.error("Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+
+    if (typeof email === 'string' && !email.includes("@")) {
+      message.error("Email không hợp lệ");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const res = await loginAdmin(email as string, password as string);
-      if (res?.ok) {
-        message.success("Đăng nhập thành công");
-        router.push("/");
-      } else if (res?.ok === false) {
-        message.error(res?.message || "Đăng nhập thất bại");
-      }
+      const data = await loginAdmin(email as string, password as string);
+      const { user } = data;
+
+      useUserStore.getState().setUser(user);
+      message.success("Đăng nhập thành công");
+      router.push("/");
     } catch (err: any) {
       message.error(err?.message || "Đăng nhập thất bại");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -154,8 +170,12 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
-                    Đăng nhập
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                   </Button>
                 </div>
               </div>

@@ -6,6 +6,7 @@ import UploadFile from "@/components/upload-file";
 import { createAddressAction, updateAddressAction } from "./action";
 import { useRouter } from "next/navigation";
 import { Address } from "@/interface/Address";
+import { useUserStore } from "@/store/user-store";
 
 type AppError = {
   message: string;
@@ -31,6 +32,9 @@ const ModalAddAddress: React.FC<{
   const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm();
+
+  const { user } = useUserStore()
+
   const addressId =
     (initialValues as { _id?: string; id?: string } | undefined)?._id ??
     initialValues?._id;
@@ -111,15 +115,18 @@ const ModalAddAddress: React.FC<{
 
   return (
     <>
-      {children ? (
-        <div className="cursor-pointer" onClick={showModal}>
-          {children}
-        </div>
-      ) : (
-        <Button color="primary" variant="outlined" onClick={showModal}>
-          Thêm
-        </Button>
-      )}
+      {
+        user?.role === 'admin' && (
+          children ? (
+            <div className="cursor-pointer" onClick={showModal}>
+              {children}
+            </div>
+          ) : (
+            <Button color="primary" variant="outlined" onClick={showModal}>
+              Thêm
+            </Button>
+          ))
+      }
       <Modal
         title={action === "create" ? "Thêm địa chỉ mới" : "Cập nhật địa chỉ"}
         closable
