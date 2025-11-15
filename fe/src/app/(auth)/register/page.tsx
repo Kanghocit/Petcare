@@ -21,7 +21,7 @@ const RegisterForm = () => {
   const router = useRouter();
   const [form] = Form.useForm();
   const onFinish = async (values: RegisterFormValues) => {
-    console.log(values);
+    
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -36,7 +36,6 @@ const RegisterForm = () => {
       );
       const data = await response.json();
       if (data.ok) {
-        console.log("Đăng ký thành công", data);
         form.resetFields();
         message.success(data.message);
         router.push("/login");

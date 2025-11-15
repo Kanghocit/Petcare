@@ -7,6 +7,16 @@ import { getProductsAction, searchProductAction } from "./action";
 import { Product } from "../../../interface/product";
 import TablePagination from "@/components/table-pagination";
 import { getAllBrandsAction } from "../brands/action";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
+
+// Revalidate products page every 5 minutes
+export const revalidate = 300;
+
+export const metadata: Metadata = createMetadata({
+  title: "Sản phẩm",
+  description: "Khám phá bộ sưu tập sản phẩm đa dạng cho thú cưng tại Kangdy PetShop. Thức ăn, đồ chơi, phụ kiện chất lượng cao.",
+});
 
 const ProductsPage = async ({
   searchParams,
@@ -22,6 +32,7 @@ const ProductsPage = async ({
     price_max?: string;
     isNewProduct?: string;
     isSaleProduct?: string;
+    bestSelling?: string;
   }>;
 }) => {
   const params = await searchParams;
@@ -45,6 +56,7 @@ const ProductsPage = async ({
 
     if (params.isNewProduct) extras.set("isNewProduct", "1");
     if (params.isSaleProduct) extras.set("isSaleProduct", "1");
+    if (params.bestSelling) extras.set("bestSelling", "1");
 
     return extras.toString();
   };

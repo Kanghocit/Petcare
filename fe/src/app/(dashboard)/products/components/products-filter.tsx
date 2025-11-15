@@ -23,6 +23,7 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
 
   const isNewChecked = searchParams.get("isNewProduct") != null;
   const isSaleChecked = searchParams.get("isSaleProduct") != null;
+  const isBestSellingChecked = searchParams.get("bestSelling") != null;
 
   const formatVND = useMemo(
     () =>
@@ -90,6 +91,7 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
       "color",
       "isNewProduct",
       "isSaleProduct",
+      "bestSelling",
       "price_min",
       "price_max",
     ].forEach((k) => params.delete(k));
@@ -109,6 +111,7 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
     selectedColors.length > 0 ||
     isNewChecked ||
     isSaleChecked ||
+    isBestSellingChecked ||
     priceRange[0] !== 0 ||
     priceRange[1] !== VND_MAX;
 
@@ -121,6 +124,9 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
         : []),
       ...(isSaleChecked
         ? [{ type: "isSaleProduct", value: "Đang giảm giá" }]
+        : []),
+      ...(isBestSellingChecked
+        ? [{ type: "bestSelling", value: "Sản phẩm bán chạy" }]
         : []),
     ];
 
@@ -159,6 +165,8 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
                 setBooleanParam("isNewProduct", false);
               else if (item.type === "isSaleProduct")
                 setBooleanParam("isSaleProduct", false);
+              else if (item.type === "bestSelling")
+                setBooleanParam("bestSelling", false);
               else if (item.type === "Price") {
                 setPriceRange([0, VND_MAX]);
                 updatePriceParams(0, VND_MAX);
@@ -263,6 +271,15 @@ const ProductsFilter = ({ brands }: { brands: Brand[] }) => {
                   className="w-full"
                 >
                   Đang giảm giá
+                </Checkbox>
+                <Checkbox
+                  checked={isBestSellingChecked}
+                  onChange={(e) =>
+                    setBooleanParam("bestSelling", e.target.checked)
+                  }
+                  className="w-full"
+                >
+                  Sản phẩm bán chạy
                 </Checkbox>
               </div>
             </div>

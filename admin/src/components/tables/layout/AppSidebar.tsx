@@ -32,23 +32,42 @@ const AppSidebar: React.FC = () => {
       path: "/",
     },
 
-    ...(user?.role === 'admin' ? [{
-      name: "Quản lý nhân viên",
-      icon: <TableIcon />,
-      subItems: [
-        {
-          name: "Danh sách nhân viên",
-          path: "/manage-staff-table",
-          pro: false,
-        },
-      ],
-    },] : []),
+    ...(user?.role === "admin"
+      ? [
+          {
+            name: "Quản lý nhân viên",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Danh sách nhân viên",
+                path: "/manage-staff-table",
+                pro: false,
+              },
+            ],
+          },
+          {
+            name: "Quản lý khách hàng",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Danh sách khách hàng",
+                path: "/manage-customer-table",
+                pro: false,
+              },
+            ],
+          },
+        ]
+      : []),
 
     {
       name: "Quản lý sản phẩm",
       icon: <TableIcon />,
       subItems: [
-        { name: "Danh sách sản phẩm", path: "/manage-product-table", pro: false },
+        {
+          name: "Danh sách sản phẩm",
+          path: "/manage-product-table",
+          pro: false,
+        },
       ],
     },
 
@@ -68,34 +87,41 @@ const AppSidebar: React.FC = () => {
       ],
     },
 
-    ...(user?.role === 'admin' ? [{
-      name: "Quản lý banner",
-      icon: <TableIcon />,
-      subItems: [
-        { name: "Home Banner", path: "/manage-banner-table", pro: false },
-      ],
-    },
+    ...(user?.role === "admin"
+      ? [
+          {
+            name: "Quản lý banner",
+            icon: <TableIcon />,
+            subItems: [
+              { name: "Home Banner", path: "/manage-banner-table", pro: false },
+            ],
+          },
 
-    {
-      name: "Quản lý voicher",
-      icon: <TableIcon />,
-      subItems: [
-        { name: "Danh sách voicher", path: "/manage-voicher-table", pro: false },
-      ],
-    },
+          {
+            name: "Quản lý voicher",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Danh sách voicher",
+                path: "/manage-voicher-table",
+                pro: false,
+              },
+            ],
+          },
 
-    {
-      name: "Quản lý thương hiệu",
-      icon: <TableIcon />,
-      subItems: [
-        {
-          name: "Danh sách thương hiệu",
-          path: "/manage-brand-table",
-          pro: false,
-        },
-      ],
-    },
-    ] : []),
+          {
+            name: "Quản lý thương hiệu",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Danh sách thương hiệu",
+                path: "/manage-brand-table",
+                pro: false,
+              },
+            ],
+          },
+        ]
+      : []),
 
     {
       name: "Quản lý địa chỉ",
@@ -121,31 +147,32 @@ const AppSidebar: React.FC = () => {
       ],
     },
 
-    ...(user?.role === 'admin' ? [{
-      name: "Quản lý chương trình",
-      icon: <TableIcon />,
-      subItems: [
-        {
-          name: "Chương trình khuyến mại",
-          path: "/manage-sales-table",
-          pro: false,
-        },
-      ],
-    },
-    {
-      name: "Quản lý danh mục",
-      icon: <TableIcon />,
-      subItems: [
-        {
-          name: "Danh mục sản phẩm",
-          path: "/manage-category-table",
-          pro: false,
-        },
-      ],
-    },
-    ] : []),
-
-
+    ...(user?.role === "admin"
+      ? [
+          {
+            name: "Quản lý chương trình",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Chương trình khuyến mại",
+                path: "/manage-sales-table",
+                pro: false,
+              },
+            ],
+          },
+          {
+            name: "Quản lý danh mục",
+            icon: <TableIcon />,
+            subItems: [
+              {
+                name: "Danh mục sản phẩm",
+                path: "/manage-category-table",
+                pro: false,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const renderMenuItems = (
@@ -158,19 +185,22 @@ const AppSidebar: React.FC = () => {
           {nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                ? "menu-item-active"
-                : "menu-item-inactive"
-                } cursor-pointer ${!isExpanded && !isHovered
+              className={`menu-item group ${
+                openSubmenu?.type === menuType && openSubmenu?.index === index
+                  ? "menu-item-active"
+                  : "menu-item-inactive"
+              } cursor-pointer ${
+                !isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
-                }`}
+              }`}
             >
               <span
-                className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-icon-active"
-                  : "menu-item-icon-inactive"
-                  }`}
+                className={` ${
+                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                    ? "menu-item-icon-active"
+                    : "menu-item-icon-inactive"
+                }`}
               >
                 {nav.icon}
               </span>
@@ -179,11 +209,12 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto h-5 w-5 transition-transform duration-200 ${openSubmenu?.type === menuType &&
+                  className={`ml-auto h-5 w-5 transition-transform duration-200 ${
+                    openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                    ? "text-brand-500 rotate-180"
-                    : ""
-                    }`}
+                      ? "text-brand-500 rotate-180"
+                      : ""
+                  }`}
                 />
               )}
             </button>
@@ -191,14 +222,16 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 href={nav.path}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                  }`}
+                className={`menu-item group ${
+                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                }`}
               >
                 <span
-                  className={`${isActive(nav.path)
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
-                    }`}
+                  className={`${
+                    isActive(nav.path)
+                      ? "menu-item-icon-active"
+                      : "menu-item-icon-inactive"
+                  }`}
                 >
                   {nav.icon}
                 </span>
@@ -226,29 +259,32 @@ const AppSidebar: React.FC = () => {
                   <li key={subItem.name}>
                     <Link
                       href={subItem.path}
-                      className={`menu-dropdown-item ${isActive(subItem.path)
-                        ? "menu-dropdown-item-active"
-                        : "menu-dropdown-item-inactive"
-                        }`}
+                      className={`menu-dropdown-item ${
+                        isActive(subItem.path)
+                          ? "menu-dropdown-item-active"
+                          : "menu-dropdown-item-inactive"
+                      }`}
                     >
                       {subItem.name}
                       <span className="ml-auto flex items-center gap-1">
                         {subItem.new && (
                           <span
-                            className={`ml-auto ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              } menu-dropdown-badge`}
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
                           >
                             new
                           </span>
                         )}
                         {subItem.pro && (
                           <span
-                            className={`ml-auto ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              } menu-dropdown-badge`}
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
                           >
                             pro
                           </span>
@@ -331,18 +367,20 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out lg:mt-0 dark:border-gray-800 dark:bg-gray-900 ${isExpanded || isMobileOpen
-        ? "w-[290px]"
-        : isHovered
+      className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out lg:mt-0 dark:border-gray-800 dark:bg-gray-900 ${
+        isExpanded || isMobileOpen
           ? "w-[290px]"
-          : "w-[90px]"
-        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+          : isHovered
+            ? "w-[290px]"
+            : "w-[90px]"
+      } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`flex py-8 ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-          }`}
+        className={`flex py-8 ${
+          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        }`}
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -364,10 +402,11 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 flex text-xs leading-[20px] text-gray-400 uppercase ${!isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "justify-start"
-                  }`}
+                className={`mb-4 flex text-xs leading-[20px] text-gray-400 uppercase ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"

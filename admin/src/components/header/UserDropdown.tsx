@@ -6,6 +6,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { getAdminAccount, logoutAdmin } from "@/libs/auth";
 import { useRouter } from "next/navigation";
 import { App, Avatar } from "antd";
+import { useUserStore } from "@/store/user-store";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,13 +40,22 @@ export default function UserDropdown() {
     };
   }, []);
 
+  const { clearUser } = useUserStore();
+
   const handleSignOut = async () => {
     try {
       await logoutAdmin();
+      // Clear user store
+      clearUser();
       message.success("Đăng xuất thành công!");
       router.push("/signin");
+      router.refresh();
     } catch (e: any) {
+      // Clear user store even if logout fails
+      clearUser();
       message.error(e?.message || "Đăng xuất thất bại");
+      router.push("/signin");
+      router.refresh();
     }
   };
 

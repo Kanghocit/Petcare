@@ -41,11 +41,33 @@ export default function SignInForm() {
       const data = await loginAdmin(email as string, password as string);
       const { user } = data;
 
+      // Check if user has admin or staff role
+      if (!user || (user.role !== "admin" && user.role !== "staff")) {
+        message.error("Bạn không có quyền truy cập trang quản trị");
+        return;
+      }
+
+      // Set user in store first
       useUserStore.getState().setUser(user);
       message.success("Đăng nhập thành công");
-      router.push("/");
+      
+      // Wait a bit to ensure cookies are set before redirecting
+      // This gives the browser time to set cookies from the login response
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Use replace instead of push to avoid back button issues
+      router.replace("/");
+      
+      // Refresh after navigation to ensure AuthGuard sees the cookies
+      setTimeout(() => {
+        router.refresh();
+      }, 300);
     } catch (err: any) {
-      message.error(err?.message || "Đăng nhập thất bại");
+      const errorMessage = err?.message || "Đăng nhập thất bại";
+      message.error(errorMessage);
+      
+      // Clear user store on error
+      useUserStore.getState().clearUser();
     } finally {
       setIsLoading(false);
     }

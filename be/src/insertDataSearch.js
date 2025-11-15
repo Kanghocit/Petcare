@@ -49,6 +49,7 @@ async function syncProducts() {
     const transformedProducts = products.map((product) => ({
       id: product._id.toString(), // Important: MeiliSearch needs string ID
       title: product.title,
+      slug: product.slug, // Add slug to Meilisearch index
       description: product.description,
       price: product.price,
       discount: product.discount,

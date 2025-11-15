@@ -28,8 +28,6 @@ export default function ManageProductsTable({
   products?: { products: Product[]; total: number };
 }) {
   const { products: productList = [], total = 0 } = products || {};
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const imageBase = apiBase?.replace(/\/api\/?$/, "");
   const router = useRouter();
 
   return (
@@ -62,7 +60,13 @@ export default function ManageProductsTable({
                   isHeader
                   className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Giá
+                  Giá nhập
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Giá bán
                 </TableCell>
                 <TableCell
                   isHeader
@@ -138,9 +142,7 @@ export default function ManageProductsTable({
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <div className="flex gap-1">
                       {p.images?.map((item, index) => {
-                        const src = item.startsWith("http")
-                          ? item
-                          : `${imageBase}${item}`;
+                        const src = item.startsWith("http") ? item : item;
                         return (
                           <Image
                             width={40}
@@ -159,7 +161,14 @@ export default function ManageProductsTable({
                     </p>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {p.price}
+                    {p.importPrice
+                      ? `${Number(p.importPrice).toLocaleString("vi-VN")}đ`
+                      : "--"}
+                  </TableCell>
+                  <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
+                    {p.price
+                      ? `${Number(p.price).toLocaleString("vi-VN")}đ`
+                      : "--"}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     <p

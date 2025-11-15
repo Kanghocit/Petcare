@@ -99,9 +99,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const formLayout =
     layout === "horizontal"
       ? {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 18 },
-      }
+          labelCol: { span: 6 },
+          wrapperCol: { span: 18 },
+        }
       : {};
 
   return (
@@ -217,14 +217,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Col xs={24} lg={8}>
             <Card title="Giá">
               <Form.Item
-                label="Giá"
-                name="price"
-                rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+                label="Giá nhập"
+                name="importPrice"
+                rules={[{ required: true, message: "Vui lòng nhập giá nhập" }]}
               >
                 <InputNumber
                   min={0}
                   style={{ width: "100%" }}
-                  placeholder="Thêm giá sản phẩm"
+                  placeholder="Thêm giá nhập sản phẩm"
+                />
+              </Form.Item>
+              <Form.Item
+                label="Giá bán"
+                name="price"
+                rules={[{ required: true, message: "Vui lòng nhập giá bán" }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: "100%" }}
+                  placeholder="Thêm giá bán sản phẩm"
                 />
               </Form.Item>
               {showDiscount && (
@@ -278,14 +289,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </Form.Item>
 
           <Form.Item
-            label="Giá"
+            label="Giá bán"
             name="price"
-            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+            rules={[{ required: true, message: "Vui lòng nhập giá bán" }]}
           >
             <InputNumber
               min={0}
               style={{ width: "100%" }}
-              placeholder="Thêm giá sản phẩm"
+              placeholder="Thêm giá bán sản phẩm"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Giá nhập"
+            name="importPrice"
+            rules={[{ required: false }]}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              placeholder="Thêm giá nhập sản phẩm"
             />
           </Form.Item>
 

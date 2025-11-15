@@ -34,7 +34,7 @@ export const createOrder = async (req, res) => {
     // Normalize and validate items, also compute total
     const productIds = items.map((i) => i.product);
     const products = await Product.find({ _id: { $in: productIds } })
-      .select("_id price title slug images brand")
+      .select("_id price importPrice title slug images brand")
       .lean();
 
     const productMap = new Map(products.map((p) => [String(p._id), p]));
@@ -49,6 +49,7 @@ export const createOrder = async (req, res) => {
       }
 
       const priceAtPurchase = Number(i.priceAtPurchase ?? product.price ?? 0);
+      const importPriceAtPurchase = Number(i.importPriceAtPurchase ?? product.importPrice ?? 0);
 
       const chosenImage =
         typeof i.image === "string" && i.image.trim()
@@ -61,6 +62,7 @@ export const createOrder = async (req, res) => {
         product: i.product,
         quantity,
         priceAtPurchase,
+        importPriceAtPurchase,
         productSnapshot: {
           title: i.name || product.title,
           slug: product.slug,
@@ -148,7 +150,6 @@ export const createOrder = async (req, res) => {
       order: created,
     });
   } catch (error) {
-    console.error("Create order error:", error);
     return res.status(500).json({
       message: "Lỗi khi tạo đơn hàng",
       error: error.message,
@@ -221,7 +222,6 @@ export const getOrders = async (req, res) => {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.error("Get orders error:", error);
     return res.status(500).json({
       message: "Lỗi khi lấy danh sách đơn hàng",
       error: error.message,
@@ -282,7 +282,6 @@ export const getOrderById = async (req, res) => {
 
     return res.status(200).json({ ok: true, order });
   } catch (error) {
-    console.error("Get order by id error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi lấy đơn hàng", error: error.message });
@@ -314,7 +313,6 @@ export const getOrderByCode = async (req, res) => {
 
     return res.status(200).json({ ok: true, order });
   } catch (error) {
-    console.error("Get order by code error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi lấy đơn hàng", error: error.message });
@@ -447,7 +445,6 @@ export const updateOrderStatus = async (req, res) => {
       order,
     });
   } catch (error) {
-    console.error("Update order status error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi cập nhật đơn hàng", error: error.message });
@@ -506,7 +503,6 @@ export const cancelOrder = async (req, res) => {
       order,
     });
   } catch (error) {
-    console.error("Cancel order error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi hủy đơn hàng", error: error.message });
@@ -530,7 +526,6 @@ export const getOrderStats = async (req, res) => {
       stats,
     });
   } catch (error) {
-    console.error("Get order stats error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi lấy thống kê", error: error.message });
@@ -553,7 +548,6 @@ export const deleteOrder = async (req, res) => {
       .status(200)
       .json({ ok: true, message: "Xóa đơn hàng thành công" });
   } catch (error) {
-    console.error("Delete order error:", error);
     return res
       .status(500)
       .json({ message: "Lỗi khi xóa đơn hàng", error: error.message });

@@ -5,9 +5,17 @@ import { getFlashSale } from "./libs/flash_sale";
 import type { FlashSale } from "@/interface/flashSale";
 
 export const getUser = async () => {
-  const user = await fetchWithToken("/user/profile");
-  const userData = await user.json();
-  return userData;
+  try {
+    const user = await fetchWithToken("/user/profile");
+    if (!user.ok) {
+      return { user: null };
+    }
+    const userData = await user.json();
+    return userData;
+  } catch (error) {
+    // Nếu có lỗi (không có token, network error, etc), trả về null user
+    return { user: null };
+  }
 };
 
 export const getFlashSaleAction = async (): Promise<FlashSale | null> => {

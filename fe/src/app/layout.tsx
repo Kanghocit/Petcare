@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Quicksand } from "next/font/google";
+import { defaultMetadata } from "@/utils/metadata";
 
-export const metadata: Metadata = {
-  title: "Kangdy - PetShop",
-  description: "Kangdy - PetShop",
-};
+export const metadata: Metadata = defaultMetadata;
 
 const quicksand = Quicksand({
   subsets: ["latin"],

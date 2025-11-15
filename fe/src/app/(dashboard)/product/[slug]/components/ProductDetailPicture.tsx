@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useImageSrcs } from "@/hooks/useImageSrc";
+
 interface ProductDetailPictureProps {
   images: string[];
 }
@@ -10,25 +12,13 @@ const ProductDetailPicture: React.FC<ProductDetailPictureProps> = ({
   images,
 }) => {
   const [selected, setSelected] = useState(0);
-  const toAbsolute = (src?: string | null) => {
-    if (!src) return null;
-    if (src.startsWith("http://") || src.startsWith("https://")) return src;
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-    try {
-      const u = new URL(apiBase);
-      u.pathname = u.pathname.replace(/\/api\/?$/, "");
-      const base = `${u.origin}${u.pathname}`.replace(/\/$/, "");
-      const normalizedSource = src.startsWith("/") ? src : `/${src}`;
-      return `${base}${normalizedSource}`;
-    } catch {
-      const base = apiBase.replace(/\/api\/?$/, "").replace(/\/$/, "");
-      const normalizedSource = src.startsWith("/") ? src : `/${src}`;
-      return `${base}${normalizedSource}`;
-    }
-  };
+
+  // Normalize image URLs sử dụng hook
+  const normalizedImages = useImageSrcs(images.slice(0, 5));
+
   // Luôn tạo mảng 5 phần tử, nếu thiếu thì thêm null
   const displayImages = [
-    ...images.slice(0, 5).map((s) => toAbsolute(s) as string),
+    ...normalizedImages,
     ...Array(5 - images.length).fill(null),
   ].slice(0, 5);
 

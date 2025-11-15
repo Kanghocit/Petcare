@@ -5,18 +5,31 @@ import Menu from "@/components/menu";
 import { getUser } from "@/actions";
 import { App } from "antd";
 import FloatingActionButton from "@/components/brands/FloatingActionButton";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
 
+// Force dynamic vì layout cần user data từ cookies
+export const dynamic = "force-dynamic";
+
+// Metadata will be overridden by child pages
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userData = await getUser();
+  // Xử lý error để tránh crash layout
+  let userData = { user: null };
+  try {
+    userData = await getUser();
+  } catch (error) {
+    // Nếu getUser fail, vẫn render layout với user = null
+    console.error("Failed to get user:", error);
+  }
 
   return (
     <App>
       <div className="flex flex-col min-h-screen">
-        <Header user={userData.user} />
+        <Header user={userData?.user || null} />
         <Menu />
 
         <main className="flex-grow">{children}</main>

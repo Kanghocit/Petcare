@@ -1,25 +1,29 @@
+import React from "react";
 import { RightOutlined } from "@ant-design/icons";
 import SectionHeader from "../section-header";
 import Tabs from "../tabs";
 import Link from "next/link";
 import Image from "next/image";
 import { FoodTab } from "../../constants/food";
-import { searchProductAction } from "@/app/(dashboard)/products/action";
+import type { Product } from "@/interface/product";
 
-const Foods = async ({
-  title,
-  tabs,
-  hasBanner = true,
-}: {
+interface FoodsProps {
   title: string;
   tabs: FoodTab[];
   hasBanner?: boolean;
+  catFoodData?: Product[];
+  dogFoodData?: Product[];
+  toysData?: Product[];
+}
+
+const Foods: React.FC<FoodsProps> = ({
+  title,
+  tabs,
+  hasBanner = true,
+  catFoodData = [],
+  dogFoodData = [],
+  toysData = [],
 }) => {
-  const [catFoodData, dogFoodData, toysData] = await Promise.all([
-    searchProductAction("Thức ăn cho mèo", 1, 5),
-    searchProductAction("Thức ăn cho chó", 1, 5),
-    searchProductAction("Đồ chơi", 1, 5),
-  ]);
 
   return (
     <div className="flex flex-col w-full">
@@ -27,9 +31,9 @@ const Foods = async ({
 
       <Tabs
         tabs={tabs}
-        catFoodData={catFoodData?.products}
-        dogFoodData={dogFoodData?.products}
-        toysData={toysData?.products}
+        catFoodData={catFoodData}
+        dogFoodData={dogFoodData}
+        toysData={toysData}
       />
 
       <Link

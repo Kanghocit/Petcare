@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 
 export const fetchWithToken = async (
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  cacheConfig?: { next?: { revalidate?: number; tags?: string[] } }
 ): Promise<Response> => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
@@ -15,7 +16,8 @@ export const fetchWithToken = async (
     .filter(Boolean)
     .join("; ");
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
+  // Add cache configuration for GET requests
+  const fetchOptions: RequestInit = {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -23,7 +25,19 @@ export const fetchWithToken = async (
       ...(cookieHeader && { Cookie: cookieHeader }),
     },
     credentials: "include",
-  });
+  };
+
+  // Only cache GET requests
+  if (!options.method || options.method === "GET") {
+    if (cacheConfig?.next) {
+      fetchOptions.next = cacheConfig.next;
+    } else {
+      // Default: cache for 60 seconds
+      fetchOptions.next = { revalidate: 60 };
+    }
+  }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, fetchOptions);
 
   return response;
 };

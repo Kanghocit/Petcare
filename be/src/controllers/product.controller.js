@@ -1,7 +1,10 @@
 import Product from "../models/Product.js";
 import Brand from "../models/Brand.js";
 import Category from "../models/Category.js";
+import Order from "../models/Order.js";
 import { meiliClient, productIndex } from "../services/meilisearch.services.js";
+import mongoose from "mongoose";
+import slugify from "slugify";
 
 //tạo sản phẩm
 export const createProduct = async (req, res) => {
@@ -10,6 +13,7 @@ export const createProduct = async (req, res) => {
       title,
       description,
       price,
+      importPrice,
       discount,
       isNewProduct,
       isSaleProduct,
@@ -45,6 +49,7 @@ export const createProduct = async (req, res) => {
       title,
       description,
       price,
+      importPrice,
       discount,
       isNewProduct,
       isSaleProduct,
@@ -89,16 +94,9 @@ export const createProduct = async (req, res) => {
             images,
           },
         ]);
-        console.log("Product added to MeiliSearch successfully");
       } catch (meiliError) {
-        console.warn(
-          "Failed to add product to MeiliSearch:",
-          meiliError.message
-        );
         // Continue without throwing error - product is still created in MongoDB
       }
-    } else {
-      console.warn("MeiliSearch not available - skipping search index update");
     }
 
     res.status(201).json({
@@ -107,7 +105,6 @@ export const createProduct = async (req, res) => {
       product,
     });
   } catch (error) {
-    console.error("Create product error:", error);
     res.status(500).json({
       message: "Lỗi khi tạo sản phẩm",
       error: error.message,
@@ -191,6 +188,16 @@ export const getProducts = async (req, res) => {
       query.isSaleProduct = true;
     }
 
+    // Filter by stock status
+    if (req.query.filter) {
+      const filterValue = String(req.query.filter).trim();
+      if (filterValue === "lowStock") {
+        query.quantity = { $gte: 1, $lte: 10 };
+      } else if (filterValue === "outOfStock") {
+        query.quantity = { $eq: 0 };
+      }
+    }
+
     const price = {};
     if (req.query.price_min !== undefined && req.query.price_min !== "") {
       price.$gte = Number(req.query.price_min);
@@ -202,19 +209,93 @@ export const getProducts = async (req, res) => {
       query.price = price;
     }
 
+    // Filter by best selling - if bestSelling is requested, get products from orders
+    const isBestSelling = parseBool(req.query.bestSelling);
+    let bestSellingMap = null;
+
+    if (isBestSelling) {
+      // Aggregate to get best selling products
+      const bestSelling = await Order.aggregate([
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.product",
+            totalSold: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { totalSold: -1 } },
+      ]);
+
+      if (bestSelling.length === 0) {
+        return res.status(200).json({
+          ok: true,
+          message: "Lấy danh sách sản phẩm thành công",
+          products: [],
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        });
+      }
+
+      // Create a map for sorting by sold quantity
+      bestSellingMap = new Map(
+        bestSelling.map((item) => [item._id.toString(), item.totalSold])
+      );
+
+      // Filter products to only include best selling ones
+      const bestSellingProductIds = bestSelling.map((item) => item._id);
+      query._id = { $in: bestSellingProductIds };
+    }
+
     const skip = (page - 1) * limit;
-    const [products, total] = await Promise.all([
+    let products = await Product.find(query)
+      .select(
+        "_id title slug description price importPrice discount quantity isNewProduct category isSaleProduct star brand images status"
+      )
+      .collation({ locale: "vi", strength: 3 })
+      .lean();
+
+    // Sort by best selling if bestSelling filter is active
+    if (isBestSelling && bestSellingMap) {
+      // Sort products by sold quantity (descending)
+      products = products.sort((a, b) => {
+        const soldA = bestSellingMap.get(a._id.toString()) || 0;
+        const soldB = bestSellingMap.get(b._id.toString()) || 0;
+        return soldB - soldA;
+      });
+
+      // Apply pagination after sorting
+      const total = products.length;
+      products = products.slice(skip, skip + limit);
+
+      res.status(200).json({
+        ok: true,
+        message: "Lấy danh sách sản phẩm thành công",
+        products,
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      });
+      return;
+    }
+
+    // Normal sorting and pagination
+    const [productsData, total] = await Promise.all([
       Product.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .select(
-          "_id title slug description price discount quantity isNewProduct category isSaleProduct star brand images status"
+          "_id title slug description price importPrice discount quantity isNewProduct category isSaleProduct star brand images status"
         )
         .collation({ locale: "vi", strength: 3 })
         .lean(),
       Product.countDocuments(query),
     ]);
+
+    products = productsData;
 
     res.status(200).json({
       ok: true,
@@ -253,6 +334,9 @@ export const searchProducts = async (req, res) => {
           { category: { $regex: new RegExp(query, "i") } },
         ],
       })
+        .select(
+          "_id title slug description price importPrice discount quantity isNewProduct category isSaleProduct star brand images status"
+        )
         .skip((page - 1) * limit)
         .limit(limit)
         .lean();
@@ -266,11 +350,33 @@ export const searchProducts = async (req, res) => {
         totalPages: Math.ceil(data.length / limit),
       });
     }
+    // Enrich Meilisearch results with slug from MongoDB if not present
+    const productIds = result.hits.map((hit) => hit.id || hit._id);
+    const productsWithSlug = await Product.find({
+      _id: { $in: productIds },
+    })
+      .select("_id slug")
+      .lean();
+
+    const slugMap = new Map(
+      productsWithSlug.map((p) => [p._id.toString(), p.slug])
+    );
+
+    // Add slug to each hit if not present
+    const enrichedHits = result.hits.map((hit) => {
+      const productId = hit.id || hit._id;
+      const slug = slugMap.get(productId?.toString()) || hit.slug || null;
+      return {
+        ...hit,
+        slug,
+      };
+    });
+
     res.status(200).json({
       ok: true,
       message: "Tìm sản phẩm thành công",
       query,
-      products: result.hits,
+      products: enrichedHits,
       total: result.estimatedTotalHits,
       page,
       totalPages: Math.ceil(result.estimatedTotalHits / limit),
@@ -289,17 +395,52 @@ export const getProductBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const product = await Product.findOne({ slug });
+    // Tìm sản phẩm theo slug
+    let product = await Product.findOne({ slug });
+
+    // Nếu không tìm thấy, thử tìm theo _id (fallback cho trường hợp slug bị lỗi hoặc không có)
+    if (!product && mongoose.Types.ObjectId.isValid(slug)) {
+      product = await Product.findById(slug);
+    }
+
+    // Nếu vẫn không tìm thấy, thử tìm với slug được decode
+    if (!product) {
+      try {
+        const decodedSlug = decodeURIComponent(slug);
+        if (decodedSlug !== slug) {
+          product = await Product.findOne({ slug: decodedSlug });
+        }
+      } catch (e) {
+        // Ignore decode errors
+      }
+    }
+
+    // Nếu vẫn không tìm thấy và slug có thể là title (cho sản phẩm cũ không có slug)
+    if (!product) {
+      // Tạo slug từ input để tìm
+      const possibleSlug = slugify(slug, { lower: true, strict: true });
+      product = await Product.findOne({ slug: possibleSlug });
+    }
+
     if (!product) {
       return res.status(404).json({ message: "Sản phẩm không tồn tại" });
     }
+
+    // Đảm bảo sản phẩm có slug (migrate cho sản phẩm cũ)
+    if (!product.slug && product.title) {
+      product.slug = slugify(product.title, { lower: true, strict: true });
+      await product.save();
+    }
+
     res.status(200).json({
       ok: true,
       message: "Lấy sản phẩm thành công",
       product,
     });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi lấy sản phẩm", error });
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy sản phẩm", error: error.message });
   }
 };
 
@@ -313,6 +454,7 @@ export const updateProduct = async (req, res) => {
       title,
       description,
       price,
+      importPrice,
       discount,
       isNewProduct,
       isSaleProduct,
@@ -329,6 +471,7 @@ export const updateProduct = async (req, res) => {
       ...(title !== undefined && { title }),
       ...(description !== undefined && { description }),
       ...(price !== undefined && { price }),
+      ...(importPrice !== undefined && { importPrice }),
       ...(isNewProduct !== undefined && { isNewProduct }),
       ...(isSaleProduct !== undefined && { isSaleProduct }),
       ...(status !== undefined && { status }),
@@ -370,7 +513,7 @@ export const updateProduct = async (req, res) => {
         oldBrandDoc = await Brand.findById(oldProduct.brand);
         oldBrandName = oldBrandDoc ? oldBrandDoc.name : null;
       } catch (error) {
-        console.error("Lỗi khi tìm brand cũ:", error);
+        // Error finding old brand
       }
     }
 
@@ -379,7 +522,6 @@ export const updateProduct = async (req, res) => {
         // Tìm brand mới theo tên để lấy _id
         const newBrandDoc = await Brand.findOne({ name: brand });
         if (!newBrandDoc) {
-          console.error("Brand mới không tồn tại:", brand);
           return res.status(400).json({ message: "Brand mới không tồn tại" });
         }
 
@@ -394,14 +536,9 @@ export const updateProduct = async (req, res) => {
         await Brand.findByIdAndUpdate(newBrandDoc._id, {
           $inc: { numberProducts: 1 },
         });
-
-        console.log("Brand counts updated successfully");
       } catch (brandError) {
-        console.error("Lỗi khi update brand count:", brandError);
         // Không throw error để không ảnh hưởng đến việc update product
       }
-    } else {
-      console.log("Brand không thay đổi hoặc không có brand mới");
     }
 
     if (category && category !== oldProduct.category) {
@@ -409,16 +546,10 @@ export const updateProduct = async (req, res) => {
         // Kiểm tra category mới có tồn tại không
         const newCategoryDoc = await Category.findOne({ name: category });
         if (!newCategoryDoc) {
-          console.error("Category mới không tồn tại:", category);
           return res
             .status(400)
             .json({ message: "Category mới không tồn tại" });
         }
-
-        console.log("Updating category counts:", {
-          oldCategory: oldProduct.category,
-          newCategory: category,
-        });
 
         // Giảm số lượng sản phẩm của category cũ
         if (oldProduct.category) {
@@ -436,14 +567,9 @@ export const updateProduct = async (req, res) => {
         await Category.findByIdAndUpdate(newCategoryDoc._id, {
           $inc: { productCount: 1 },
         });
-
-        console.log("Category counts updated successfully");
       } catch (categoryError) {
-        console.error("Lỗi khi update category count:", categoryError);
         // Không throw error để không ảnh hưởng đến việc update product
       }
-    } else {
-      console.log("Category không thay đổi hoặc không có category mới");
     }
 
     // Cập nhật MeiliSearch nếu có thay đổi category hoặc brand
@@ -488,12 +614,7 @@ export const updateProduct = async (req, res) => {
         }
 
         await productIndex.updateDocuments([meiliUpdateData]);
-        console.log("Product updated in MeiliSearch successfully");
       } catch (meiliError) {
-        console.warn(
-          "Failed to update product in MeiliSearch:",
-          meiliError.message
-        );
         // Continue without throwing error - product is still updated in MongoDB
       }
     }

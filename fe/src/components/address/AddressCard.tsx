@@ -3,6 +3,7 @@
 import Image from "next/image";
 import React from "react";
 import Button from "../button";
+import { normalizeImageUrl } from "@/utils/normalizeImageUrl";
 // import { useRouter } from "next/navigation";
 
 interface Address {
@@ -15,14 +16,10 @@ interface Address {
 
 const AddressCard = ({ data }: { data: Address }) => {
   const { name, image, address, addressLink } = data || ({} as Address);
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const imageBase = apiBase?.replace(/\/api\/?$/, "");
   const rawImage = Array.isArray(image) ? image[0] : image;
-  const imageSrc = rawImage
-    ? rawImage.startsWith("http")
-      ? rawImage
-      : `${imageBase || ""}${rawImage}`
-    : "";
+
+  // Normalize image URL sử dụng utility function
+  const imageSrc = normalizeImageUrl(rawImage);
 
   return (
     <div className="flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">

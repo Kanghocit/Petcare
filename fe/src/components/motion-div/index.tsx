@@ -4,7 +4,7 @@ import React from "react";
 
 const MotionDiv = ({
   children,
-  delay = 0.5
+  delay = 0
 }: {
   children: React.ReactNode;
   delay?: number;
@@ -13,8 +13,8 @@ const MotionDiv = ({
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay }}
-      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.4, delay }}
+      viewport={{ once: true, amount: 0.1 }}
     >
       {children}
     </motion.div>

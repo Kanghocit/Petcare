@@ -1,13 +1,14 @@
-import { fetchWithToken } from "@/utils/fetchWithToken";
+import { fetchWithoutToken } from "@/utils/fetchWithoutToken";
 
+// News không cần token, dùng fetchWithoutToken để có thể cache
 export const getNews = async (page: number, limit: number) => {
-  const response = await fetchWithToken(`/news?page=${page}&limit=${limit}&status=active`);
-  const data = await response.json();
+  const data = await fetchWithoutToken(
+    `/news?page=${page}&limit=${limit}&status=active`
+  );
   return data;
 };
 
 export const getNewsBySlug = async (slug: string) => {
-  const response = await fetchWithToken(`/news/${slug}`);
-  const data = await response.json();
+  const data = await fetchWithoutToken(`/news/${slug}`);
   return data;
 };

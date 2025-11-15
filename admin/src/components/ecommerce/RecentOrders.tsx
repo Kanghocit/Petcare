@@ -8,6 +8,13 @@ import {
 import Image from "next/image";
 import { Button } from "antd";
 import { Product } from "@/interface/Products";
+import Link from "next/link";
+
+// Extend Product type for best selling products
+type ProductWithSold = Product & {
+  soldQuantity?: number;
+  totalRevenue?: number;
+};
 
 // Define the table data using the interface
 
@@ -16,15 +23,13 @@ export default function RecentOrders({
   products,
 }: {
   title: string;
-  products: Product[];
+  products: ProductWithSold[];
 }) {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-  const origin = apiBase.replace(/\/?api\/?$/, "");
   const resolveImageUrl = (path?: string) => {
-    if (!path) return `${origin}/images/placeholder.png`;
+    if (!path) return "/images/placeholder.png";
     if (/^https?:\/\//i.test(path)) return path;
-    if (path.startsWith("/")) return `${origin}${path}`;
-    return `${origin}/${path}`;
+    if (path.startsWith("/")) return path;
+    return `/${path}`;
   };
 
   // Only show up to 3 products; compute remaining count
@@ -41,13 +46,33 @@ export default function RecentOrders({
       maximumFractionDigits: 0,
     }).format(value);
 
+  // Xác định filter type dựa trên title
+  const getFilterType = () => {
+    if (title.includes("sắp hết hàng")) return "lowStock";
+    if (title.includes("hết hàng")) return "outOfStock";
+    if (title.includes("bán chạy")) return "bestSelling";
+    if (title.includes("bán chậm")) return "slowSelling";
+    return null;
+  };
+
+  const isBestSelling = title.includes("bán chạy");
+  const isSlowSelling = title.includes("bán chậm");
+  const isSoldQuantity = isBestSelling || isSlowSelling;
+
+  const filterType = getFilterType();
+  const linkHref = filterType
+    ? `/manage-product-table?filter=${filterType}`
+    : "/manage-product-table";
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 pb-3 sm:px-6 dark:border-gray-800 dark:bg-white/3">
       <div className="mb-4 flex items-center justify-between gap-2">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           {title}
         </h3>
-        <Button>Xem thêm</Button>
+        <Link href={linkHref}>
+          <Button>Xem thêm</Button>
+        </Link>
       </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
@@ -62,13 +87,13 @@ export default function RecentOrders({
               </TableCell>
               <TableCell
                 isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                className="text-theme-xs px-1 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
-                Số lượng
+                {isSoldQuantity ? "Đã bán" : "Còn lại"}
               </TableCell>
               <TableCell
                 isHeader
-                className="text-theme-xs py-3 text-start font-medium text-gray-500 dark:text-gray-400"
+                className="text-theme-xs px-1 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
               >
                 Đơn giá
               </TableCell>
@@ -101,8 +126,10 @@ export default function RecentOrders({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
-                  {product.quantity}
+                <TableCell className="text-theme-sm py-3 text-center text-gray-500 dark:text-gray-400">
+                  {isSoldQuantity
+                    ? product.soldQuantity || 0
+                    : product.quantity}
                 </TableCell>
                 <TableCell className="text-theme-sm py-3 text-gray-500 dark:text-gray-400">
                   {formatCurrency(product.price)}

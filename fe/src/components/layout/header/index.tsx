@@ -84,59 +84,52 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   ];
 
   return (
-    <App>
-      <header className="flex items-center justify-center bg-white px-3 py-2 gap-8 sticky  top-0 z-100 w-full shadow-sm ">
-        <Link href="/" className="!ms-5 gap-2">
-          <Image
-            src="https://paddy.vn/cdn/shop/files/logo_paddy_desktop_155x.png?v=1693364605"
-            alt="logo"
-            width={150}
-            height={100}
-          />
-        </Link>
-        <SearchBar />
-        <div className="flex items-center justify-around gap-2">
-          <Language />
+    <header className="flex items-center justify-center bg-white px-3 py-2 gap-8 sticky top-0 z-[100] w-full shadow-sm min-h-[80px]">
+      <Link href="/" className="!ms-5 gap-2 flex-shrink-0">
+        <Image src="/images/logo.webp" alt="logo" width={150} height={100} priority />
+      </Link>
+      <SearchBar />
+      <div className="flex items-center justify-around gap-2 flex-shrink-0">
+        <Language />
 
-          {user ? (
-            <Dropdown menu={{ items }} placement="bottomRight" arrow>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <Avatar size="large" style={{ backgroundColor: "#f56a00" }}>
-                  {user?.name.charAt(0).toUpperCase()}
-                </Avatar>
+        {user ? (
+          <Dropdown menu={{ items }} placement="bottomRight" arrow>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <Avatar size="large" style={{ backgroundColor: "#f56a00" }}>
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </Avatar>
 
-                <div className="flex flex-col items-start text-sm ">
-                  <p>Tài khoản</p>
-                  <p className="font-semibold">{user.name}</p>
-                </div>
+              <div className="flex flex-col items-start text-sm">
+                <p>Tài khoản</p>
+                <p className="font-semibold">{user.name || "User"}</p>
               </div>
-            </Dropdown>
-          ) : (
-            <Dropdown menu={{ items: itemsAuth }} placement="bottomRight" arrow>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <Avatar size="large">
-                  <UserOutlined />
-                </Avatar>
+            </div>
+          </Dropdown>
+        ) : (
+          <Dropdown menu={{ items: itemsAuth }} placement="bottomRight" arrow>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <Avatar size="large">
+                <UserOutlined />
+              </Avatar>
 
-                <div className="flex flex-col items-start text-sm ">
-                  <p>Tài khoản</p>
-                  <p className="font-semibold">Đăng nhập</p>
-                </div>
+              <div className="flex flex-col items-start text-sm">
+                <p>Tài khoản</p>
+                <p className="font-semibold">Đăng nhập</p>
               </div>
-            </Dropdown>
-          )}
+            </div>
+          </Dropdown>
+        )}
 
-          <CartDrawer>
-            <button className="text-xl flex items-center gap-2 cursor-pointer  rounded-xl p-3 ">
-              <Badge count={cartCount}>
-                <ShoppingCartOutlined style={{ fontSize: 24 }} />
-              </Badge>
-              <p className="text-[16px]">Giỏ hàng</p>
-            </button>
-          </CartDrawer>
-        </div>
-      </header>
-    </App>
+        <CartDrawer>
+          <button className="text-xl flex items-center gap-2 cursor-pointer rounded-xl p-3">
+            <Badge count={cartCount}>
+              <ShoppingCartOutlined style={{ fontSize: 24 }} />
+            </Badge>
+            <p className="text-[16px]">Giỏ hàng</p>
+          </button>
+        </CartDrawer>
+      </div>
+    </header>
   );
 };
 

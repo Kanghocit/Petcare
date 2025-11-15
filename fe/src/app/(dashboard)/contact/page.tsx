@@ -3,6 +3,10 @@
 import Breadcrumb from "@/components/breadCrumb";
 import { Select } from "antd";
 import React, { useState } from "react";
+import type { Metadata } from "next";
+
+// Note: Metadata cannot be exported from client components
+// This page is client-side, so metadata should be in layout or parent
 
 const branches = [
   {

@@ -20,7 +20,6 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const onFinish = async (values: LoginFormValues) => {
-    console.log("Form values:", values);
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -36,7 +35,6 @@ const LoginForm = () => {
       );
       const data = await response.json();
       if (data.ok) {
-        console.log("Đăng nhập thành công", data);
         form.resetFields();
         message.success(data.message);
         router.push("/");

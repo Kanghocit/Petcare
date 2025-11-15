@@ -17,8 +17,6 @@ export default function ProfileLayoutWrapper({
 }: ProfileLayoutWrapperProps) {
   const pathname = usePathname();
 
-  console.log('user', user);
-
   // Nếu là order detail page thì chỉ render children
   if (
     pathname?.includes("/profile/orders/") &&
@@ -65,9 +63,7 @@ export default function ProfileLayoutWrapper({
                 <Link href="/profile">
                   <p className="font-semibold hover:text-[#FF8661] cursor-pointer">
                     Xin chào,{" "}
-                    <span className="font-semibold">
-                      {user?.name}!
-                    </span>
+                    <span className="font-semibold">{user?.name}!</span>
                   </p>
                 </Link>
               </div>

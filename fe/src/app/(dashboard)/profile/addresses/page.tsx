@@ -3,6 +3,20 @@ import AddressModal from "@/components/address-modal";
 import React from "react";
 import { addAddressAction, getUserProfileAction, setDefaultAddressAction, updateAddressAction } from "./action";
 import clsx from "clsx";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
+
+// No revalidate for user-specific pages (dynamic)
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createMetadata({
+  title: "Địa chỉ",
+  description: "Quản lý địa chỉ giao hàng của bạn",
+  robots: {
+    index: false,
+    follow: false,
+  },
+});
 
 const AddressesPage = async () => {
   const profile = await getUserProfileAction();

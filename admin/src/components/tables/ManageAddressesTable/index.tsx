@@ -23,11 +23,9 @@ const ManageAddressTable = ({
   addresses?: { addresses: Address[]; total: number; limit: number };
 }) => {
   const { addresses: addressesData, total, limit } = addresses || {};
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const imageBase = apiBase?.replace(/\/api\/?$/, "");
   const router = useRouter();
   const { modal, message } = App.useApp();
-  const { user } = useUserStore()
+  const { user } = useUserStore();
 
   const handleDeleteaddress = async (id: string) => {
     modal.confirm({
@@ -71,13 +69,14 @@ const ManageAddressTable = ({
                 >
                   Địa chỉ
                 </TableCell>
-                {user?.role === 'admin' && (
+                {user?.role === "admin" && (
                   <TableCell
                     isHeader
                     className="text-theme-xs px-5 py-3 text-start font-medium text-gray-500 dark:text-gray-400"
                   >
                     Hành động
-                  </TableCell>)}
+                  </TableCell>
+                )}
               </TableRow>
             </TableHeader>
 
@@ -111,7 +110,7 @@ const ManageAddressTable = ({
                         const normalized = rewriteBannerPath(raw);
                         const src = normalized?.startsWith("http")
                           ? normalized
-                          : `${imageBase}${normalized}`;
+                          : normalized;
 
                         return address.image ? (
                           <Image
@@ -131,7 +130,7 @@ const ManageAddressTable = ({
                     {address.address}
                   </TableCell>
 
-                  {user?.role === 'admin' && (
+                  {user?.role === "admin" && (
                     <TableCell className="text-theme-sm mx-1 my-3 flex gap-2 px-4 py-3 text-gray-500 dark:text-gray-400">
                       {/* View button */}
                       <ModalAddAddress action="update" initialValues={address}>

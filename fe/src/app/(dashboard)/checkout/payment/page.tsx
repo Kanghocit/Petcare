@@ -4,6 +4,9 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 import { Image } from "antd";
 
+// Note: Metadata cannot be exported from client components
+// This page is client-side for payment processing
+
 type PaymentDetailParams = {
   amount: number;
   content: string;

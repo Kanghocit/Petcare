@@ -21,6 +21,7 @@ interface ProductFormData {
   title: string;
   description: string;
   price: number;
+  importPrice?: number;
   discount?: number; // <-- có thể undefined khi không sale
   isNewProduct: boolean;
   isSaleProduct: boolean;
@@ -177,14 +178,26 @@ const ModalAddProduct: React.FC<{
         </Form.Item>
 
         <Form.Item
-          label="Giá"
+          label="Giá bán"
           name="price"
-          rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+          rules={[{ required: true, message: "Vui lòng nhập giá bán" }]}
         >
           <InputNumber
             min={0}
             style={{ width: "100%" }}
-            placeholder="Thêm giá sản phẩm"
+            placeholder="Thêm giá bán sản phẩm"
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Giá nhập"
+          name="importPrice"
+          rules={[{ required: false }]}
+        >
+          <InputNumber
+            min={0}
+            style={{ width: "100%" }}
+            placeholder="Thêm giá nhập sản phẩm"
           />
         </Form.Item>
 

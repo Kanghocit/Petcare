@@ -2,7 +2,10 @@ export const fetchWithoutToken = async (
   url: string,
   method: string = "GET",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any = null
+  data: any = null,
+  cacheConfig?:
+    | RequestCache
+    | { next?: { revalidate?: number; tags?: string[] } }
 ) => {
   const options: RequestInit = {
     method,
@@ -10,6 +13,20 @@ export const fetchWithoutToken = async (
       "Content-Type": "application/json",
     },
   };
+
+  // Add cache configuration for GET requests
+  if (method === "GET") {
+    if (typeof cacheConfig === "object" && cacheConfig?.next) {
+      // Next.js cache configuration
+      options.next = cacheConfig.next;
+    } else if (typeof cacheConfig === "string") {
+      // Standard fetch cache
+      options.cache = cacheConfig;
+    } else {
+      // Default: cache for 60 seconds
+      options.next = { revalidate: 60 };
+    }
+  }
 
   if (data && method !== "GET") {
     options.body = JSON.stringify(data);

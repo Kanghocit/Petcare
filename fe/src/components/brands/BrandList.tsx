@@ -1,7 +1,10 @@
 "use client";
 
-import React from "react";
-import { Image } from "antd";
+import React, { useState } from "react";
+import { Image, App } from "antd";
+import { normalizeImageUrl } from "@/utils/normalizeImageUrl";
+import { useRouter } from "next/navigation";
+import { fetchWithoutToken } from "@/utils/fetchWithoutToken";
 
 interface Brand {
   id: string;
@@ -15,6 +18,46 @@ interface BrandListProps {
 }
 
 const BrandList: React.FC<BrandListProps> = ({ brands, selectedLetter }) => {
+  const router = useRouter();
+  const [loadingBrand, setLoadingBrand] = useState<string | null>(null);
+  const { message } = App.useApp();
+
+  const handleBrandClick = async (brandName: string, brandId: string) => {
+    if (loadingBrand === brandId) return; // Prevent double clicks
+
+    setLoadingBrand(brandId);
+    try {
+      // Check if brand has products
+      const params = new URLSearchParams();
+      params.append("brand", brandName);
+      params.append("limit", "1"); // Only check if products exist, limit to 1
+      params.append("page", "1");
+
+      const response = await fetchWithoutToken(
+        `/product?${params.toString()}`,
+        "GET"
+      );
+
+      if (response?.products && response.products.length > 0) {
+        // Brand has products, navigate to products page with brand filter
+        router.push(`/products?brand=${encodeURIComponent(brandName)}`);
+      } else {
+        // Brand has no products, show message and don't navigate
+        message.warning({
+          content: `Thương hiệu "${brandName}" hiện chưa có sản phẩm`,
+          duration: 4, // Hiển thị trong 4 giây
+        });
+      }
+    } catch {
+      message.error({
+        content: "Không thể kiểm tra sản phẩm của thương hiệu này",
+        duration: 3,
+      });
+    } finally {
+      setLoadingBrand(null);
+    }
+  };
+
   // Group brands by first letter
   const groupedBrands = React.useMemo(() => {
     const groups: { [key: string]: Brand[] } = {};
@@ -65,7 +108,7 @@ const BrandList: React.FC<BrandListProps> = ({ brands, selectedLetter }) => {
       {Object.keys(filteredGroups).map((letter) => (
         <div key={letter} className="flex gap-8 border-b border-gray-200 pb-8">
           {/* Letter header */}
-          <div className="w-16 flex-shrink-0">
+          <div className="w-16 shrink-0">
             <h2 className="text-4xl font-extrabold tracking-tight text-gray-200 sticky top-4">
               {letter}
             </h2>
@@ -74,40 +117,46 @@ const BrandList: React.FC<BrandListProps> = ({ brands, selectedLetter }) => {
           {/* Brands grid */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {filteredGroups[letter].map((brand) => (
-                <div
-                  key={brand.id}
-                  className="group cursor-pointer rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200/70 dark:bg-white/5 dark:border-white/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gray-50 ring-1 ring-gray-100 overflow-hidden grid place-items-center dark:bg-white/5 dark:ring-white/10">
-                      {brand.logo ? (
-                        <Image
-                          width={40}
-                          height={40}
-                          src={
-                            brand.logo?.startsWith("http")
-                              ? brand.logo
-                              : `http://localhost:8000${brand.logo}`
-                          }
-                          alt={brand.name}
-                          className="w-8 h-8 object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <span className="text-xs font-semibold text-gray-500">
-                          {brand.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
+              {filteredGroups[letter].map((brand) => {
+                const isLoading = loadingBrand === brand.id;
+                return (
+                  <div
+                    key={brand.id}
+                    onClick={() => handleBrandClick(brand.name, brand.id)}
+                    className={`group rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200/70 dark:bg-white/5 dark:border-white/10 ${
+                      isLoading ? "opacity-50 cursor-wait" : "cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 shrink-0 rounded-lg bg-gray-50 ring-1 ring-gray-100 overflow-hidden grid place-items-center dark:bg-white/5 dark:ring-white/10">
+                        {(() => {
+                          const logoSrc = normalizeImageUrl(brand.logo);
+                          return logoSrc ? (
+                            <Image
+                              width={40}
+                              height={40}
+                              src={logoSrc}
+                              alt={brand.name}
+                              className="w-8 h-8 object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold text-gray-500">
+                              {brand.name.charAt(0).toUpperCase()}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                      <span className="text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                        {brand.name}
+                        {isLoading && "..."}
+                      </span>
                     </div>
-                    <span className="text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
-                      {brand.name}
-                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

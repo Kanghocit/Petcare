@@ -4,8 +4,8 @@ import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/components/tables/layout/AppHeader";
 import AppSidebar from "@/components/tables/layout/AppSidebar";
 import Backdrop from "@/components/tables/layout/Backdrop";
+import AuthGuard from "@/components/auth/AuthGuard";
 import React from "react";
-import { App } from "antd";
 
 export default function AdminLayout({
   children,
@@ -22,7 +22,7 @@ export default function AdminLayout({
       : "lg:ml-[90px]";
 
   return (
-    <App>
+    <AuthGuard>
       <div className="min-h-screen xl:flex">
         {/* Sidebar and Backdrop */}
         <AppSidebar />
@@ -39,6 +39,6 @@ export default function AdminLayout({
           </div>
         </div>
       </div>
-    </App>
+    </AuthGuard>
   );
 }

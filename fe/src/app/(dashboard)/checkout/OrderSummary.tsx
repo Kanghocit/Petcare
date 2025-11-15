@@ -262,7 +262,7 @@ const OrderSummary: React.FC = () => {
         message.success(msg);
         if (paymentMethod === "momo") {
           const result = await createPaymentAction(orderCode, grandTotal);
-          console.log("result", result);
+
           if (result.ok && result.data) {
             // MoMo API trả về payUrl trực tiếp trong data
             const payUrl = result.data.payUrl || result.data;
@@ -286,8 +286,7 @@ const OrderSummary: React.FC = () => {
           (result.body as { message?: string })?.message || "Đặt hàng thất bại";
         message.error(msg);
       }
-    } catch (error) {
-      console.log("error", error);
+    } catch {
       message.error("Không thể tạo đơn hàng. Vui lòng thử lại.");
     }
   };

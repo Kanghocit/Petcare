@@ -1,7 +1,6 @@
 import React from "react";
 import SectionHeader from "../section-header";
 import NewPostCard from "./NewPostCard";
-import { getNewsAction } from "@/app/(dashboard)/news/action";
 
 interface News {
   _id: string;
@@ -11,11 +10,13 @@ interface News {
   publishTime: string;
   slug: string;
 }
-const limit = 4;
-const page = 1;
 
-const News = async () => {
-  const res = await getNewsAction(page, limit);
+interface NewsProps {
+  newsData?: { news?: News[] };
+}
+
+const News: React.FC<NewsProps> = ({ newsData }) => {
+  const res = newsData;
 
   return (
     <>

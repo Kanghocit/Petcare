@@ -80,7 +80,7 @@ const Feedback = ({
   }, [comments]);
 
   const [newComment, setNewComment] = useState({
-    name: user ? user.user.name : "",
+    name: user ? user?.user?.name : "",
     rating: 5,
     comment: "",
   });
@@ -645,7 +645,7 @@ const Feedback = ({
                     size="large"
                     gap={2}
                   >
-                    {user.user.name.split("")[0].toUpperCase()}
+                    {user?.user?.name.split("")[0].toUpperCase()}
                   </Avatar>
                   <span className="font-semibold">{comment.name}</span>
                   <Rate

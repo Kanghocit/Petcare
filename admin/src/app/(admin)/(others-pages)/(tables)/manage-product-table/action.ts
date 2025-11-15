@@ -8,8 +8,12 @@ import {
   updateProduct,
 } from "@/libs/product";
 
-export const getAllProductsAction = async (page: number, search: string) => {
-  const data = await getAllProducts(page, search);
+export const getAllProductsAction = async (
+  page: number,
+  search: string,
+  filter?: string,
+) => {
+  const data = await getAllProducts(page, search, filter);
   return data;
 };
 

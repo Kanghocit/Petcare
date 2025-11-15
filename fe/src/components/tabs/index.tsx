@@ -36,6 +36,7 @@ const Tabs = ({ tabs, catFoodData, dogFoodData, toysData }: TabsProps) => {
   };
 
   const currentData = getCurrentData();
+  
 
   return (
     <div className="w-full flex flex-col items-center justify-center">

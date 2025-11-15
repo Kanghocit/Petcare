@@ -42,6 +42,17 @@ const orderItemSchema = new Schema(
       },
     },
 
+    // Giá nhập tại thời điểm mua (VND)
+    importPriceAtPurchase: {
+      type: Number,
+      default: 0,
+      min: [0, "Giá nhập không được âm"],
+      validate: {
+        validator: Number.isInteger,
+        message: "Giá nhập phải là số nguyên",
+      },
+    },
+
     // Snapshot thông tin sản phẩm lúc mua
     productSnapshot: {
       title: { type: String, required: true },

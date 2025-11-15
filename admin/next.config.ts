@@ -9,25 +9,35 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  // Rewrite để proxy /images đến backend, tránh lỗi private IP
+  async rewrites() {
+    return [
+      {
+        source: "/images/:path*",
+        destination: `${
+          process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
+          "http://localhost:8000"
+        }/images/:path*`,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "8000",
-        pathname: "/images/**",
-      },
+      // Không cần localhost nữa vì đã dùng rewrite
       {
         protocol: "https",
         hostname: "i1-vnexpress.vnecdn.net",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "i1-giadinh.vnecdn.net",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "*.vnecdn.net",
+        pathname: "/**",
       },
     ],
   },

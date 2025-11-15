@@ -22,6 +22,12 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       default: 0,
+      // Giá bán (selling price)
+    },
+    importPrice: {
+      type: Number,
+      default: 0,
+      // Giá nhập (import/cost price) - mặc định bằng 75% giá bán
     },
     //đang bán/tạm ngừng bán/ngừng hẳn
     status: {
@@ -63,8 +69,12 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.pre("save", async function (next) {
-  if (!this.isModified("title")) return next();
-  this.slug = slugify(this.title, { lower: true, strict: true });
+  // Luôn tạo slug nếu chưa có hoặc title đã thay đổi
+  if (!this.slug || this.isModified("title")) {
+    if (this.title) {
+      this.slug = slugify(this.title, { lower: true, strict: true });
+    }
+  }
   next();
 });
 

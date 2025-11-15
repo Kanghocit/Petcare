@@ -1,6 +1,16 @@
 import Breadcrumb from "@/components/breadCrumb";
 import NewsTable from "./components/NewsTable";
 import { getNews } from "@/libs/new";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
+
+// Revalidate news page every 5 minutes
+export const revalidate = 300;
+
+export const metadata: Metadata = createMetadata({
+  title: "Tin tức",
+  description: "Cập nhật tin tức mới nhất về thú cưng, cách chăm sóc, sức khỏe và nhiều thông tin hữu ích khác.",
+});
 
 const NewsPage = async ({
   searchParams,

@@ -2,6 +2,8 @@ import React from "react";
 import { getOrderByIdAction } from "../action";
 import { Badge } from "antd";
 import dayjs from "dayjs";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -11,6 +13,26 @@ import {
 import Image from "next/image";
 import BreadCrumb from "@/components/breadCrumb";
 import ModalConfirm from "./components/ModalConfirm";
+
+// No revalidate for user-specific pages (dynamic)
+export const dynamic = "force-dynamic";
+
+// Generate dynamic metadata for order pages
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  return createMetadata({
+    title: `Đơn hàng #${id.slice(-8)}`,
+    description: "Chi tiết đơn hàng của bạn",
+    robots: {
+      index: false,
+      follow: false,
+    },
+  });
+}
 
 interface OrderItem {
   _id: string;

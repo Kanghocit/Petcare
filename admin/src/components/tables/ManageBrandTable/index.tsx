@@ -22,8 +22,6 @@ const ManageBrandTable = ({
   brands?: { brands: Brand[]; total: number; limit: number };
 }) => {
   const { brands: brandsData, total, limit } = brands || {};
-  const apiBase = process.env.NEXT_PUBLIC_API_URL;
-  const imageBase = apiBase?.replace(/\/api\/?$/, "");
   const router = useRouter();
   const { modal, message } = App.useApp();
 
@@ -106,7 +104,7 @@ const ManageBrandTable = ({
                         const normalized = rewriteBannerPath(raw);
                         const src = normalized?.startsWith("http")
                           ? normalized
-                          : `${imageBase}${normalized}`;
+                          : normalized;
 
                         return brand.image ? (
                           <Image

@@ -1,26 +1,50 @@
 "use client";
 
 import { Input } from "antd";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 const { Search } = Input;
 
 const SearchProducts = () => {
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
 
   useEffect(() => {
-    router.push(`/manage-product-table?search=${search}`);
-  }, [search, router]);
+    // Sync với URL params khi component mount hoặc URL thay đổi từ bên ngoài
+    const urlSearch = searchParams.get("search") || "";
+    setSearch(urlSearch);
+  }, [searchParams]);
+
+  const updateUrl = (newSearch: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Update search param
+    if (newSearch && newSearch.trim()) {
+      params.set("search", newSearch.trim());
+    } else {
+      params.delete("search");
+    }
+
+    // Reset page khi search thay đổi
+    params.set("page", "1");
+
+    const queryString = params.toString();
+    router.push(`${pathname}${queryString ? `?${queryString}` : ""}`);
+    router.refresh();
+  };
 
   return (
     <Search
       placeholder="Tìm kiếm sản phẩm"
       allowClear
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+      }}
       onSearch={(value) => {
-        setSearch(value);
-        router.push(`/manage-product-table?search=${value}`);
-        router.refresh();
+        updateUrl(value);
       }}
       style={{ width: 250 }}
     />

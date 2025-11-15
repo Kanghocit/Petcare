@@ -2,8 +2,23 @@ import { fetchData } from "@/utils/fetchData";
 import { Product } from "@/interface/Products";
 
 //get
-export const getAllProducts = async (page: number, search: string = "") => {
-  const data = await fetchData(`/product?page=${page}&search=${search}`);
+export const getAllProducts = async (
+  page: number,
+  search: string = "",
+  filter?: string,
+) => {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (search && search.trim()) {
+    params.set("search", search.trim());
+  }
+  if (filter) {
+    params.set("filter", filter);
+  }
+  const url = `/product?${params.toString()}`;
+  
+  
+  const data = await fetchData(url);
   return data;
 };
 export const getProductBySlug = async (slug: string) => {

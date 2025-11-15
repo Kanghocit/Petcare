@@ -48,7 +48,6 @@ export const login = async (req, res) => {
     }
     //so sánh mật khẩu
     const isMatch = await authService.matchPassword(password, user.password);
-    console.log(isMatch);
     if (!isMatch) {
       return res.status(400).json({ message: "Mật khẩu không chính xác" });
     }
@@ -124,10 +123,7 @@ export const refreshToken = async (req, res) => {
       message: "Tạo lại access token thành công",
       accessToken: newAccessToken,
     });
-
-    console.log("đã tạo lại access token");
   } catch (error) {
-    console.error("Refresh token error:", error);
     res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
@@ -177,26 +173,22 @@ export const loginAdmin = async (req, res) => {
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      console.log("Không tìm thấy tài khoản");
       return res.status(400).json({ ok: false, message: "Không tìm thấy tài khoản" });
     }
 
     //check trạng thái tài khoản
     if (user.status === "blocked") {
-      console.log("Tài khoản đã bị vô hiệu hóa");
       return res.status(400).json({ ok: false, message: "Tài khoản đã bị vô hiệu hóa" });
     }
 
     //check role account 
     if (user.role !== "admin" && user.role !== "staff") {
-      console.log("Không có quyền truy cập trang quản trị");
       return res.status(403).json({ ok: false, message: "Không có quyền truy cập trang quản trị" });
     }
 
     //check pass 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.log("Sai mật khẩu");
       return res.status(400).json({ ok: false, message: "Sai mật khẩu" });
     }
 

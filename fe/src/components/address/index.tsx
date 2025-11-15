@@ -2,7 +2,6 @@ import React from "react";
 import SectionHeader from "../section-header";
 
 import AddressCard from "./AddressCard";
-import { getAllAddressAction } from "./action";
 
 interface AddressItem {
   _id: string;
@@ -11,11 +10,13 @@ interface AddressItem {
   address: string;
   addressLink: string;
 }
-const limit = 4;
-const page = 1;
 
-const AddressSection = async () => {
-  const res = await getAllAddressAction(page, limit);
+interface AddressSectionProps {
+  addressesData?: { addresses?: AddressItem[] };
+}
+
+const AddressSection: React.FC<AddressSectionProps> = ({ addressesData }) => {
+  const res = addressesData;
 
   return (
     <>

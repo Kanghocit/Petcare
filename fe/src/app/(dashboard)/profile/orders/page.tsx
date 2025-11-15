@@ -2,6 +2,20 @@
 import { getOrderByUserIdAction } from "./action";
 import { getUser } from "@/actions";
 import OrderTable from "@/components/tables/OrderTable";
+import { createMetadata } from "@/utils/metadata";
+import type { Metadata } from "next";
+
+// No revalidate for user-specific pages (dynamic)
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createMetadata({
+  title: "Đơn hàng",
+  description: "Xem lịch sử đơn hàng của bạn",
+  robots: {
+    index: false,
+    follow: false,
+  },
+});
 
 const OrdersPage = async () => {
   const data = await getUser();

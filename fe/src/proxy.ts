@@ -1,4 +1,4 @@
-// middleware.ts
+// src/proxy.ts
 import { NextRequest, NextResponse } from "next/server";
 
 function isJwtExpired(token: string | undefined): boolean {
@@ -17,14 +17,13 @@ function isJwtExpired(token: string | undefined): boolean {
   }
 }
 
-export async function middleware(request: NextRequest) {
+// Chú ý: export function named "proxy"
+export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  // If no refresh token, nothing we can do
   if (!refreshToken) return NextResponse.next();
 
-  // Refresh when token missing OR expired
   if (!accessToken || isJwtExpired(accessToken)) {
     try {
       const refreshRes = await fetch(
@@ -53,19 +52,19 @@ export async function middleware(request: NextRequest) {
           return response;
         }
       } else {
-        // On failed refresh, clear broken access token so app can re-auth
         const response = NextResponse.next();
         response.cookies.set("accessToken", "", { path: "/", maxAge: 0 });
         return response;
       }
     } catch {
-      // ignore network errors and continue
+      // ignore network errors
     }
   }
 
   return NextResponse.next();
 }
 
+// Nếu muốn, có thể giữ matcher config như middleware
 export const config = {
   matcher: ["/((?!_next|favicon.ico|api/auth).*)"],
 };
