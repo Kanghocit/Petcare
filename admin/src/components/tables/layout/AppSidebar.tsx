@@ -28,7 +28,7 @@ const AppSidebar: React.FC = () => {
   const navItems: NavItem[] = [
     {
       icon: <GridIcon />,
-      name: "Tổng quan",
+      name: "Báo cáo thống kê",
       path: "/",
     },
 

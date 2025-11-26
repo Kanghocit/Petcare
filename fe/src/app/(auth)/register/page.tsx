@@ -21,7 +21,6 @@ const RegisterForm = () => {
   const router = useRouter();
   const [form] = Form.useForm();
   const onFinish = async (values: RegisterFormValues) => {
-    
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -45,7 +44,7 @@ const RegisterForm = () => {
       setIsLoading(false);
       //eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      message.error(error?.message || "Đăng ký thất bại");
+      message.error(error?.message);
       setIsLoading(false);
     }
   };

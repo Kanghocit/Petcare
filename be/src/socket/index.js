@@ -7,7 +7,9 @@ const initSocket = (server) => {
 
   ioInstance = new Server(server, {
     cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001"],
+      // Allow both admin & FE (any origin in dev/prod)
+      origin: "*",
+      methods: ["GET", "POST"],
       credentials: true,
     },
   });

@@ -5,8 +5,7 @@ import Menu from "@/components/menu";
 import { getUser } from "@/actions";
 import { App } from "antd";
 import FloatingActionButton from "@/components/brands/FloatingActionButton";
-import { createMetadata } from "@/utils/metadata";
-import type { Metadata } from "next";
+
 
 // Force dynamic vì layout cần user data từ cookies
 export const dynamic = "force-dynamic";

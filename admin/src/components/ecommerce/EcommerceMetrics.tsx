@@ -12,7 +12,7 @@ import {
 
 type EcommerceStats = {
   revenue: number;
-  sales: number;
+  profit: number;
   newCustomers: number;
   sold: number;
   refund: number;
@@ -38,8 +38,8 @@ export const EcommerceMetrics = ({ data }: { data: EcommerceStats }) => {
       />
 
       <StatisticCard
-        title="Doanh số"
-        value={formatCurrency(data.sales)}
+        title="Lợi nhuận"
+        value={formatCurrency(data.profit)}
         icon={
           <ShoppingCartOutlined className="text-xl text-blue-600! dark:text-blue-500!" />
         }

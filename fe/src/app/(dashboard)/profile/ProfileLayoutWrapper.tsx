@@ -78,18 +78,24 @@ export default function ProfileLayoutWrapper({
             </h3>
             <div className="text-sm  flex flex-col gap-4">
               <Link
+                href="/profile/edit"
+                className="border-b border-gray-200 pb-4 cursor-pointer hover:text-[#FF8661]! text-gray-800!"
+              >
+                ✏️ Cập nhật thông tin
+              </Link>
+              <Link
                 href="/profile/addresses"
-                className="border-b border-gray-200 pb-4 cursor-pointer hover:!text-[#FF8661] !text-gray-800"
+                className="border-b border-gray-200 pb-4 cursor-pointer hover:text-[#FF8661]! text-gray-800!"
               >
                 📍 Địa chỉ đã lưu ({user?.address?.length || 0})
               </Link>
               <Link
                 href="/profile/change-password"
-                className="border-b border-gray-200 pb-4 cursor-pointer hover:!text-[#FF8661] !text-gray-800"
+                className="border-b border-gray-200 pb-4 cursor-pointer hover:text-[#FF8661]! text-gray-800!"
               >
                 🔁 Đổi mật khẩu
               </Link>
-              <div className="cursor-pointer hover:!text-[#FF8661] !text-gray-800">
+              <div className="cursor-pointer hover:text-[#FF8661]! text-gray-800!">
                 🚪 Đăng xuất
               </div>
             </div>

@@ -55,7 +55,14 @@ const ManageOrderDetailPage = async ({
         pageTitle={`Đơn hàng ${order.orderCode || order._id?.slice(-8)}`}
       />
 
-      <OrderAction id={id} fulfillment={order.fulfillment?.status} />
+      <OrderAction
+        id={id}
+        fulfillment={order.fulfillment?.status}
+        hasReturnRequest={
+          typeof order.note === "string" &&
+          order.note.startsWith("[RETURN_REQUEST]")
+        }
+      />
 
       <div className="grid grid-cols-6 gap-4">
         <ComponentCard

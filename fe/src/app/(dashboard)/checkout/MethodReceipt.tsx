@@ -33,10 +33,11 @@ const MethodReceipt: React.FC<AddressProp> = ({ address }) => {
       {/* --- Chọn phương thức --- */}
       <div className="flex gap-3 mb-4">
         <button
-          className={`flex w-full justify-center cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border transition ${method === "home"
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-200 hover:border-gray-400"
-            }`}
+          className={`flex w-full justify-center cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border transition ${
+            method === "home"
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-200 hover:border-gray-400"
+          }`}
           onClick={() => setMethod("home")}
         >
           <span className="text-xl">🚚</span>
@@ -44,10 +45,11 @@ const MethodReceipt: React.FC<AddressProp> = ({ address }) => {
         </button>
 
         <button
-          className={`flex w-full justify-center cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border transition ${method === "store"
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-200 hover:border-gray-400"
-            }`}
+          className={`flex w-full justify-center cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border transition ${
+            method === "store"
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-200 hover:border-gray-400"
+          }`}
           onClick={() => setMethod("store")}
         >
           <span className="text-xl">🏬</span>
@@ -86,7 +88,7 @@ const MethodReceipt: React.FC<AddressProp> = ({ address }) => {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <span className="font-medium">{tempAddress}</span>
+              <p className="font-medium text-sm">{tempAddress}</p>
               <button
                 className="text-blue-600 hover:underline text-sm cursor-pointer"
                 onClick={() => setIsEditing(true)}

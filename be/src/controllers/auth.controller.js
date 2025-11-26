@@ -19,7 +19,8 @@ export const register = async (req, res) => {
       email,
       password,
       phone: "",
-      address: "",
+      // address là mảng các object theo schema, nên để mặc định là mảng rỗng
+      address: [],
     });
     const userObj = user.toObject();
     delete userObj.password;

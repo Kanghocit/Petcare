@@ -1,23 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Modal, Radio, Input, Space, App } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { cancelOrderAction } from "../action";
+import { cancelOrderAction, requestReturnOrderAction } from "../action";
+import { getSocket } from "@/libs/socket";
 
 const { TextArea } = Input;
 
 interface ModalConfirmProps {
   orderId: string;
   orderCode: string;
-  canCancel?: boolean;
+  fulfillmentStatus?: string;
+  initialNote?: string;
 }
 
 const ModalConfirm: React.FC<ModalConfirmProps> = ({
   orderId,
   orderCode,
-  canCancel,
+  fulfillmentStatus,
+  initialNote,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>("");
@@ -25,6 +28,52 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
   const router = useRouter();
+
+  // Local, realtime status synced via Socket.IO
+  const [liveStatus, setLiveStatus] = useState<string | undefined>(
+    fulfillmentStatus
+  );
+  // Kiểm tra xem đã có yêu cầu hoàn hàng chưa (từ note ban đầu hoặc từ socket)
+  const [hasReturnRequest, setHasReturnRequest] = useState(
+    initialNote?.includes("[RETURN_REQUEST]") || false
+  );
+  const [liveNote, setLiveNote] = useState<string | undefined>(initialNote);
+
+  // Realtime: lắng nghe thay đổi trạng thái đơn hàng và note
+  useEffect(() => {
+    const socket = getSocket();
+
+    type OrderUpdatedPayload = {
+      orderId: string;
+      fulfillmentStatus?: string;
+      status?: string;
+      note?: string;
+    };
+
+    const handleOrderUpdated = (payload: OrderUpdatedPayload) => {
+      if (payload.orderId !== orderId) return;
+      if (payload.fulfillmentStatus) {
+        setLiveStatus(payload.fulfillmentStatus);
+      }
+      if (payload.note !== undefined) {
+        setLiveNote(payload.note);
+        // Nếu note có [RETURN_REQUEST] hoặc [RETURN_REJECTED] thì đã có yêu cầu hoàn hàng
+        if (
+          payload.note?.includes("[RETURN_REQUEST]") ||
+          payload.note?.includes("[RETURN_REJECTED]")
+        ) {
+          setHasReturnRequest(true);
+        }
+      }
+    };
+
+    socket.on("order-updated", handleOrderUpdated);
+    return () => {
+      socket.off("order-updated", handleOrderUpdated);
+    };
+  }, [orderId]);
+
+  const isDelivered = liveStatus === "delivered";
 
   const cancelReasons = [
     {
@@ -59,18 +108,54 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
     },
   ];
 
+  const returnReasons = [
+    {
+      value: "damaged_product",
+      label: "Sản phẩm bị hư hỏng",
+      description: "Sản phẩm nhận được bị vỡ, móp, hư hỏng khi vận chuyển",
+    },
+    {
+      value: "wrong_product",
+      label: "Giao sai sản phẩm",
+      description: "Sản phẩm nhận được không đúng với đơn đặt hàng",
+    },
+    {
+      value: "not_as_described",
+      label: "Sản phẩm không đúng mô tả",
+      description: "Chất lượng, mẫu mã khác với mô tả trên website",
+    },
+    {
+      value: "change_of_mind_after_receive",
+      label: "Đổi ý sau khi nhận hàng",
+      description: "Tôi không còn nhu cầu sử dụng sản phẩm này nữa",
+    },
+    {
+      value: "other",
+      label: "Lý do khác",
+      description: "Vui lòng mô tả lý do cụ thể",
+    },
+  ];
+
   const showModal = () => {
     setIsModalOpen(true);
   };
 
   const handleOk = async () => {
     if (!cancelReason) {
-      message.error("Vui lòng chọn lý do hủy đơn hàng");
+      message.error(
+        isDelivered
+          ? "Vui lòng chọn lý do yêu cầu hoàn hàng"
+          : "Vui lòng chọn lý do hủy đơn hàng"
+      );
       return;
     }
 
     if (cancelReason === "other" && !otherReason.trim()) {
-      message.error("Vui lòng mô tả lý do hủy đơn hàng");
+      message.error(
+        isDelivered
+          ? "Vui lòng mô tả lý do yêu cầu hoàn hàng"
+          : "Vui lòng mô tả lý do hủy đơn hàng"
+      );
       return;
     }
 
@@ -78,23 +163,38 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
     try {
       const finalReason = cancelReason === "other" ? otherReason : cancelReason;
 
-      const res = await cancelOrderAction(orderId, finalReason);
+      const res = isDelivered
+        ? await requestReturnOrderAction(orderId, finalReason)
+        : await cancelOrderAction(orderId, finalReason);
 
       if (res.ok) {
-        message.success("Đã hủy đơn hàng thành công");
+        message.success(
+          isDelivered
+            ? "Đã gửi yêu cầu hoàn hàng thành công"
+            : "Đã hủy đơn hàng thành công"
+        );
         setIsModalOpen(false);
 
         // Reset form
         setCancelReason("");
         setOtherReason("");
+        if (isDelivered) {
+          setHasReturnRequest(true);
+        }
         router.refresh();
-        router.push("/profile/orders");
+        if (!isDelivered) {
+          router.push("/profile/orders");
+        }
       } else {
         message.error(res.message);
       }
     } catch (error) {
-      message.error("Có lỗi xảy ra khi hủy đơn hàng");
-      console.error("Error canceling order:", error);
+      message.error(
+        isDelivered
+          ? "Có lỗi xảy ra khi gửi yêu cầu hoàn hàng"
+          : "Có lỗi xảy ra khi hủy đơn hàng"
+      );
+      console.error("Error updating order:", error);
     } finally {
       setLoading(false);
     }
@@ -113,22 +213,59 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
     }
   };
 
-  if (!canCancel) {
+  // Determine what actions user can do based on *current* status
+  const canCancelNow =
+    liveStatus !== "shipping" &&
+    liveStatus !== "shipped" &&
+    liveStatus !== "delivered" &&
+    liveStatus !== "returned" &&
+    liveStatus !== "cancelled";
+
+  // Nếu admin đã xử lý yêu cầu hoàn hàng (chấp nhận hoặc từ chối), không hiển thị nút nữa
+  const isReturnProcessed =
+    liveStatus === "returned" || liveNote?.startsWith("[RETURN_REJECTED]");
+
+  // Nếu admin đã xử lý (chấp nhận hoặc từ chối), không hiển thị nút nữa
+  if (isReturnProcessed) {
     return null;
   }
+
+  // Nếu đã gửi yêu cầu hoàn hàng rồi và vẫn đang ở trạng thái delivered,
+  // không hiển thị nút nữa, chỉ hiển thị thông báo
+  if (liveStatus === "delivered" && hasReturnRequest) {
+    return (
+      <div className="flex justify-end mb-4">
+        <p className="text-sm text-blue-600">
+          Bạn đã gửi yêu cầu hoàn hàng. Vui lòng chờ admin xử lý.
+        </p>
+      </div>
+    );
+  }
+
+  // Nếu có thể hủy đơn hàng, hiển thị nút hủy
+  if (canCancelNow) {
+    // mode = "cancel" - sẽ được set ở return statement
+  } else if (isDelivered) {
+    // mode = "return" - sẽ được set ở return statement
+  } else {
+    // Không có hành động nào
+    return null;
+  }
+
+  const mode: "cancel" | "return" = canCancelNow ? "cancel" : "return";
 
   return (
     <>
       <div className="flex justify-end mb-4">
         <Button
-          variant="outlined"
-          color="danger"
+          variant={mode === "cancel" ? "outlined" : "filled"}
+          color={mode === "cancel" ? "danger" : "primary"}
           onClick={showModal}
           icon={<ExclamationCircleOutlined />}
           className="flex items-center gap-2"
-          disabled={!canCancel}
+          disabled={mode === "cancel" && !canCancelNow}
         >
-          Hủy đơn hàng
+          {mode === "cancel" ? "Hủy đơn hàng" : "Yêu cầu hoàn hàng"}
         </Button>
       </div>
 
@@ -136,18 +273,25 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
         title={
           <div className="flex items-center gap-2 text-red-600">
             <ExclamationCircleOutlined />
-            <span>Xác nhận hủy đơn hàng</span>
+            <span>
+              {mode === "cancel"
+                ? "Xác nhận hủy đơn hàng"
+                : "Yêu cầu hoàn hàng"}
+            </span>
           </div>
         }
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={loading}
-        okText="Xác nhận hủy"
+        okText={mode === "cancel" ? "Xác nhận hủy" : "Gửi yêu cầu"}
         cancelText="Đóng"
         okButtonProps={{
-          danger: true,
-          className: "bg-red-600 hover:bg-red-700 border-red-600",
+          danger: mode === "cancel",
+          className:
+            mode === "cancel"
+              ? "bg-red-600 hover:bg-red-700 border-red-600"
+              : "bg-blue-600 hover:bg-blue-700 border-blue-600",
         }}
         width={600}
         centered
@@ -160,7 +304,10 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
               <span className="font-semibold">Thông tin đơn hàng</span>
             </div>
             <p className="text-red-700">
-              Bạn sắp hủy đơn hàng <strong>{orderCode}</strong>
+              {mode === "cancel"
+                ? "Bạn sắp hủy đơn hàng "
+                : "Bạn muốn yêu cầu hoàn hàng cho đơn "}
+              <strong>{orderCode}</strong>
             </p>
             <p className="text-red-600 text-sm mt-1">
               Hành động này không thể hoàn tác. Vui lòng xác nhận lý do hủy đơn
@@ -171,7 +318,9 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
           {/* Chọn lý do hủy */}
           <div className="mb-6">
             <h4 className="font-semibold text-gray-800 mb-4">
-              Vui lòng chọn lý do hủy đơn hàng: *
+              {mode === "cancel"
+                ? "Vui lòng chọn lý do hủy đơn hàng: *"
+                : "Vui lòng chọn lý do yêu cầu hoàn hàng: *"}
             </h4>
             <Radio.Group
               value={cancelReason}
@@ -179,22 +328,24 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
               className="w-full"
             >
               <Space direction="vertical" className="w-full">
-                {cancelReasons.map((reason) => (
-                  <Radio
-                    key={reason.value}
-                    value={reason.value}
-                    className="w-full p-3 transition-colors"
-                  >
-                    <div className="ml-2">
-                      <div className="font-medium text-gray-800">
-                        {reason.label}
+                {(mode === "cancel" ? cancelReasons : returnReasons).map(
+                  (reason) => (
+                    <Radio
+                      key={reason.value}
+                      value={reason.value}
+                      className="w-full p-3 transition-colors"
+                    >
+                      <div className="ml-2">
+                        <div className="font-medium text-gray-800">
+                          {reason.label}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {reason.description}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {reason.description}
-                      </div>
-                    </div>
-                  </Radio>
-                ))}
+                    </Radio>
+                  )
+                )}
               </Space>
             </Radio.Group>
           </div>

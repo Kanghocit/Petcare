@@ -10,28 +10,28 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 
 type ChartType = {
   _id: string;
-  sales: number;
   revenue: number;
+  profit: number;
 };
 
 export default function MonthlySalesChart({ chart }: { chart: ChartType[] }) {
   // build categories từ _id (theo tháng, năm...)
   const categories = chart?.map((item) => item._id);
 
-  // series cho chart
+  // series cho chart: Doanh thu & Lợi nhuận
   const series = [
     {
       name: "Doanh thu",
       data: chart?.map((item) => item.revenue),
     },
     {
-      name: "Doanh số",
-      data: chart?.map((item) => item.sales),
+      name: "Lợi nhuận",
+      data: chart?.map((item) => item.profit),
     },
   ];
 
   const options: ApexOptions = {
-    colors: ["#465fff", "#ff9800"], // Sales (xanh), Revenue (cam)
+    colors: ["#465fff", "#22c55e"], // Doanh thu (xanh), Lợi nhuận (xanh lá)
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
@@ -63,14 +63,14 @@ export default function MonthlySalesChart({ chart }: { chart: ChartType[] }) {
       {
         min: 0,
         title: {
-          text: "Doanh thu (VNĐ)",
+          text: "Giá trị (VNĐ)",
         },
       },
       {
         opposite: true,
         min: 0,
         title: {
-          text: "Doanh số",
+          text: "Giá trị (VNĐ)",
         },
       },
     ],

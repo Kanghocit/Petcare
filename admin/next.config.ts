@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  // Turbopack config để tương thích với Next.js 16
+  // Thêm config rỗng để tránh lỗi khi dùng Turbopack với webpack config
+  turbopack: {},
   // Rewrite để proxy /images đến backend, tránh lỗi private IP
   async rewrites() {
     return [

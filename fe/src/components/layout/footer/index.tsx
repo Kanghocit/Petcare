@@ -19,11 +19,11 @@ const Footer: React.FC = () => {
           {/* Cột 1 - Thông tin cửa hàng */}
           <Col xs={24} md={12} lg={6}>
             <Image
-              src="https://paddy.vn/cdn/shop/files/logo_paddy_desktop_155x.png?v=1693364605"
+              src="/images/logo.webp"
               alt="logo"
-              className="mb-4"
               width={150}
-              height={150}
+              height={100}
+              priority
             />
             <h3 className="text-xl font-semibold">Cửa hàng cho thú cưng</h3>
             <p className="mt-2 text-[14px]">
@@ -32,10 +32,7 @@ const Footer: React.FC = () => {
             </p>
             <p className="mt-2 text-[14px]">Mã số thuế: 12345678910</p>
             <p className="flex items-center mt-2 text-[14px]">
-              📍{" "}
-              <span className="ml-1 font-semibold">
-                70 Lu Gia, District 11, Ho Chi Minh City
-              </span>
+              📍 <span className="ml-1 font-semibold">Ha Noi, Viet Nam</span>
             </p>
             <p className="mt-2 text-[14px]">
               📞 Hotline:{" "}

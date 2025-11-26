@@ -1,6 +1,7 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import User from "../models/user.js";
+import { getIo } from "../socket/index.js";
 
 // Create order
 export const createOrder = async (req, res) => {
@@ -49,14 +50,16 @@ export const createOrder = async (req, res) => {
       }
 
       const priceAtPurchase = Number(i.priceAtPurchase ?? product.price ?? 0);
-      const importPriceAtPurchase = Number(i.importPriceAtPurchase ?? product.importPrice ?? 0);
+      const importPriceAtPurchase = Number(
+        i.importPriceAtPurchase ?? product.importPrice ?? 0
+      );
 
       const chosenImage =
         typeof i.image === "string" && i.image.trim()
           ? i.image.trim()
           : Array.isArray(product.images) && product.images[0]
-            ? product.images[0]
-            : "/images/product/placeholder.png";
+          ? product.images[0]
+          : "/images/product/placeholder.png";
 
       return {
         product: i.product,
@@ -361,6 +364,13 @@ export const updateOrderStatus = async (req, res) => {
 
       order.fulfillment.status = fulfillmentStatus;
 
+      // If admin accepts return request -> mark all items as fully returned
+      if (fulfillmentStatus === "returned") {
+        order.items.forEach((item) => {
+          item.returnedQty = item.quantity;
+        });
+      }
+
       // Set timestamps
       if (fulfillmentStatus === "shipped" && !order.fulfillment.shippedAt) {
         order.fulfillment.shippedAt = new Date();
@@ -439,6 +449,18 @@ export const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    // Emit realtime event for admin dashboards & clients
+    const io = getIo();
+    if (io) {
+      io.emit("order-updated", {
+        orderId: order._id,
+        fulfillmentStatus: order.fulfillment.status,
+        paymentStatus: order.payment.status,
+        status: order.status,
+        note: order.note,
+      });
+    }
+
     return res.status(200).json({
       ok: true,
       message: "Cập nhật đơn hàng thành công",
@@ -487,6 +509,17 @@ export const cancelOrder = async (req, res) => {
     order.cancelReason = reason || "";
 
     await order.save();
+
+    // Emit realtime event when order is cancelled
+    const io = getIo();
+    if (io) {
+      io.emit("order-updated", {
+        orderId: order._id,
+        fulfillmentStatus: order.fulfillment.status,
+        paymentStatus: order.payment.status,
+        status: order.status,
+      });
+    }
 
     // cập nhật số lượng sản phẩm
     for (const item of order.items) {

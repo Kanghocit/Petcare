@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
+import { EcommerceMetricsRealtime } from "@/components/ecommerce/EcommerceMetricsRealtime";
 import React from "react";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import RecentOrders from "@/components/ecommerce/RecentOrders";
@@ -26,7 +26,12 @@ export default async function Ecommerce({
         <MonthlySalesChart chart={chart} />
       </div>
       <div className="col-span-12 space-y-6">
-        <EcommerceMetrics data={statisticData} />
+        <EcommerceMetricsRealtime
+          initialData={statisticData}
+          startDate={startDate}
+          endDate={endDate}
+          type={type}
+        />
       </div>
 
       <div className="col-span-12 xl:col-span-6">

@@ -143,11 +143,6 @@ const OrderSummary: React.FC = () => {
     );
   }, [effectiveCart]);
 
-  const shippingFee = effectiveCart.length > 0 ? 30000 : 0;
-  const discountCode = useCheckoutStore((s) => s.discountCode);
-  const discountAmount = useCheckoutStore((s) => s.discountAmount) || 0;
-  const grandTotal = Math.max(0, subtotal + shippingFee - discountAmount);
-
   const {
     fullName,
     email,
@@ -169,6 +164,14 @@ const OrderSummary: React.FC = () => {
       invoice: s.invoice,
     }))
   );
+
+  // Nếu nhận tại cửa hàng thì phí ship = 0
+  const shippingFee =
+    receiptMethod === "store" ? 0 : effectiveCart.length > 0 ? 30000 : 0;
+
+  const discountCode = useCheckoutStore((s) => s.discountCode);
+  const discountAmount = useCheckoutStore((s) => s.discountAmount) || 0;
+  const grandTotal = Math.max(0, subtotal + shippingFee - discountAmount);
 
   // Sync data based on checkout source and clear discount for new orders
   useEffect(() => {

@@ -14,6 +14,8 @@ import { EyeOutlined } from "@ant-design/icons";
 import TablePagination from "@/components/tables/TablePagination";
 import { Orders } from "@/interface/Orders";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { getSocket } from "@/libs/socket";
 
 const ManageOrderTable = ({
   orders,
@@ -22,6 +24,20 @@ const ManageOrderTable = ({
 }) => {
   const { orders: ordersData, total } = orders || {};
   const router = useRouter();
+
+  // Realtime: refresh order table when any order is updated
+  useEffect(() => {
+    const socket = getSocket();
+    const handleOrderUpdated = () => {
+      router.refresh();
+    };
+
+    socket.on("order-updated", handleOrderUpdated);
+
+    return () => {
+      socket.off("order-updated", handleOrderUpdated);
+    };
+  }, [router]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("vi-VN", {

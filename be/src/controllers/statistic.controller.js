@@ -15,9 +15,14 @@ export const getStatistic = async (req, res) => {
     // =============================
     // 1) Tổng quan
     // =============================
-    // Tính doanh số (sales) - tổng giá trị bán
+    // Tính doanh số (sales) - tổng giá trị bán (doanh số gộp)
+    // Lưu ý: loại bỏ đơn đã hủy khỏi doanh số
     const [orderAgg] = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+        },
+      },
       {
         $group: {
           _id: null,
@@ -29,33 +34,59 @@ export const getStatistic = async (req, res) => {
       },
     ]);
 
-    // Tính doanh thu (revenue) - lợi nhuận = doanh số - chi phí nhập
+    // Tính doanh thu (revenue) và lợi nhuận (profit)
+    // Quy ước:
+    // - Đơn bị hủy: không tính vào doanh thu / lợi nhuận
+    // - Hàng trả lại: không tính vào doanh thu / lợi nhuận (chỉ tính vào refund)
     const [itemsAgg] = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+          status: { $ne: "cancelled" },
+        },
+      },
       { $unwind: "$items" },
+      {
+        $addFields: {
+          "items.effectiveQty": {
+            $max: [
+              0,
+              { $subtract: ["$items.quantity", "$items.returnedQty"] },
+            ],
+          },
+        },
+      },
       {
         $group: {
           _id: null,
-          sold: { $sum: "$items.quantity" },
+          sold: { $sum: "$items.effectiveQty" },
           returnedQty: { $sum: "$items.returnedQty" },
+          // Doanh thu: (số lượng - số lượng trả) * giá bán tại thời điểm mua
           totalRevenue: {
             $sum: {
+              $multiply: ["$items.effectiveQty", "$items.priceAtPurchase"],
+            },
+          },
+          // Chi phí nhập: (số lượng - số lượng trả) * giá nhập tại thời điểm mua
+          totalCost: {
+            $sum: {
               $multiply: [
-                "$items.quantity",
+                "$items.effectiveQty",
+                { $ifNull: ["$items.importPriceAtPurchase", 0] },
+              ],
+            },
+          },
+          // Lợi nhuận: (giá bán - giá nhập) * (số lượng - số lượng trả)
+          totalProfit: {
+            $sum: {
+              $multiply: [
+                "$items.effectiveQty",
                 {
                   $subtract: [
                     "$items.priceAtPurchase",
                     { $ifNull: ["$items.importPriceAtPurchase", 0] },
                   ],
                 },
-              ],
-            },
-          },
-          totalCost: {
-            $sum: {
-              $multiply: [
-                "$items.quantity",
-                { $ifNull: ["$items.importPriceAtPurchase", 0] },
               ],
             },
           },
@@ -73,15 +104,30 @@ export const getStatistic = async (req, res) => {
 
     // Lấy sản phẩm bán chạy (best selling products) trong khoảng thời gian
     const bestSelling = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+          status: { $ne: "cancelled" },
+        },
+      },
       { $unwind: "$items" },
+      {
+        $addFields: {
+          "items.effectiveQty": {
+            $max: [
+              0,
+              { $subtract: ["$items.quantity", "$items.returnedQty"] },
+            ],
+          },
+        },
+      },
       {
         $group: {
           _id: "$items.product",
-          totalSold: { $sum: "$items.quantity" },
+          totalSold: { $sum: "$items.effectiveQty" },
           totalRevenue: {
             $sum: {
-              $multiply: ["$items.quantity", "$items.priceAtPurchase"],
+              $multiply: ["$items.effectiveQty", "$items.priceAtPurchase"],
             },
           },
         },
@@ -116,15 +162,30 @@ export const getStatistic = async (req, res) => {
     // Lấy sản phẩm bán chậm (slow selling products) trong khoảng thời gian
     // Lấy tất cả sản phẩm đã bán ít hoặc không bán được
     const allProductsWithSales = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
+      {
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+          status: { $ne: "cancelled" },
+        },
+      },
       { $unwind: "$items" },
+      {
+        $addFields: {
+          "items.effectiveQty": {
+            $max: [
+              0,
+              { $subtract: ["$items.quantity", "$items.returnedQty"] },
+            ],
+          },
+        },
+      },
       {
         $group: {
           _id: "$items.product",
-          totalSold: { $sum: "$items.quantity" },
+          totalSold: { $sum: "$items.effectiveQty" },
           totalRevenue: {
             $sum: {
-              $multiply: ["$items.quantity", "$items.priceAtPurchase"],
+              $multiply: ["$items.effectiveQty", "$items.priceAtPurchase"],
             },
           },
         },
@@ -193,28 +254,39 @@ export const getStatistic = async (req, res) => {
         };
     }
 
-    // Tính doanh số và doanh thu theo thời gian
-    const timeSeriesOrders = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
+    // Tính doanh thu (revenue) và lợi nhuận (profit) theo thời gian
+    const timeSeriesItems = await Order.aggregate([
       {
-        $group: {
-          _id: dateGroup,
-          sales: { $sum: { $add: ["$subtotal", "$shipping.fee"] } },
+        $match: {
+          createdAt: { $gte: start, $lte: end },
+          status: { $ne: "cancelled" },
         },
       },
-      { $sort: { _id: 1 } },
-    ]);
-
-    const timeSeriesItems = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end } } },
       { $unwind: "$items" },
+      {
+        $addFields: {
+          "items.effectiveQty": {
+            $max: [
+              0,
+              { $subtract: ["$items.quantity", "$items.returnedQty"] },
+            ],
+          },
+        },
+      },
       {
         $group: {
           _id: dateGroup,
+          // Doanh thu theo thời gian = (số lượng - số lượng trả) * giá bán
           revenue: {
             $sum: {
+              $multiply: ["$items.effectiveQty", "$items.priceAtPurchase"],
+            },
+          },
+          // Lợi nhuận theo thời gian = (giá bán - giá nhập) * (số lượng - số lượng trả)
+          profit: {
+            $sum: {
               $multiply: [
-                "$items.quantity",
+                "$items.effectiveQty",
                 {
                   $subtract: [
                     "$items.priceAtPurchase",
@@ -229,34 +301,25 @@ export const getStatistic = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // Merge sales and revenue by date
-    const salesMap = new Map(
-      timeSeriesOrders.map((item) => [item._id, item.sales])
-    );
-    const revenueMap = new Map(
-      timeSeriesItems.map((item) => [item._id, item.revenue || 0])
-    );
-
-    // Get all unique dates
-    const allDates = new Set([
-      ...timeSeriesOrders.map((item) => item._id),
-      ...timeSeriesItems.map((item) => item._id),
-    ]);
-
-    const timeSeries = Array.from(allDates)
-      .sort()
-      .map((date) => ({
-        _id: date,
-        sales: salesMap.get(date) || 0,
-        revenue: revenueMap.get(date) || 0,
-      }));
+    // Chuẩn hóa dữ liệu biểu đồ: mỗi mốc thời gian có doanh thu & lợi nhuận
+    const timeSeries = timeSeriesItems
+      .map((item) => ({
+        _id: item._id,
+        revenue: item.revenue || 0,
+        profit: item.profit || 0,
+      }))
+      .sort((a, b) => (a._id > b._id ? 1 : a._id < b._id ? -1 : 0));
 
     // =============================
     // 3) Kết quả trả về
     // =============================
     const stats = {
-      revenue: itemsAgg?.totalRevenue || 0, // Doanh thu = lợi nhuận (giá bán - giá nhập)
-      sales: orderAgg?.sales || 0, // Doanh số = tổng giá trị bán
+      // Doanh thu = tổng tiền bán ra (số lượng * giá bán)
+      revenue: itemsAgg?.totalRevenue || 0,
+      // Lợi nhuận = doanh thu - chi phí nhập
+      profit: itemsAgg?.totalProfit || 0,
+      // Doanh số = tổng giá trị đơn hàng (giá bán + phí ship), vẫn giữ nếu cần dùng ở nơi khác
+      sales: orderAgg?.sales || 0,
       cost: itemsAgg?.totalCost || 0, // Chi phí nhập
       sold: itemsAgg?.sold || 0,
       refund: itemsAgg?.returnedQty || 0,

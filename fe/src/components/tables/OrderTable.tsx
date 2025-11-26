@@ -2,6 +2,9 @@
 
 import dayjs from "dayjs";
 import { Space, Table, TableProps, Tag } from "antd";
+import { useEffect } from "react";
+import { getSocket } from "@/libs/socket";
+import { useRouter } from "next/navigation";
 
 interface Order {
   _id: string;
@@ -13,6 +16,8 @@ interface Order {
 }
 
 const OrderTable = ({ orders }: { orders: Order[] }) => {
+  const router = useRouter();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -131,6 +136,22 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
       ),
     },
   ];
+
+  // Realtime: refresh orders list when backend emits order-updated
+  useEffect(() => {
+    const socket = getSocket();
+
+    const handleOrderUpdated = () => {
+      // Simply refetch the page data from the server (fresh orders)
+      router.refresh();
+    };
+
+    socket.on("order-updated", handleOrderUpdated);
+    return () => {
+      socket.off("order-updated", handleOrderUpdated);
+    };
+  }, [router]);
+
   return (
     <Table<Order>
       columns={columns}

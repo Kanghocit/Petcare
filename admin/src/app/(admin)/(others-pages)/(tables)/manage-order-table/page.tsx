@@ -1,10 +1,10 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import ManageOrderTable from "@/components/tables/ManageOrderTable";
 import { getOrdersAction } from "./action";
 import { Metadata } from "next";
 import SelectAction from "./components/SelectAction";
 import SearchOrders from "./components/SearchOrders";
+import ManageOrderTable from "@/components/tables/ManageOrderTable";
 
 export const metadata: Metadata = {
   title: "Kangdy Admin ",

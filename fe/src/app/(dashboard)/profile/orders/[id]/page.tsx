@@ -1,6 +1,5 @@
 import React from "react";
 import { getOrderByIdAction } from "../action";
-import { Badge } from "antd";
 import dayjs from "dayjs";
 import { createMetadata } from "@/utils/metadata";
 import type { Metadata } from "next";
@@ -13,6 +12,7 @@ import {
 import Image from "next/image";
 import BreadCrumb from "@/components/breadCrumb";
 import ModalConfirm from "./components/ModalConfirm";
+import OrderStatus from "./OrderStatus";
 
 // No revalidate for user-specific pages (dynamic)
 export const dynamic = "force-dynamic";
@@ -65,6 +65,7 @@ export interface OrderData {
   user: { name: string; email: string; rank: string };
   items: OrderItem[];
   createdAt: string;
+  note?: string;
 }
 
 const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
@@ -79,42 +80,6 @@ const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
       style: "currency",
       currency: "VND",
     }).format(amount);
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "unfulfilled":
-        return "Chưa xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "shipped":
-        return "Đã giao hàng";
-      case "delivered":
-        return "Đã nhận hàng";
-      case "cancelled":
-        return "Đã hủy";
-      default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "success";
-      case "unfulfilled":
-        return "warning";
-      case "processing":
-        return "processing";
-      case "shipping":
-        return "processing";
-      case "shipped":
-        return "processing";
-      case "cancelled":
-        return "error";
-      default:
-        return "default";
-    }
-  };
 
   const getPaymentMethodText = (method: string) => {
     switch (method) {
@@ -152,11 +117,8 @@ const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
             <ModalConfirm
               orderId={order._id}
               orderCode={order.orderCode || order._id?.slice(-8)}
-              canCancel={
-                order.fulfillment?.status !== "shipping" &&
-                order.fulfillment?.status !== "shipped" &&
-                order.fulfillment?.status !== "delivered"
-              }
+              fulfillmentStatus={order.fulfillment?.status}
+              initialNote={order.note}
             />
 
             {/* Danh sách sản phẩm */}
@@ -257,16 +219,16 @@ const OrderDetailPage = async ({ params }: { params: { id: string } }) => {
 
           {/* Cột phải - Thông tin chi tiết */}
           <div className="space-y-6">
-            {/* Trạng thái đơn hàng */}
+            {/* Trạng thái đơn hàng (realtime) */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl border border-blue-100">
               <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center gap-2">
                 <TruckOutlined className="text-blue-600" />
                 Trạng thái đơn hàng
               </h3>
-              <Badge
-                status={getStatusColor(order.fulfillment?.status)}
-                text={getStatusText(order.fulfillment?.status)}
-                className="text-lg font-semibold"
+              <OrderStatus
+                orderId={order._id}
+                initialStatus={order.fulfillment?.status}
+                initialNote={order.note}
               />
             </div>
 
