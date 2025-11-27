@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 
 import { App, Button, Tag } from "antd";
+import Badge from "@/components/ui/badge/Badge";
 import {
   CheckOutlined,
   CloseOutlined,
@@ -43,6 +44,7 @@ const ManageCategoryTable = ({
   const { modal, message } = App.useApp();
 
   const rows = flattenCategories(categories);
+  console.log(rows);
 
   const findParentName = (parentId?: string | null) => {
     if (!parentId) return "--";
@@ -154,11 +156,22 @@ const ManageCategoryTable = ({
                     {cat.productCount ?? 0}
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
-                    {cat.isActive ? (
-                      <Tag color="green">Hoạt động</Tag>
-                    ) : (
-                      <Tag>Tạm dừng</Tag>
-                    )}
+                    <Badge
+                      size="sm"
+                      color={
+                        cat.isActive
+                          ? "success"
+                          : cat.isActive === null
+                            ? "warning"
+                            : "error"
+                      }
+                    >
+                      {cat.isActive
+                        ? "Hoạt động"
+                        : cat.isActive === null
+                          ? "Tạm dừng"
+                          : "Không hoạt động"}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-theme-sm px-4 py-3 text-start text-gray-500 dark:text-gray-400">
                     {cat.createdAt
@@ -178,6 +191,7 @@ const ManageCategoryTable = ({
                       <Button
                         size="small"
                         shape="circle"
+                        color="blue"
                         variant="outlined"
                         icon={<EditOutlined />}
                         title="Chỉnh sửa"
@@ -186,6 +200,7 @@ const ManageCategoryTable = ({
                     <Button
                       size="small"
                       shape="circle"
+                      color="yellow"
                       variant="outlined"
                       icon={
                         cat.isActive ? <CloseOutlined /> : <CheckOutlined />
@@ -198,6 +213,7 @@ const ManageCategoryTable = ({
                     <Button
                       size="small"
                       shape="circle"
+                      color="red"
                       variant="outlined"
                       icon={<DeleteOutlined />}
                       onClick={() => handleDelete(cat.slug as string)}

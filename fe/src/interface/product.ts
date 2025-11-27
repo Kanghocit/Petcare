@@ -11,4 +11,5 @@ export interface Product {
   star: number;
   brand: string;
   images: string[];
+  totalReviews?: number;
 }

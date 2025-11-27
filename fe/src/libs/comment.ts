@@ -11,7 +11,12 @@ export const createComment = async (productSlug: string, comment: Comment) => {
 };
 
 export const getComments = async (productSlug: string) => {
-  const data = await fetchWithoutToken(`/comment/${productSlug}`);
+  const data = await fetchWithoutToken(
+    `/comment/${productSlug}`,
+    "GET",
+    null,
+    "no-store"
+  );
   return data;
 };
 

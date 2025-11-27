@@ -33,6 +33,7 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
       | "shipped"
       | "delivered"
       | "cancelled"
+      | "returned"
   ) => {
     switch (status) {
       case "unfulfilled":
@@ -45,6 +46,8 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
         return "Đã nhận hàng";
       case "cancelled":
         return "Đã hủy";
+      case "returned":
+        return "Đã trả hàng";
       default:
         return status;
     }
@@ -58,6 +61,7 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
       | "shipped"
       | "delivered"
       | "cancelled"
+      | "returned"
   ) => {
     switch (status) {
       case "unfulfilled":
@@ -72,6 +76,8 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
         return "green";
       case "cancelled":
         return "red";
+      case "returned":
+        return "purple";
       default:
         return "default";
     }
@@ -114,7 +120,8 @@ const OrderTable = ({ orders }: { orders: Order[] }) => {
           | "shipping"
           | "shipped"
           | "delivered"
-          | "cancelled";
+          | "cancelled"
+          | "returned";
       }) => (
         <Tag color={getStatusColor(fulfillment.status)}>
           {getStatusText(fulfillment.status)}

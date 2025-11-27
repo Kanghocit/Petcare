@@ -2,7 +2,7 @@
 
 import { User } from "@/interface/user";
 import { App, Avatar, Button, Input, Rate } from "antd";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getSocket } from "@/libs/socket";
 import { Comment, CommentDisplay, ReplyDisplay } from "@/interface/comment";
 import {
@@ -94,53 +94,59 @@ const Feedback = ({
   const [editRating, setEditRating] = useState(5);
   const { message, modal } = App.useApp();
 
-  // Load comments from API
-  useEffect(() => {
-    const loadComments = async () => {
-      try {
-        const data = await getCommentAction(productSlug);
-        if (data && data.comments) {
-          // Transform API data to match CommentDisplay interface
-          const transformedComments = data.comments.map(
-            (comment: {
-              _id: string;
-              userId?: { _id: string; name: string };
-              rating?: number;
-              content: string;
-              createdAt: string;
-              status: string;
-              replies?: Array<{
-                _id: string;
-                userId?: { _id: string; name: string };
-                content: string;
-                createdAt: string;
-              }>;
-            }) => ({
-              id: comment._id,
-              name: comment.userId?.name || "Anonymous",
-              rating: comment.rating || 0,
-              verified: true, // You can add verification logic later
-              comment: comment.content,
-              status: comment.status,
-              timestamp: comment.createdAt,
-              userId: comment.userId?._id,
-              replies:
-                comment.replies?.map((reply) => ({
-                  id: reply._id,
-                  name: reply.userId?.name || "Shop Pet",
-                  comment: reply.content,
-                  timestamp: reply.createdAt,
-                })) || [],
-            })
-          );
-          setComments(transformedComments);
-        }
-      } catch (error) {
-        console.error("Error loading comments:", error);
+  const transformComments = useCallback(
+    (
+      commentsFromApi: Array<{
+        _id: string;
+        userId?: { _id: string; name: string };
+        rating?: number;
+        content: string;
+        createdAt: string;
+        status: string;
+        replies?: Array<{
+          _id: string;
+          userId?: { _id: string; name: string };
+          content: string;
+          createdAt: string;
+          status?: string;
+        }>;
+      }>
+    ): CommentDisplay[] =>
+      commentsFromApi.map((comment) => ({
+        id: comment._id,
+        name: comment.userId?.name || "Anonymous",
+        rating: comment.rating || 0,
+        verified: true,
+        comment: comment.content,
+        status: comment.status,
+        timestamp: comment.createdAt,
+        userId: comment.userId?._id,
+        replies:
+          comment.replies?.map((reply) => ({
+            id: reply._id,
+            name: reply.userId?.name || "Shop Pet",
+            comment: reply.content,
+            timestamp: reply.createdAt,
+            status: reply.status || "active",
+          })) || [],
+      })),
+    []
+  );
+
+  const fetchComments = useCallback(async () => {
+    try {
+      const data = await getCommentAction(productSlug);
+      if (data && data.comments) {
+        setComments(transformComments(data.comments));
       }
-    };
-    loadComments();
-  }, [productSlug]);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    }
+  }, [productSlug, transformComments]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   // Realtime: listen to new-comment and new-reply
   useEffect(() => {
@@ -258,48 +264,29 @@ const Feedback = ({
       }
 
       message.success("Đã đánh giá thành công");
-      setNewComment({ name: "", rating: 5, comment: "" });
+      setNewComment({
+        name: user ? user?.user?.name || "" : "",
+        rating: 5,
+        comment: "",
+      });
       setOpen(false);
-
-      // Reload comments
-      const data = await getCommentAction(productSlug);
-      if (data && data.comments) {
-        const transformedComments = data.comments.map(
-          (comment: {
-            _id: string;
-            userId?: { _id: string; name: string };
-            rating?: number;
-            content: string;
-            createdAt: string;
-            status: string;
-            replies?: Array<{
-              _id: string;
-              userId?: { _id: string; name: string };
-              content: string;
-              createdAt: string;
-            }>;
-          }) => ({
-            id: comment._id,
-            name: comment.userId?.name || "Default user",
-            rating: comment.rating || 0,
-            verified: true,
-            comment: comment.content,
-            timestamp: comment.createdAt,
-            userId: comment.userId?._id,
-            status: comment.status,
-            replies:
-              comment.replies?.map((reply) => ({
-                id: reply._id,
-                name: reply.userId?.name || "Shop Pet",
-                comment: reply.content,
-                timestamp: reply.createdAt,
-              })) || [],
-          })
-        );
-        setComments(transformedComments);
-      }
-    } catch {
-      message.error(`Có lỗi xảy ra khi gửi đánh giá`);
+      setComments((prev) => [
+        {
+          id: result.comment._id,
+          name: result.comment.userId?.name || newComment.name || "Anonymous",
+          rating: Number(result.comment.rating) || newComment.rating,
+          verified: true,
+          comment: result.comment.content,
+          status: result.comment.status || "active",
+          timestamp: result.comment.createdAt,
+          userId: result.comment.userId?._id || user.user._id,
+          replies: [],
+        },
+        ...prev,
+      ]);
+      await fetchComments();
+    } catch (error) {
+      message.error(`Có lỗi xảy ra khi gửi đánh giá: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -338,43 +325,7 @@ const Feedback = ({
       setReplyText("");
       setReplyTo(null);
 
-      // Reload comments
-      const data = await getCommentAction(productSlug);
-      if (data && data.comments) {
-        const transformedComments = data.comments.map(
-          (comment: {
-            _id: string;
-            userId?: { _id: string; name: string };
-            rating?: number;
-            content: string;
-            createdAt: string;
-            status: string;
-            replies?: Array<{
-              _id: string;
-              userId?: { _id: string; name: string };
-              content: string;
-              createdAt: string;
-            }>;
-          }) => ({
-            id: comment._id,
-            name: comment.userId?.name || "Default user",
-            rating: comment.rating || 0,
-            verified: true,
-            comment: comment.content,
-            timestamp: comment.createdAt,
-            userId: comment.userId?._id,
-            status: comment.status,
-            replies:
-              comment.replies?.map((reply) => ({
-                id: reply._id,
-                name: reply.userId?.name || "Shop Pet",
-                comment: reply.content,
-                timestamp: reply.createdAt,
-              })) || [],
-          })
-        );
-        setComments(transformedComments);
-      }
+      await fetchComments();
     } catch (error) {
       console.error("Error adding reply:", error);
       message.error("Có lỗi xảy ra khi gửi trả lời");
@@ -406,7 +357,8 @@ const Feedback = ({
         commentId,
         editText,
         user.user._id,
-        editRating
+        editRating,
+        productSlug
       );
       if (result.ok) {
         message.success("Đã cập nhật bình luận thành công");
@@ -414,43 +366,7 @@ const Feedback = ({
         setEditText("");
         setEditRating(5);
 
-        // Reload comments
-        const data = await getCommentAction(productSlug);
-        if (data && data.comments) {
-          const transformedComments = data.comments.map(
-            (comment: {
-              _id: string;
-              userId?: { _id: string; name: string };
-              rating?: number;
-              content: string;
-              createdAt: string;
-              status: string;
-              replies?: Array<{
-                _id: string;
-                userId?: { _id: string; name: string };
-                content: string;
-                createdAt: string;
-              }>;
-            }) => ({
-              id: comment._id,
-              name: comment.userId?.name || "Default user",
-              rating: comment.rating || 0,
-              verified: true,
-              comment: comment.content,
-              timestamp: comment.createdAt,
-              userId: comment.userId?._id,
-              status: comment.status,
-              replies:
-                comment.replies?.map((reply) => ({
-                  id: reply._id,
-                  name: reply.userId?.name || "Shop Pet",
-                  comment: reply.content,
-                  timestamp: reply.createdAt,
-                })) || [],
-            })
-          );
-          setComments(transformedComments);
-        }
+        await fetchComments();
       } else {
         message.error("Không thể cập nhật bình luận");
       }
@@ -476,18 +392,15 @@ const Feedback = ({
       onOk: async () => {
         setLoading(true);
         try {
-          const result = await deleteCommentAction(commentId, user.user._id);
+          const result = await deleteCommentAction(
+            commentId,
+            user.user._id,
+            productSlug
+          );
           if (result.ok) {
             message.success("Đã xóa bình luận thành công");
 
-            // Cập nhật state trực tiếp thay vì reload
-            setComments((prevComments) => {
-              const updatedComments = prevComments.filter(
-                (comment) => comment.id !== commentId
-              );
-
-              return updatedComments;
-            });
+            await fetchComments();
           } else {
             message.error("Không thể xóa bình luận");
           }
@@ -546,7 +459,7 @@ const Feedback = ({
         </div>
       </div>
 
-      <div className="flex justify-end mt-6 border-b-1 border-gray-300">
+      <div className="flex justify-end mt-6 border-b border-gray-300">
         <Button
           color="primary"
           variant="outlined"
@@ -633,7 +546,7 @@ const Feedback = ({
           filteredComments.map((comment: CommentDisplay) => (
             <div
               key={comment.id}
-              className="mb-6 border-b-1 border-gray-300 pb-4"
+              className="mb-6 border-b border-gray-300 pb-4"
             >
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">

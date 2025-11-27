@@ -1,8 +1,54 @@
+import mongoose from "mongoose";
 import Comment from "../models/Comment.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
 import { getIo } from "../socket/index.js";
+
+const updateProductReviewStats = async (productId) => {
+  if (!productId) return null;
+
+  const normalizedId = new mongoose.Types.ObjectId(
+    productId.toString ? productId.toString() : productId
+  );
+
+  const [stats] = await Comment.aggregate([
+    {
+      $match: {
+        productId: normalizedId,
+        parentId: null,
+        status: "active",
+        rating: { $gt: 0 },
+      },
+    },
+    {
+      $group: {
+        _id: "$productId",
+        avgRating: { $avg: "$rating" },
+        reviewCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const avgRating = stats?.avgRating || 0;
+  const reviewCount = stats?.reviewCount || 0;
+  const normalizedAvg =
+    reviewCount > 0 ? Math.round((avgRating + Number.EPSILON) * 10) / 10 : 0;
+
+  await Product.findByIdAndUpdate(
+    normalizedId,
+    {
+      star: normalizedAvg,
+      totalReviews: reviewCount,
+    },
+    { new: true }
+  );
+
+  return {
+    star: normalizedAvg,
+    totalReviews: reviewCount,
+  };
+};
 
 export const createComment = async (req, res) => {
   try {
@@ -41,6 +87,11 @@ export const createComment = async (req, res) => {
     // enrich for realtime consumers
     await comment.populate("userId", "name");
 
+    let productRating = null;
+    if (!comment.parentId) {
+      productRating = await updateProductReviewStats(product._id);
+    }
+
     const io = getIo();
     if (io)
       io.emit("new-comment", {
@@ -52,6 +103,7 @@ export const createComment = async (req, res) => {
       ok: true,
       message: "Tạo bình luận thành công",
       comment,
+      productRating,
     });
   } catch (error) {
     console.log("Tạo bình luận thất bại", error);
@@ -183,10 +235,16 @@ export const updateComment = async (req, res) => {
       new: true,
     });
 
+    let productRating = null;
+    if (!commentInDb.parentId) {
+      productRating = await updateProductReviewStats(commentInDb.productId);
+    }
+
     res.status(200).json({
       ok: true,
       message: "Cập nhật bình luận thành công",
       comment: updatedComment,
+      productRating,
     });
   } catch (error) {
     console.log("Cập nhật bình luận thất bại", error);
@@ -211,10 +269,16 @@ export const deleteComment = async (req, res) => {
         .json({ ok: false, message: "Comment không tồn tại" });
     }
 
+    const wasRootComment = !commentInDb.parentId;
     await Comment.findByIdAndDelete(id);
+    let productRating = null;
+    if (wasRootComment) {
+      productRating = await updateProductReviewStats(commentInDb.productId);
+    }
     res.status(200).json({
       ok: true,
       message: "Xóa bình luận thành công",
+      productRating,
     });
   } catch (error) {
     console.log("Xóa bình luận thất bại", error);
@@ -303,10 +367,15 @@ export const updateCommentStatus = async (req, res) => {
       { status },
       { new: true }
     );
+    let productRating = null;
+    if (comment && !comment.parentId) {
+      productRating = await updateProductReviewStats(comment.productId);
+    }
     res.status(200).json({
       ok: true,
       message: "Cập nhật trạng thái bình luận thành công",
       comment,
+      productRating,
     });
   } catch (error) {
     console.log("Cập nhật trạng thái bình luận thất bại", error);

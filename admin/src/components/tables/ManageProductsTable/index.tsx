@@ -36,7 +36,7 @@ export default function ManageProductsTable({
         <div className="min-w-[1102px]">
           <Table>
             {/* Table Header */}
-            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+            <TableHeader className="border-b border-gray-100 dark:border-white/5">
               <TableRow>
                 <TableCell
                   isHeader

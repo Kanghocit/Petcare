@@ -62,6 +62,10 @@ const productSchema = new mongoose.Schema(
     images: {
       type: [String],
     },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
