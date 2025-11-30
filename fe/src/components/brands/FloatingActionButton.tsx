@@ -1,14 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   MessageOutlined,
   ArrowUpOutlined,
   ReloadOutlined,
   ShareAltOutlined,
 } from "@ant-design/icons";
+import ChatBox from "../chat/ChatBox";
 
 const FloatingActionButton = () => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -62,16 +65,16 @@ const FloatingActionButton = () => {
       {/* Bottom right floating action button */}
       <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={() => {
-            // Handle support chat
-            alert("Tính năng hỗ trợ đang được phát triển!");
-          }}
+          onClick={() => setIsChatOpen(!isChatOpen)}
           className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2"
         >
           <MessageOutlined className="w-5 h-5" />
           <span className="font-medium">Hỗ trợ</span>
         </button>
       </div>
+
+      {/* Chat Box */}
+      <ChatBox isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </>
   );
 };

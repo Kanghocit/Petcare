@@ -15,7 +15,8 @@ export const revalidate = 300;
 
 export const metadata: Metadata = createMetadata({
   title: "Sản phẩm",
-  description: "Khám phá bộ sưu tập sản phẩm đa dạng cho thú cưng tại Kangdy PetShop. Thức ăn, đồ chơi, phụ kiện chất lượng cao.",
+  description:
+    "Khám phá bộ sưu tập sản phẩm đa dạng cho thú cưng tại Kangdy PetShop. Thức ăn, đồ chơi, phụ kiện chất lượng cao.",
 });
 
 const ProductsPage = async ({
@@ -61,12 +62,15 @@ const ProductsPage = async ({
     return extras.toString();
   };
 
-  const [products, brands] = await Promise.all([
+  const [productsResult, brands] = await Promise.all([
     q
       ? searchProductAction(q, Number(page ?? 1), 18)
       : getProductsAction(Number(page ?? 1), search ?? "", 12, buildExtras()),
     getAllBrandsAction(1, 10),
   ]);
+
+  // Xử lý trường hợp lỗi hoặc không tìm thấy
+  const products = productsResult || { products: [], total: 0, message: "" };
 
   return (
     <>
@@ -78,6 +82,12 @@ const ProductsPage = async ({
           </div>
           <div className="w-3/4">
             <h1 className="text-2xl font-bold mb-4">Danh sách sản phẩm</h1>
+            {/* Hiển thị thông báo nếu có message và không có sản phẩm */}
+            {products.message && products.products?.length === 0 && (
+              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">{products.message}</p>
+              </div>
+            )}
             <div className="flex flex-wrap gap-4">
               {products?.products?.map((product: Product) => (
                 <ProductCard
@@ -94,7 +104,7 @@ const ProductsPage = async ({
                   img={[product.images[0], product.images[1]]}
                 />
               ))}
-              {products?.products?.length === 0 && (
+              {products?.products?.length === 0 && !products.message && (
                 <div className="w-full h-full flex items-center justify-center">
                   <h1 className="text-2xl font-bold">
                     Sản phẩm hiện đang trống
@@ -102,7 +112,7 @@ const ProductsPage = async ({
                 </div>
               )}
             </div>
-            <TablePagination total={products?.total} link="/products" />
+            <TablePagination total={products?.total || 0} link="/products" />
           </div>
         </div>
       </div>

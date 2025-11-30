@@ -297,9 +297,26 @@ export const getProducts = async (req, res) => {
 
     products = productsData;
 
+    // Kiểm tra nếu có search query nhưng không tìm thấy sản phẩm
+    if (searchRaw && total === 0) {
+      return res.status(200).json({
+        ok: true,
+        message: `Không tìm thấy sản phẩm nào với từ khóa "${searchRaw}"`,
+        products: [],
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
+        search: searchRaw,
+      });
+    }
+
     res.status(200).json({
       ok: true,
-      message: "Lấy danh sách sản phẩm thành công",
+      message:
+        total === 0
+          ? "Không có sản phẩm nào"
+          : "Lấy danh sách sản phẩm thành công",
       products,
       page,
       limit,
@@ -341,6 +358,21 @@ export const searchProducts = async (req, res) => {
         .limit(limit)
         .lean();
 
+      // Nếu không tìm thấy sản phẩm nào
+      if (data.length === 0) {
+        return res.status(200).json({
+          ok: true,
+          message: query
+            ? `Không tìm thấy sản phẩm nào với từ khóa "${query}"`
+            : "Không tìm thấy sản phẩm nào",
+          products: [],
+          total: 0,
+          page,
+          totalPages: 0,
+          query: query || undefined,
+        });
+      }
+
       return res.status(200).json({
         ok: true,
         message: "Tìm sản phẩm thành công",
@@ -371,6 +403,21 @@ export const searchProducts = async (req, res) => {
         slug,
       };
     });
+
+    // Kiểm tra nếu không tìm thấy sản phẩm
+    if (enrichedHits.length === 0 || result.estimatedTotalHits === 0) {
+      return res.status(200).json({
+        ok: true,
+        message: query
+          ? `Không tìm thấy sản phẩm nào với từ khóa "${query}"`
+          : "Không tìm thấy sản phẩm nào",
+        query: query || undefined,
+        products: [],
+        total: 0,
+        page,
+        totalPages: 0,
+      });
+    }
 
     res.status(200).json({
       ok: true,
